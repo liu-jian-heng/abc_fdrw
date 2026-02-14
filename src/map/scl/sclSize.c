@@ -200,7 +200,7 @@ void Abc_SclTimeNtkPrint( SC_Man * p, int fShowAll, int fPrintPath )
         while ( pObj && Abc_ObjIsNode(pObj) )
         {
             i++;
-            nLength = Abc_MaxInt( nLength, Abc_SclObjCell(pObj) ? strlen(Abc_SclObjCell(pObj)->pName) : 2 /* strlen("pi") */ );
+            nLength = Abc_MaxInt( nLength, strlen(Abc_SclObjCell(pObj)->pName) );
             pObj = Abc_SclFindMostCriticalFanin( p, &fRise, pObj );
         }
 
@@ -270,25 +270,21 @@ void Abc_SclTimeNtkPrint( SC_Man * p, int fShowAll, int fPrintPath )
   SeeAlso     []
 
 ***********************************************************************/
-static inline void Abc_SclTimeFanin( SC_Man * p, SC_Timing * pTime, Abc_Obj_t * pObj, Abc_Obj_t * pFanin, int k )
+static inline void Abc_SclTimeFanin( SC_Man * p, SC_Timing * pTime, Abc_Obj_t * pObj, Abc_Obj_t * pFanin )
 {
     SC_Pair * pArrIn   = Abc_SclObjTime( p, pFanin );
     SC_Pair * pSlewIn  = Abc_SclObjSlew( p, pFanin );
     SC_Pair * pLoad    = Abc_SclObjLoad( p, pObj );
     SC_Pair * pArrOut  = Abc_SclObjTime( p, pObj );   // modified
     SC_Pair * pSlewOut = Abc_SclObjSlew( p, pObj );   // modified
-    if ( p->pFuncFanin ) pLoad->fall += p->pFuncFanin(p, pObj, pFanin, k, 0);
-    if ( p->pFuncFanin ) pLoad->rise += p->pFuncFanin(p, pObj, pFanin, k, 1);
     Scl_LibPinArrival( pTime, pArrIn, pSlewIn, pLoad, pArrOut, pSlewOut );
 }
-static inline void Abc_SclDeptFanin( SC_Man * p, SC_Timing * pTime, Abc_Obj_t * pObj, Abc_Obj_t * pFanin, int k )
+static inline void Abc_SclDeptFanin( SC_Man * p, SC_Timing * pTime, Abc_Obj_t * pObj, Abc_Obj_t * pFanin )
 {
     SC_Pair * pDepIn   = Abc_SclObjDept( p, pFanin );   // modified
     SC_Pair * pSlewIn  = Abc_SclObjSlew( p, pFanin );
     SC_Pair * pLoad    = Abc_SclObjLoad( p, pObj );
     SC_Pair * pDepOut  = Abc_SclObjDept( p, pObj );
-    if ( p->pFuncFanin ) pLoad->fall += p->pFuncFanin(p, pObj, pFanin, k, 0);
-    if ( p->pFuncFanin ) pLoad->rise += p->pFuncFanin(p, pObj, pFanin, k, 1);    
     Scl_LibPinDeparture( pTime, pDepIn, pSlewIn, pLoad, pDepOut );
 }
 static inline void Abc_SclDeptObj( SC_Man * p, Abc_Obj_t * pObj )
@@ -302,7 +298,7 @@ static inline void Abc_SclDeptObj( SC_Man * p, Abc_Obj_t * pObj )
         if ( Abc_ObjIsCo(pFanout) || Abc_ObjIsLatch(pFanout) )
             continue;
         pTime = Scl_CellPinTime( Abc_SclObjCell(pFanout), Abc_NodeFindFanin(pFanout, pObj) );
-        Abc_SclDeptFanin( p, pTime, pFanout, pObj, Abc_NodeFindFanin(pFanout, pObj) );
+        Abc_SclDeptFanin( p, pTime, pFanout, pObj );
     }
 }
 static inline float Abc_SclObjLoadValue( SC_Man * p, Abc_Obj_t * pObj )
@@ -372,9 +368,9 @@ void Abc_SclTimeNode( SC_Man * p, Abc_Obj_t * pObj, int fDept )
     {
         pTime = Scl_CellPinTime( pCell, k );
         if ( fDept )
-            Abc_SclDeptFanin( p, pTime, pObj, pFanin, k );
+            Abc_SclDeptFanin( p, pTime, pObj, pFanin );
         else
-            Abc_SclTimeFanin( p, pTime, pObj, pFanin, k );
+            Abc_SclTimeFanin( p, pTime, pObj, pFanin );
     }
     if ( p->EstLoadMax && Value > 1 )
     {

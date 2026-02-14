@@ -18,13 +18,6 @@
 
 ***********************************************************************/
 
-#ifdef WIN32
-#include <windows.h>
-#define PATH_MAX MAX_PATH
-#else
-#include <limits.h>
-#endif
-
 #include "extra.h"
 
 ABC_NAMESPACE_IMPL_START
@@ -191,9 +184,9 @@ char * Extra_FileNameGeneric( char * FileName )
 ***********************************************************************/
 char * Extra_FileNameGenericAppend( char * pBase, char * pSuffix )
 {
-    static char Buffer[PATH_MAX];
+    static char Buffer[1000];
     char * pDot;
-    assert( strlen(pBase) + strlen(pSuffix) < PATH_MAX );
+    assert( strlen(pBase) + strlen(pSuffix) < 1000 );
     strcpy( Buffer, pBase );
     if ( (pDot = strrchr( Buffer, '.' )) )
         *pDot = 0;

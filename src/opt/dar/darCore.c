@@ -67,7 +67,8 @@ void Dar_ManDefaultRwrParams( Dar_RwrPar_t * pPars )
 
 /**Function*************************************************************
 
-  Synopsis    []
+  Synopsis    [initializes a rewriting manager, processes nodes to compute and evaluate cuts, 
+  applies transformations, and ensures the integrity of the modified network]
 
   Description []
                
@@ -78,6 +79,8 @@ void Dar_ManDefaultRwrParams( Dar_RwrPar_t * pPars )
 ***********************************************************************/
 int Dar_ManRewrite( Aig_Man_t * pAig, Dar_RwrPar_t * pPars )
 {
+    int fVerbose = 1;
+    // printf( "Start Dar_ManRewrite\n" );
     extern Vec_Int_t * Saig_ManComputeSwitchProbs( Aig_Man_t * p, int nFrames, int nPref, int fProbOne );
     Dar_Man_t * p;
 //    Bar_Progress_t * pProgress;
@@ -126,8 +129,10 @@ int Dar_ManRewrite( Aig_Man_t * pAig, Dar_RwrPar_t * pPars )
             break;
         if ( pPars->fRecycle && ++Counter % 50000 == 0 && Aig_DagSize(pObj) < Vec_PtrSize(p->vCutNodes)/100 )
         {
-//            printf( "Counter = %7d.  Node = %7d.  Dag = %5d. Vec = %5d.\n", 
-//                Counter, i, Aig_DagSize(pObj), Vec_PtrSize(p->vCutNodes) );
+            if (fVerbose) {
+                printf( "Counter = %7d.  Node = %7d.  Dag = %5d. Vec = %5d.\n", 
+                    Counter, i, Aig_DagSize(pObj), Vec_PtrSize(p->vCutNodes) );
+            }
 //            fflush( stdout );
             Dar_ManCutsRestart( p, pObj );
         }

@@ -47,7 +47,8 @@ ABC_NAMESPACE_IMPL_START
 int Fra_FraigSat( Aig_Man_t * pMan, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, int nLearnedStart, int nLearnedDelta, int nLearnedPerce, int fFlipBits, int fAndOuts, int fNewSolver, int fVerbose )
 {
     if ( fNewSolver )
-    {
+    {   
+        printf("label 26\n");
         extern void * Cnf_DataWriteIntoSolver2( Cnf_Dat_t * p, int nFrames, int fInit );
         extern int    Cnf_DataWriteOrClause2( void * pSat, Cnf_Dat_t * pCnf );
 
@@ -163,6 +164,7 @@ int Fra_FraigSat( Aig_Man_t * pMan, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimi
     }
     else
     {
+        printf("label 27\n");
         sat_solver * pSat;
         Cnf_Dat_t * pCnf;
         int status, RetValue = 0;
@@ -308,7 +310,8 @@ int Aig_ManCountXors( Aig_Man_t * p )
 
 /**Function*************************************************************
 
-  Synopsis    []
+  Synopsis    [Fra_FraigCec applying SAT solving, rewriting, fraiging, and XOR balancing techniques. 
+  It returns the equivalence status and updates the input AIG pointer with the modified graph.]
 
   Description []
                
@@ -318,7 +321,7 @@ int Aig_ManCountXors( Aig_Man_t * p )
 
 ***********************************************************************/
 int Fra_FraigCec( Aig_Man_t ** ppAig, int nConfLimit, int fVerbose )
-{
+{   extern Gia_Man_t * Gia_ManFromAig( Aig_Man_t * p );
     int nBTLimitStart =        300;   // starting SAT run
     int nBTLimitFirst =          2;   // first fraiging iteration
     int nBTLimitLast  = nConfLimit;   // the last-gasp SAT run
@@ -418,14 +421,16 @@ ABC_PRT( "Time", Abc_Clock() - clk );
 
         // set the parameters for the next run
         pParams->nBTLimitNode = 8 * pParams->nBTLimitNode;
+        // pParams->nBTLimitNode = 12 * pParams->nBTLimitNode;
         pParams->nBTLimitMiter = 2 * pParams->nBTLimitMiter;
+        // pParams->nBTLimitMiter = 4 * pParams->nBTLimitMiter;
     }
-
+    if (RetValue == -1) Gia_AigerWrite(Gia_ManFromAig( pAig ), "cec_fraFraig.aig", 0, 0, 0);
     // if still unsolved try last gasp
     if ( RetValue == -1 )
     {
 clk = Abc_Clock();
-        RetValue = Fra_FraigSat( pAig, (ABC_INT64_T)nBTLimitLast, (ABC_INT64_T)0, 0, 0, 0, 1, 0, 0, 0 );
+        RetValue = Fra_FraigSat( pAig, (ABC_INT64_T)nBTLimitLast, (ABC_INT64_T)0, 0, 0, 0, 1, 0, 0, fVerbose );
         if ( fVerbose )
         {
             printf( "Final SAT:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
@@ -436,6 +441,67 @@ ABC_PRT( "Time", Abc_Clock() - clk );
     *ppAig = pAig;
     return RetValue;
 }
+
+/* Mimic Cec for synthesis*/
+Aig_Man_t * Fra_FraigCecSyn( Aig_Man_t ** ppAig, int fFirst, int fVerbose )
+{   
+    extern Gia_Man_t * Gia_ManFromAig( Aig_Man_t * p );
+
+    Fra_Par_t Params, * pParams = &Params;
+    Aig_Man_t * pAig = *ppAig, * pTemp;
+    int i, RetValue;
+    abctime clk;
+
+    // duplicate the AIG
+clk = Abc_Clock();
+    if ( fFirst ) {
+        pAig = Dar_ManRwsat( pTemp = pAig, 1, 0 );
+        Aig_ManStop( pTemp );
+    }
+    
+    if ( fVerbose )
+    {
+        printf( "Rewriting:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "Time", Abc_Clock() - clk );
+    }
+    
+    if ( ~fFirst ) {
+        RetValue = Fra_FraigMiterStatus( pAig );
+        if ( RetValue >= 0 )
+            return pAig;
+
+        clk = Abc_Clock();
+            pAig = Dar_ManRewriteDefault( pTemp = pAig );
+            Aig_ManStop( pTemp );
+            if ( fVerbose )
+                {
+                    printf( "Rewriting:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+        ABC_PRT( "--------Rewrite Time", Abc_Clock() - clk );
+                } 
+                // check the miter status
+        RetValue = Fra_FraigMiterStatus( pAig );
+        if ( RetValue >= 0 )
+            return pAig;
+    }
+
+   
+    // try XOR balancing
+    if ( Aig_ManCountXors(pAig) * 30 > Aig_ManNodeNum(pAig) + 300 )
+    {
+clk = Abc_Clock();
+        pAig = Dar_ManBalanceXor( pTemp = pAig, 1, 0, 0 );
+        Aig_ManStop( pTemp );
+        if ( fVerbose )
+        {
+                printf( "Balance-X:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "--------Balance-X Time", Abc_Clock() - clk );
+        } 
+    }
+
+    return pAig;
+    
+}
+
 
 /**Function*************************************************************
 

@@ -150,13 +150,6 @@ Vec_Wrd_t * Gia_ManComputeTruths( Gia_Man_t * p, int nCutSize, int nLutNum, int 
         // collect and sort fanins
         vLeaves.nCap = vLeaves.nSize = Gia_ObjLutSize( p, i );
         vLeaves.pArray = Gia_ObjLutFanins( p, i );
-        if( !Vec_IntCheckUniqueSmall(&vLeaves) ) 
-        {
-            Vec_IntUniqify(&vLeaves);
-            Vec_IntWriteEntry(p->vMapping, Vec_IntEntry(p->vMapping, i), vLeaves.nSize);
-            for ( k = 0; k < vLeaves.nSize; k++ )
-                Vec_IntWriteEntry(p->vMapping, Vec_IntEntry(p->vMapping, i) + 1 + k, vLeaves.pArray[k]);
-        }
         assert( Vec_IntCheckUniqueSmall(&vLeaves) );
         Vec_IntSelectSort( Vec_IntArray(&vLeaves), Vec_IntSize(&vLeaves) );
         if ( !fReverse )
@@ -217,9 +210,7 @@ Vec_Wec_t * Gia_ManFxRetrieve( Gia_Man_t * p, Vec_Str_t ** pvCompl, int fReverse
         int nVars = Gia_ObjLutSize( p, i );
         int * pVars = Gia_ObjLutFanins( p, i );
         word * pTruth = Vec_WrdEntryP( vTruths, Counter++ * nWords );
-        Abc_TtFlipVar5( pTruth, nVars );
         int Status = Kit_TruthIsop( (unsigned *)pTruth, nVars, vCover, 1 );
-        Abc_TtFlipVar5( pTruth, nVars );
         if ( Vec_IntSize(vCover) == 0 || (Vec_IntSize(vCover) == 1 && Vec_IntEntry(vCover,0) == 0) )
         {
             Vec_StrWriteEntry( *pvCompl, pObj->Value, (char)(Vec_IntSize(vCover) == 0) );

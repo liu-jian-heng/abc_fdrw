@@ -32,7 +32,7 @@
 
 #ifdef ABC_USE_PTHREADS
 
-#if defined(_WIN32) && !defined(__MINGW32__)
+#ifdef _WIN32
 #include "../lib/pthread.h"
 #else
 #include <pthread.h>

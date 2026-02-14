@@ -62,6 +62,7 @@ extern void                Gia_ManReprToAigRepr2( Aig_Man_t * pAig, Gia_Man_t * 
 extern void                Gia_ManReprFromAigRepr( Aig_Man_t * pAig, Gia_Man_t * pGia );
 extern void                Gia_ManReprFromAigRepr2( Aig_Man_t * pAig, Gia_Man_t * pGia );
 extern Gia_Man_t *         Gia_ManCompress2( Gia_Man_t * p, int fUpdateLevel, int fVerbose );
+extern Gia_Man_t *         Gia_ManSelfSyn( Gia_Man_t * p, int fUpdateLevel, int fCec, int fResub, int fVerbose );
 extern Gia_Man_t *         Gia_ManPerformDch( Gia_Man_t * p, void * pPars );
 extern Gia_Man_t *         Gia_ManAbstraction( Gia_Man_t * p, Vec_Int_t * vFlops );
 extern void                Gia_ManSeqCleanupClasses( Gia_Man_t * p, int fConst, int fEquiv, int fVerbose );

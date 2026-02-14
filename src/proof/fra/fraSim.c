@@ -737,7 +737,7 @@ p->timeRef += Abc_Clock() - clk;
 ***********************************************************************/
 void Fra_SmlSimulate( Fra_Man_t * p, int fInit )
 {
-    int fVerbose = 0;
+    int fVerbose = 1;
     int nChanges, nClasses;
     abctime clk;
     assert( !fInit || Aig_ManRegNum(p->pManAig) );
@@ -749,7 +749,7 @@ void Fra_SmlSimulate( Fra_Man_t * p, int fInit )
     Fra_ClassesPrepare( p->pCla, p->pPars->fLatchCorr, 0 );
 //    Fra_ClassesPrint( p->pCla, 0 );
 if ( fVerbose )
-printf( "Starting classes = %5d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), Fra_ClassesCountLits(p->pCla) );
+printf( "Starting Fra_SmlSimulate......classes = %5d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), Fra_ClassesCountLits(p->pCla) );
 
 //return;
 
@@ -764,7 +764,7 @@ clk = Abc_Clock();
     nChanges += Fra_ClassesRefine1( p->pCla, 1, NULL );
 p->timeRef += Abc_Clock() - clk;
 if ( fVerbose )
-printf( "Refined classes  = %5d.   Changes = %4d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), nChanges, Fra_ClassesCountLits(p->pCla) );
+printf( "Refined classes  after Pattern 0= %5d.   Changes = %4d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), nChanges, Fra_ClassesCountLits(p->pCla) );
     Fra_SmlSavePattern1( p, fInit );
     Fra_SmlAssignDist1( p->pSml, p->pPatWords );
     Fra_SmlSimulateOne( p->pSml );
@@ -776,7 +776,7 @@ clk = Abc_Clock();
 p->timeRef += Abc_Clock() - clk;
 
 if ( fVerbose )
-printf( "Refined classes  = %5d.   Changes = %4d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), nChanges, Fra_ClassesCountLits(p->pCla) );
+printf( "Refined classes after pattern 1 = %5d.   Changes = %4d.   Lits = %6d.\n", Vec_PtrSize(p->pCla->vClasses), nChanges, Fra_ClassesCountLits(p->pCla) );
     // refine classes by random simulation
     do {
         Fra_SmlInitialize( p->pSml, fInit );

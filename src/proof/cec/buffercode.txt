@@ -1,0 +1,3937 @@
+// FdRw
+                else if (nodeId == -6) {
+                    // greedy decrease level
+                    Vec_IntPrint(vRwNd);
+                    assert(Vec_IntSize(vRwNd) == 6);
+                    frac = Vec_IntEntry( vRwNd, 1 );
+                    up = Vec_IntEntry( vRwNd, 2 );
+                    bot = Vec_IntEntry( vRwNd, 3 );
+                    rwCkt = Vec_IntSize( vRwNd ) > 4 ? Vec_IntEntry( vRwNd, 4 ) : -1;
+                    frtMin = Vec_IntSize( vRwNd ) > 5 ? Vec_IntEntry( vRwNd, 5 ) : -1;
+
+                    assert(up < bot); // level decrease as going up
+                    buf1 = -1;
+                    buf2 = -1;
+                    Vec_IntForEachEntry( pMan->vMerge, buf, j) {
+                        if (Vec_IntEntry(pMan->vLevel1, buf) > buf1) buf1 = Vec_IntEntry(pMan->vLevel1, buf);
+                        if (Vec_IntEntry(pMan->vLevel2, buf) > buf2) buf2 = Vec_IntEntry(pMan->vLevel2, buf);
+                    }
+                    printf("level range: %d,%d~%d,%d\n", buf1 * up / frac, buf2 *up /frac, buf1 * bot / frac, buf2 * bot / frac);
+                        
+                    Gia_ManForEachAnd( pMan->pGia, pObj, j ) { 
+                        nid = Gia_ObjId(pMan->pGia, pObj);
+                        if ( Gia_ObjColors(pMan->pGia, nid) == 1 ) {
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac < buf1 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac >= buf1 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        } else if ( Gia_ObjColors(pMan->pGia, nid) == 2) {
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac < buf2 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac >= buf2 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        }
+                    }
+                    Cec_ManFdIncreIter( pMan );
+                    if (pPars->fVerbose) Cec_ManFdReport( pMan );
+                    
+                    printf("UNSAT nodes:\n");
+                    Vec_IntPrint( Cec_ManFdUnsatId( pMan, 0, 1 ) );
+                    printf("Useful nodes:\n");
+                    vIntBuff = Cec_ManFdUnsatId( pMan, 0, 0 );
+                    Vec_IntPrint( vIntBuff );
+
+                    Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                        if (rwCkt == -1) continue;
+                        if (Gia_ObjColors(pMan->pGia, nid) != rwCkt) {
+                            Vec_IntWriteEntry( vIntBuff, j, -1 );
+                        }
+                    }
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj1), 1 );
+                    vCnt1 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+                    vCntInit1 = Vec_IntDup(vCnt1);
+                    vCnt3 = vCnt1;
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj2), 1 );
+                    vCnt2 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+                    vCntInit2 = Vec_IntDup(vCnt2);
+                    vCnt4 = vCnt2;
+                    
+                    printf("initial cover counts 1: ");
+                    Vec_IntPrint(vCnt1);
+                    printf("initial cover counts 2: ");
+                    Vec_IntPrint(vCnt2);
+                    printf("=========================\n");
+
+                    vIntBuff1 = Vec_IntAlloc( Vec_IntSize(vIntBuff) );
+                    while (Vec_IntSize(vIntBuff1) < Abc_MinInt(10, Vec_IntSize(vIntBuff))) {
+                        vIntBuff2 = Vec_IntDup( vIntBuff1 );
+                        Vec_IntPush( vIntBuff2, -1 ); // push any dummy to enlarge size
+                        buf1 = 0;
+                        buf2 = 0;
+                        k = -1;
+                        Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                            if (nid == -1) continue;
+                            Vec_IntWriteEntry( vIntBuff2, Vec_IntSize(vIntBuff2) - 1, nid );
+                            pTemp = Cec_ManFdReplaceMulti( pMan, Vec_IntDup(vIntBuff2) );
+
+                            pObj1 = Gia_ObjFanin0( Gia_ObjFanin0( Gia_ObjFanin0( Gia_ManCo(pTemp, 0) ) ) );
+                            pObj2 = Gia_ObjFanin1( Gia_ObjFanin0( Gia_ObjFanin0( Gia_ManCo(pTemp, 0) ) ) );
+                            vMerge = Vec_IntAlloc( 1 );
+                            Cec_ManGetMerge( pTemp, pObj1, pObj2, vMerge );
+
+                            Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj1), 1 );
+                            vCnt5 = Cec_ManCountVal( pTemp, vMerge );
+                            vChange = Vec_IntAdd( vCnt5, vCnt1, 0 );
+                            buf3 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                            Vec_IntFree( vChange );
+
+                            Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj2), 1 );
+                            vCnt6 = Cec_ManCountVal( pTemp, vMerge );
+                            vChange = Vec_IntAdd( vCnt6, vCnt2, 0 );
+                            buf4 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                            Vec_IntFree( vChange );
+                            flag = 0;
+
+                            if (frtMin) {
+                                if (buf3 + buf4 >= 0) continue;
+                                if (buf1 >= 0 && buf2 >= 0) flag = 1;
+                                if (Abc_MaxInt(buf3, buf4) < 0) { // (-,-), maxint is nearer to 0
+                                    if (Abc_MaxInt(buf1, buf2) < 0 && Abc_MaxInt(buf3, buf4) > Abc_MaxInt(buf1, buf2)) {
+                                        flag = 1;
+                                    } else if (Abc_MaxInt(buf1, buf2) >= 0 && Abc_MaxInt(buf3, buf4) > Abc_MinInt(buf1, buf2)) { 
+                                        // -, +, minint is less than 0
+                                        flag = 1;
+                                    }
+                                } else { // -, +, minint is less than 0
+                                    if (Abc_MaxInt(buf1, buf2) < 0 && Abc_MinInt(buf3, buf4) > Abc_MaxInt(buf1, buf2)) {
+                                        flag = 1;
+                                    } else if (Abc_MaxInt(buf1, buf2) >= 0 && Abc_MinInt(buf3, buf4) > Abc_MinInt(buf1, buf2)) {
+                                        flag = 1;
+                                    }
+                                }
+                            } else {
+                                if (buf3 + buf4 >= 0) continue;
+                                if (Abc_MinInt(buf3, buf4) < Abc_MinInt(buf1, buf2)) flag = 1;
+                                else if (Abc_MinInt(buf3, buf4) == Abc_MinInt(buf1, buf2)
+                                            && Abc_MaxInt(buf3, buf4) < Abc_MaxInt(buf1, buf2)) flag = 1;
+                            }
+                            if (flag) {
+                                // printf("buf1, buf2, buf3, buf4: %d, %d, %d, %d\n", buf1, buf2, buf3, buf4);
+                                k = j;
+                                buf1 = buf3;
+                                buf2 = buf4;
+                                vCnt3 = Vec_IntDup(vCnt5);
+                                vCnt4 = Vec_IntDup(vCnt6);
+                            }
+
+                            Vec_IntFree( vMerge );
+                            Vec_IntFree( vCnt5 );
+                            Vec_IntFree( vCnt6 );
+                            Gia_ManStop( pTemp );
+
+                        }
+                        if (k == -1) break;
+                        Vec_IntPush( vIntBuff1, Vec_IntEntry(vIntBuff, k) );
+                        Vec_IntWriteEntry( vIntBuff, k, -1 );
+
+                        printf("Replace nodes: ");
+                        Vec_IntForEachEntry( vIntBuff1, nid, j ) {
+                            printf("%d, ", nid);
+                        }
+                        printf("\n");
+                        printf("ckt1:\n");
+                        vChange = Vec_IntAdd( vCnt3, vCnt1, 0 );
+                        printf("buf1 = %d, cover changes 1: ", buf1);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+                        printf("new cover counts 1: ");
+                        Vec_IntPrint( vCnt3 );
+                        Cec_ManMergeCompare( vCntInit1, vCnt3 );
+
+                        printf("ckt2:\n");
+                        vChange = Vec_IntAdd( vCnt4, vCnt2, 0 );
+                        printf("buf2 = %d, cover changes 2: ", buf2);
+                        Vec_IntPrint(vChange);
+                        Vec_IntFree( vChange );
+                        printf("new cover counts 2: ");
+                        Vec_IntPrint( vCnt4 );
+                        Cec_ManMergeCompare( vCntInit2, vCnt4 );
+
+                        // Vec_IntFree( vCnt1 );
+                        // Vec_IntFree( vCnt2 );
+                        vCnt1 = Vec_IntDup(vCnt3);
+                        vCnt2 = Vec_IntDup(vCnt4);
+                        Vec_IntFree( vCnt3 );
+                        Vec_IntFree( vCnt4 );
+                        Vec_IntFree( vIntBuff2 );
+
+                        // printf("new nodeId = %d, buf1 = %d, buf2 = %d\n", nodeId, buf1, buf2);
+                        // store the initial, and compute real changes compare with initial
+                        printf("===============================\n");
+
+                    }
+
+                    Vec_IntDump( "cover_nodes.log", vIntBuff1, 0 );
+                } else if (nodeId == -7) {
+                    // check all combination
+                    Cec_ManFdIncreIter( pMan );
+                    Cec_ManFdReport( pMan );
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj1), 1 );
+                    vIntBuff1 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj2), 1 );
+                    vIntBuff2 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+
+                    if (Vec_IntSize(vRwNd) == 1) return 0;
+                    assert(Vec_IntSize(vRwNd) < 33);
+                    for ( i = 1; i < (1 << (Vec_IntSize(vRwNd) - 1)); i++ ) {
+                        buf = i;
+                        vIntBuff = Vec_IntAlloc( Vec_IntSize(vRwNd) - 1 );
+                        Vec_IntForEachEntry( vRwNd, nodeId, j ) {
+                            if (buf == 0) break;
+                            if (buf & 1) {
+                                Vec_IntPush( vIntBuff, nodeId );
+                            }
+                            buf >>= 1;
+                        }
+                        pTemp = Cec_ManFdReplaceMulti( pMan, vIntBuff );
+
+                        pObj1 = Gia_ObjFanin0( Gia_ObjFanin0( Gia_ObjFanin0( Gia_ManCo(pTemp, 0) ) ) );
+                        pObj2 = Gia_ObjFanin1( Gia_ObjFanin0( Gia_ObjFanin0( Gia_ManCo(pTemp, 0) ) ) );
+                        vMerge = Vec_IntAlloc( 1 );
+                        Cec_ManGetMerge( pTemp, pObj1, pObj2, vMerge );
+                        printf("merge_org = %d, merge_new = %d\n", Vec_IntSize(pMan->vMerge), Vec_IntSize(vMerge));
+
+                        Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj1), 1 );
+                        vCnt = Cec_ManCountVal( pTemp, vMerge );
+
+                        printf("ckt1:\n");
+                        Cec_ManMergeCompare( vIntBuff1, vCnt1 );
+                        Vec_IntClear( vCnt1 );
+                        Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj2), 1 );
+                        vCnt = Cec_ManCountVal( pTemp, vMerge );
+                        printf("ckt2:\n");
+                        Cec_ManMergeCompare( vIntBuff2, vCnt1 );
+                        Vec_IntClear( vCnt1 );
+                        printf("=====================================\n");
+
+                        Vec_IntFree( vIntBuff );
+                        Vec_IntFree( vMerge );
+                        Gia_ManStop( pTemp );
+                    }
+                } else if (nodeId == -8) {
+                    // push frontier (multi)
+                    Vec_IntPrint(vRwNd);
+                    assert(Vec_IntSize(vRwNd) == 4);
+                    frac = Vec_IntEntry( vRwNd, 1 );
+                    up = Vec_IntEntry( vRwNd, 2 );
+                    bot = Vec_IntEntry( vRwNd, 3 );
+
+                    assert(up < bot); // level decrease as going up
+                    buf1 = -1;
+                    buf2 = -1;
+                    Vec_IntForEachEntry( pMan->vMerge, buf, j) {
+                        if (Vec_IntEntry(pMan->vLevel1, buf) > buf1) buf1 = Vec_IntEntry(pMan->vLevel1, buf);
+                        if (Vec_IntEntry(pMan->vLevel2, buf) > buf2) buf2 = Vec_IntEntry(pMan->vLevel2, buf);
+                    }
+                    printf("level range: %d,%d~%d,%d\n", buf1 * up / frac, buf2 *up /frac, buf1 * bot / frac, buf2 * bot / frac);
+                        
+                    Gia_ManForEachAnd( pMan->pGia, pObj, j ) { 
+                        nid = Gia_ObjId(pMan->pGia, pObj);
+                        if ( Gia_ObjColors(pMan->pGia, nid) == 1 ) {
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac < buf1 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac >= buf1 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        } else if ( Gia_ObjColors(pMan->pGia, nid) == 2) {
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac < buf2 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac >= buf2 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        }
+                    }
+                    Cec_ManFdIncreIter( pMan );
+                    if (pPars->fVerbose) Cec_ManFdReport( pMan );
+                    
+                    printf("UNSAT nodes:\n");
+                    Vec_IntPrint( Cec_ManFdUnsatId( pMan, 0, 1 ) );
+                    printf("Useful nodes:\n");
+                    vIntBuff = Cec_ManFdUnsatId( pMan, 0, 0 );
+                    vIntBuff1 = Vec_IntAlloc( Vec_IntSize(vIntBuff) );
+                    Vec_IntPrint( vIntBuff );
+
+                    cost_buf = -1.0;
+                    buf = -1;
+                    Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                        if (nid == -1) continue;
+                        cost_buf1 = 1.0 - (Cec_ManFdRawCost( pMan, nid, 0, 0 ) / (float) Vec_FltEntry(pMan->vCostTh, nid));
+                        // printf("%d: %f, %f\n", nid, Cec_ManFdRawCost( pMan, nid, 0, 0 ), Vec_FltEntry(pMan->vCostTh, nid));
+                        if (cost_buf1 > cost_buf) {
+                            cost_buf = cost_buf1;
+                            buf = Gia_ObjColors(pMan->pGia, nid);
+                        }
+                    }
+                    cost_buf *= 0.68;
+                    Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                        if (nid == -1) continue;
+                        if (Gia_ObjColors(pMan->pGia, nid) != buf) continue;
+                        cost_buf1 = 1.0 - (Cec_ManFdRawCost( pMan, nid, 0, 0 ) / (float) Vec_FltEntry(pMan->vCostTh, nid));
+                        if (cost_buf1 >= cost_buf) {
+                            Vec_IntPush( vIntBuff1, nid );
+                        }
+                    }
+                    Vec_IntDump( "cover_nodes.log", vIntBuff1, 0 );
+                } else if (nodeId == -9) {
+                    // dc2
+                    Vec_IntPrint(vRwNd);
+                    assert(Vec_IntSize(vRwNd) == 4);
+                    frac = Vec_IntEntry( vRwNd, 1 );
+                    up = Vec_IntEntry( vRwNd, 2 );
+                    bot = Vec_IntEntry( vRwNd, 3 );
+
+                    assert(up < bot); // level decrease as going up
+                    buf1 = -1;
+                    buf2 = -1;
+                    Vec_IntForEachEntry( pMan->vMerge, buf, j) {
+                        if (Vec_IntEntry(pMan->vLevel1, buf) > buf1) buf1 = Vec_IntEntry(pMan->vLevel1, buf);
+                        if (Vec_IntEntry(pMan->vLevel2, buf) > buf2) buf2 = Vec_IntEntry(pMan->vLevel2, buf);
+                    }
+                    printf("level range: %d,%d~%d,%d\n", buf1 * up / frac, buf2 *up /frac, buf1 * bot / frac, buf2 * bot / frac);
+                        
+                    Gia_ManForEachAnd( pMan->pGia, pObj, j ) { 
+                        nid = Gia_ObjId(pMan->pGia, pObj);
+                        if ( Gia_ObjColors(pMan->pGia, nid) == 1 ) {
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac < buf1 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel1, nid) * frac >= buf1 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        } else if ( Gia_ObjColors(pMan->pGia, nid) == 2) {
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac < buf2 * up ) continue;
+                            if ( Vec_IntEntry(pMan->vLevel2, nid) * frac >= buf2 * bot ) continue;
+                            Cec_ManFdCleanOneUnknown( pMan, nid );
+                            Cec_ManFdShrink( pMan, nid );
+                        }
+                    }
+                    Cec_ManFdIncreIter( pMan );
+                    if (pPars->fVerbose) Cec_ManFdReport( pMan );
+                    
+                    printf("UNSAT nodes:\n");
+                    Vec_IntPrint( Cec_ManFdUnsatId( pMan, 0, 1 ) );
+                    printf("Useful nodes:\n");
+                    vIntBuff = Cec_ManFdUnsatId( pMan, 0, 0 );
+                    Vec_IntPrint( vIntBuff );
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj1), 1 );
+                    vCnt1 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+                    Vec_IntPrint( vCnt1 );
+                    // vCntInit1 = Vec_IntDup(vCnt1);
+                    // vCnt3 = vCnt1;
+                    Cec_ManDistEasy( pMan->pGia, pMan->vMerge, Gia_ObjId(pMan->pGia, pMan->pObj2), 1 );
+                    vCnt2 = Cec_ManCountVal( pMan->pGia, pMan->vMerge );
+                    Vec_IntPrint( vCnt2 );
+                    // vCntInit2 = Vec_IntDup(vCnt2);
+                    // vCnt4 = vCnt2;
+
+                    vIntBuff2 = Vec_IntStart( 2 );
+                    vMerge = Vec_IntAlloc( 1 );
+                    Vec_IntPush( vIntBuff, 0 );
+                    // test all node
+                    Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                        if (nid == -1) continue;
+                        if (nid != 0) {
+                            printf("node %d ===============\n", nid);
+                            printf("Gsupport:\n");
+                            Vec_IntPrint( Vec_WecEntry( pMan->vGSupport, nid ) );
+                            printf("Siblings (< 3 dist parents):\n");
+                            vIntBuff3 = Cec_ManGetSibling( pMan->pGia, nid, 3 );
+                            Vec_IntPrint( vIntBuff3 );
+                            Vec_IntFree( vIntBuff3 );
+                            pTemp = Cec_ManFdReplaceOne( pMan, nid );
+                        } else {
+                            printf("default =====================\n");
+                            pTemp = Gia_ManDup( pMan->pGia );
+                        }
+
+                        vIntBuff1 = Cec_ManCheckMiter( pTemp );
+                        pObj1 = Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 0) );
+                        pObj2 = Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 1) );
+                        Vec_IntClear( vMerge );
+                        Cec_ManGetMerge( pTemp, pObj1, pObj2, vMerge );
+                        printf("ckt1 before dc2:\n");
+                        Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj1), 1 );
+                        vCnt3 = Cec_ManCountVal( pTemp, vMerge );
+                        Vec_IntPrint( vCnt3 );
+                        vChange = Vec_IntAdd( vCnt3, vCnt1, 0 );
+                        buf3 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 1 before dc2 = %d\n", buf3);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+
+                        printf("ckt2 before dc2:\n");
+                        Cec_ManDistEasy( pTemp, vMerge, Gia_ObjId(pTemp, pObj2), 1 );
+                        vCnt4 = Cec_ManCountVal( pTemp, vMerge );
+                        Vec_IntPrint( vCnt4 );
+                        vChange = Vec_IntAdd( vCnt4, vCnt2, 0 );
+                        buf4 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 2 before dc2 = %d\n", buf4);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+
+                        vIntBuff1 = Cec_ManCheckMiter( pTemp );
+                        Vec_IntClear( vMerge );
+                        Cec_ManGetMerge( pTemp, 
+                                        Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 0)), 
+                                        Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 1)), vMerge );
+                        Vec_IntWriteEntry( vIntBuff2, 0, Vec_IntEntry(vIntBuff1, 0) );
+                        Vec_IntWriteEntry( vIntBuff2, 1, Vec_IntEntry(vIntBuff1, 1) );
+                        pOut = Cec_ManPartSyn( pTemp, vMerge, vIntBuff2, 1, 0 );
+                        Gia_ManStop( pTemp );
+                        Vec_IntFree( vIntBuff1 );
+                    
+                        pTemp = pOut;
+                        vIntBuff1 = Cec_ManCheckMiter( pTemp );
+                        pOut = Cec_ManFraigSyn( pTemp, 
+                                            Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 0)), Gia_ManObj( pTemp, Vec_IntEntry(vIntBuff1, 1)), 
+                                            Vec_IntEntry(vIntBuff1, 2), 0, pMan->pPars->nBTLimit, 1);
+                        // pOut have problem!
+                        Gia_ManStop(pTemp);
+                        Vec_IntFree( vIntBuff1 );
+                        
+                        vIntBuff1 = Cec_ManCheckMiter( pOut );
+                        pObj1 = Gia_ManObj( pOut, Vec_IntEntry(vIntBuff1, 0));
+                        pObj2 = Gia_ManObj( pOut, Vec_IntEntry(vIntBuff1, 1));
+                        Vec_IntClear( vMerge );
+                        Cec_ManGetMerge( pOut, pObj1, pObj2, vMerge );
+
+                        
+                        printf("ckt1 after dc2:\n");
+                        Cec_ManDistEasy( pOut, vMerge, Gia_ObjId(pOut, pObj1), 1 );
+                        vCnt5 = Cec_ManCountVal( pOut, vMerge );
+                        Vec_IntPrint( vCnt5 );
+                        vChange = Vec_IntAdd( vCnt5, vCnt1, 0 );
+                        buf3 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 1 after dc2 = %d\n", buf3);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+                        vChange = Vec_IntAdd( vCnt5, vCnt3, 0 );
+                        buf3 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 1 by dc2 = %d\n", buf3);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+                        Vec_IntFree( vCnt5 );
+                        Vec_IntFree( vCnt3 );
+
+                        printf("ckt2 after dc2:\n");
+                        Cec_ManDistEasy( pOut, vMerge, Gia_ObjId(pOut, pObj2), 1 );
+                        vCnt6 = Cec_ManCountVal( pOut, vMerge );
+                        Vec_IntPrint( vCnt6 );
+                        vChange = Vec_IntAdd( vCnt6, vCnt2, 0 );
+                        buf4 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 2 after dc2 = %d\n", buf4);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+                        vChange = Vec_IntAdd( vCnt6, vCnt4, 0 );
+                        buf4 = Cec_ManMergeChangeCompare( vChange, 0, 0 );
+                        printf("cover changes 2 by dc2 = %d\n", buf4);
+                        Vec_IntPrint( vChange );
+                        Vec_IntFree( vChange );
+                        Vec_IntFree( vCnt6 );
+                        Vec_IntFree( vCnt4 );
+                        
+                    }
+                }
+
+// ../fra/fraCec
+int Fra_FraigCec( Aig_Man_t ** ppAig, int nConfLimit, int fVerbose )
+{   
+    extern Gia_Man_t * Gia_ManFromAig( Aig_Man_t * p );
+    printf("----In FraigCec\n");
+    int nBTLimitStart =        300;   // starting SAT run
+    int nBTLimitFirst =          2;   // first fraiging iteration
+    int nBTLimitLast  = nConfLimit;   // the last-gasp SAT run
+
+    Fra_Par_t Params, * pParams = &Params;
+    Aig_Man_t * pAig = *ppAig, * pTemp;
+    int i, RetValue;
+    abctime clk;
+
+    // report the original miter
+    if ( fVerbose )
+    {
+        printf( "Original miter:   Nodes = %6d.\n", Aig_ManNodeNum(pAig) );
+    }
+    RetValue = Fra_FraigMiterStatus( pAig );
+//    assert( RetValue == -1 );
+    if ( RetValue == 0 )
+    {
+        pAig->pData = ABC_ALLOC( int, Aig_ManCiNum(pAig) );
+        memset( pAig->pData, 0, sizeof(int) * Aig_ManCiNum(pAig) );
+        return RetValue;
+    }
+
+    // if SAT only, solve without iteration
+clk = Abc_Clock();
+    if (nBTLimitLast) RetValue = Fra_FraigSat( pAig, (ABC_INT64_T)2*nBTLimitStart, (ABC_INT64_T)0, 0, 0, 0, 1, 0, 0, 0 );
+    if ( fVerbose )
+    {
+        printf( "Initial SAT:      Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "Time", Abc_Clock() - clk );
+    }
+    if ( RetValue >= 0 ) {
+        printf("done after Fra_FraigSat, is it equiv: %d\n", RetValue);
+        return RetValue;
+    }
+    // duplicate the AIG
+clk = Abc_Clock();
+    pAig = Dar_ManRwsat( pTemp = pAig, 1, 0 );
+    Aig_ManStop( pTemp );
+    if ( fVerbose )
+    {
+        printf( "Rewriting:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "Time", Abc_Clock() - clk );
+    }
+
+    // perform the loop
+    Fra_ParamsDefault( pParams );
+    pParams->nBTLimitNode = nBTLimitFirst;
+    pParams->nBTLimitMiter = nBTLimitStart;
+    pParams->fDontShowBar = 1;
+    pParams->fProve = 1;
+    for ( i = 0; i < 6; i++ )
+    {
+//printf( "Running fraiging with %d BTnode and %d BTmiter.\n", pParams->nBTLimitNode, pParams->nBTLimitMiter );
+        printf("----now in the loop %d in FraigCec\n", i);
+        // try XOR balancing
+        if ( Aig_ManCountXors(pAig) * 30 > Aig_ManNodeNum(pAig) + 300 )
+        {
+clk = Abc_Clock();
+            pAig = Dar_ManBalanceXor( pTemp = pAig, 1, 0, 0 );
+            Aig_ManStop( pTemp );
+            if ( fVerbose )
+            {
+                printf( "Balance-X:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "--------Balance-X Time", Abc_Clock() - clk );
+            } 
+        }
+
+        // run fraiging
+clk = Abc_Clock();
+        pAig = Fra_FraigPerform( pTemp = pAig, pParams );
+        Aig_ManStop( pTemp );
+        if ( fVerbose )
+        {
+            printf( "Fraiging (i=%d):   Nodes = %8d.  ", i+1, Aig_ManNodeNum(pAig) );
+ABC_PRT( "--------Fraig Time", Abc_Clock() - clk );
+        }
+
+        // check the miter status
+        RetValue = Fra_FraigMiterStatus( pAig );
+        if ( RetValue >= 0 )
+            break;
+
+        // perform rewriting
+clk = Abc_Clock();
+        pAig = Dar_ManRewriteDefault( pTemp = pAig );
+        Aig_ManStop( pTemp );
+        if ( fVerbose )
+        {
+            printf( "Rewriting:        Nodes = %6d.  ", Aig_ManNodeNum(pAig) );
+ABC_PRT( "--------Rewrite Time", Abc_Clock() - clk );
+        } 
+        // check the miter status
+        RetValue = Fra_FraigMiterStatus( pAig );
+        if ( RetValue >= 0 )
+            break;
+        // try simulation
+
+        // set the parameters for the next run
+        pParams->nBTLimitNode = 8 * pParams->nBTLimitNode; // org: 8
+        pParams->nBTLimitMiter = 2 * pParams->nBTLimitMiter;
+    }
+    // Aig_ManDumpBlif( pAig, "cec_fraFraig.blif", 0, 0 );
+    if (RetValue == -1 && nBTLimitLast == 0) Gia_AigerWrite(Gia_ManFromAig( pAig ), "cec_fraFraig.aig", 0, 0, 0);
+    // return RetValue;
+    
+    // if still unsolved try last gasp
+    if ( RetValue == -1 )
+    {
+clk = Abc_Clock();
+        if (nBTLimitLast > 0) RetValue = Fra_FraigSat( pAig, (ABC_INT64_T)nBTLimitLast, (ABC_INT64_T)0, 0, 0, 0, 1, 0, 0, 1 );
+        if ( fVerbose )
+        {
+            printf( "Final SAT:        Nodes = %8d.  ", Aig_ManNodeNum(pAig) );
+            if (RetValue == -1) printf("Problem still Undecided\n");
+            else if (RetValue == 0) printf("Problem is SAT(not equiv)\n");
+            else if (RetValue == 1) printf("Problem is UNSAT(equiv)\n");
+            
+ABC_PRT( "Final Sat Time", Abc_Clock() - clk );
+        }
+    }
+    else if (RetValue == 0) printf("SAT (False)\n");
+    else if (RetValue == 1) printf("UNSAT (True)\n");
+
+    *ppAig = pAig;
+    return RetValue;
+}
+
+// cecCore.c
+Gia_Man_t * Cec_ManSatSweeping( Gia_Man_t * pAig, Cec_ParFra_t * pPars, int fSilent )
+{   
+    // extern void Gia_SelfDefShow( Gia_Man_t * p, char * pFileName, Vec_Int_t * vLabel0, Vec_Int_t * vLabel1);
+    extern void Gia_WriteDotAigSimple(Gia_Man_t * p, char * pFileName, Vec_Int_t * vBold);
+    char buffer[100];
+    int getdot = 0;
+    int fOutputResult = 1;
+    Cec_ParSat_t ParsSat, * pParsSat = &ParsSat;
+    Cec_ParSim_t ParsSim, * pParsSim = &ParsSim;
+    Gia_Man_t * pIni, * pSrm, * pTemp;
+    Cec_ManFra_t * p;
+    Cec_ManSim_t * pSim;
+    Cec_ManPat_t * pPat;
+    int i, fTimeOut = 0, nMatches = 0;
+    abctime clk, clk2, clkTotal = Abc_Clock();
+    if ( pPars->fVerbose ) Abc_PrintTime( 1, "----Start ManSatSweeping", Abc_Clock() - clkTotal );
+    if ( pPars->fVerbose )
+        printf( "Simulating %d words for %d rounds. SAT solving with %d conflicts.\n", pPars->nWords, pPars->nRounds, pPars->nBTLimit );
+    // duplicate AIG and transfer equivalence classes
+    Gia_ManRandom( 1 );
+    pIni = Gia_ManDup(pAig);
+    pIni->pReprs = pAig->pReprs; pAig->pReprs = NULL;
+    pIni->pNexts = pAig->pNexts; pAig->pNexts = NULL;
+    if ( pPars->fUseOrigIds )
+    {
+        Gia_ManOrigIdsInit( pIni );
+        Vec_IntFreeP( &pAig->vIdsEquiv );
+        pAig->vIdsEquiv = Vec_IntAlloc( 1000 );
+    }
+    if ( pAig->vSimsPi )
+    {
+        pIni->vSimsPi = Vec_WrdDup(pAig->vSimsPi); 
+        pIni->nSimWords = pAig->nSimWords;
+    }
+
+    // prepare the managers
+    // SAT sweeping
+    p = Cec_ManFraStart( pIni, pPars );
+    if ( pPars->fDualOut )
+        pPars->fColorDiff = 1;
+    // simulation
+    Cec_ManSimSetDefaultParams( pParsSim );
+    pParsSim->nWords      = Abc_MaxInt(2*pAig->nSimWords, pPars->nWords);
+    pParsSim->nFrames     = pPars->nRounds;
+    pParsSim->fCheckMiter = pPars->fCheckMiter;
+    pParsSim->fDualOut    = pPars->fDualOut;
+    pParsSim->fVerbose    = pPars->fVerbose;
+    pSim = Cec_ManSimStart( pIni, pParsSim );
+    // SAT solving
+    Cec_ManSatSetDefaultParams( pParsSat );
+    pParsSat->nBTLimit = pPars->nBTLimit;
+    pParsSat->fVerbose = pPars->fVeryVerbose;
+    // simulation patterns
+    pPat = Cec_ManPatStart();
+    //pPat->fVerbose = pPars->fVeryVerbose;
+
+    // start equivalence classes
+clk = Abc_Clock();
+    if ( p->pAig->pReprs == NULL )
+    {
+        if ( pPars->fVerbose ) Abc_PrintTime( 1, "----Start SimClassPrepare", Abc_Clock() - clkTotal );
+        if ( Cec_ManSimClassesPrepare(pSim, -1) || (!p->pAig->nSimWords && Cec_ManSimClassesRefine(pSim)) )
+        {
+            Gia_ManStop( p->pAig );
+            p->pAig = NULL;
+            goto finalize;
+        }
+        if ( pPars->fVerbose ) Gia_ManEquivPrintClasses( p->pAig, 1, 0 );
+        if ( pPars->fVerbose ) Abc_PrintTime( 1, "----End SimClassPrepare", Abc_Clock() - clkTotal );
+    }
+p->timeSim += Abc_Clock() - clk;
+    // perform solving
+    for ( i = 1; i <= pPars->nItersMax; i++ )
+    {   
+        snprintf(buffer, sizeof(buffer), "----Start %d iters in SatSweeping", i);
+        // printf("remain PO to solve = %d\n", Gia_ManPoNum(p->pAig));
+        if ( pPars->fVerbose ) Abc_PrintTime(1, buffer, Abc_Clock() - clkTotal);
+        if ( pPars->fVerbose ) {
+            Gia_ManEquivPrintClasses( p->pAig, 0, 0 );
+        }
+        // if (i % 20 == 0 && (i < 100 || i % 100 == 0) && p->pPars->fVerbose)
+        // {   
+        //     printf("Current equivalence classes: \n");
+        //     Gia_ManEquivPrintClasses( p->pAig, 1, 0 );
+        // }
+
+        clk2 = Abc_Clock();
+        nMatches = 0;
+        if ( pPars->fDualOut || pPars->fVerbose )
+        {   // only goes in for a few iterations (??) 
+            nMatches = Gia_ManEquivSetColors( p->pAig, pPars->fVerbose );
+            // Abc_PrintTime( 1, "--------End EquivSetColors", Abc_Clock() - clk2 );
+//            p->pAig->pIso = Cec_ManDetectIsomorphism( p->pAig );
+//            Gia_ManEquivTransform( p->pAig, 1 );
+        }
+
+        pSrm = Cec_ManFraSpecReduction( p );
+        if ( getdot ) {
+            sprintf(buffer, "miter_FraSpec/%d.dot", i);
+            Gia_WriteDotAigSimple( pSrm, buffer, 0);
+
+        }
+        // Abc_PrintTime( 1, "--------End ManFraSpecReduction", Abc_Clock() - clk2 );
+
+//        Gia_AigerWrite( pSrm, "gia_srm.aig", 0, 0, 0 );
+
+        if ( pPars->fVeryVerbose )
+            Gia_ManPrintStats( pSrm, NULL );
+        if ( Gia_ManCoNum(pSrm) == 0 )
+        {   
+            printf("Remain Co == 0\n");
+            Gia_ManStop( pSrm );
+            if ( p->pPars->fVerbose )
+                Abc_Print( 1, "Considered all available candidate equivalences.\n" );
+            if ( pPars->fDualOut && Gia_ManAndNum(p->pAig) > 0 )
+            {
+                if ( pPars->fColorDiff )
+                {
+                    if ( p->pPars->fVerbose )
+                        Abc_Print( 1, "Switching into reduced mode.\n" );
+                    pPars->fColorDiff = 0;
+                }
+                else
+                {
+                    if ( p->pPars->fVerbose )
+                        Abc_Print( 1, "Switching into normal mode.\n" );
+                    pPars->fDualOut = 0;
+                }
+                continue;
+            }
+            break;
+        }
+clk = Abc_Clock();
+        if ( pPars->fRunCSat )
+            Cec_ManSatSolveCSat( pPat, pSrm, pParsSat ); 
+        else
+            Cec_ManSatSolve( pPat, pSrm, pParsSat, p->pAig->vIdsOrig, p->vXorNodes, pAig->vIdsEquiv, 0 );
+        if ( getdot ) {
+            sprintf(buffer, "miter_SatSolve/%d.dot", i);
+            Gia_WriteDotAigSimple( pSrm, buffer, 0);
+        }
+        if ( pPars->fVerbose ) Abc_PrintTime( 1, "--------End SatSolve", Abc_Clock() - clk2 ); 
+p->timeSat += Abc_Clock() - clk;
+        if ( Cec_ManFraClassesUpdate( p, pSim, pPat, pSrm ) )
+        {   
+            printf("Class Update return != 0\n");
+            Gia_ManStop( pSrm );
+            Gia_ManStop( p->pAig );
+            p->pAig = NULL;
+            goto finalize;
+        }
+        if ( getdot ) {
+            sprintf(buffer, "miter_ClassUpdate/%d.dot", i);
+            Gia_WriteDotAigSimple( p->pAig, buffer, 0);
+        }
+        // Abc_PrintTime( 1, "--------End FraClassesUpdate", Abc_Clock() - clk2 );
+        Gia_ManStop( pSrm );
+
+        // update the manager
+        // the step that really make aig structure change
+        pSim->pAig = p->pAig = Gia_ManEquivReduceAndRemap( pTemp = p->pAig, 0, pParsSim->fDualOut );
+        if ( getdot ) {
+            sprintf(buffer, "miter_EquivReduce/%d.dot", i);
+            Gia_WriteDotAigSimple( p->pAig, buffer, 0);
+        }
+        // Abc_PrintTime( 1, "--------End EquivReduceAndRemap", Abc_Clock() - clk2 );
+        if ( p->pAig == NULL )
+        {
+            printf("EquivReduceAndRemap make NULL\n");
+            p->pAig = pTemp;
+            break;
+        }
+        Gia_ManStop( pTemp );
+        if ( pPars->fVerbose )
+        {   
+            printf( "--------Performed %d SAT calls: P = %d  D = %d  F = %d\n", 
+                p->nAllProvedS + p->nAllDisprovedS + p->nAllFailedS, p->nAllProvedS, p->nAllDisprovedS, p->nAllFailedS );
+            Abc_Print( 1, "--------------------%3d : P =%7d. D =%7d. F =%6d. M = %7d. And =%8d. ", 
+                i, p->nAllProved, p->nAllDisproved, p->nAllFailed, nMatches, Gia_ManAndNum(p->pAig) );
+            Abc_PrintTime( 1, "Time", Abc_Clock() - clk2 );
+        }
+        if ( Gia_ManAndNum(p->pAig) == 0 )
+        {
+            if ( p->pPars->fVerbose )
+                Abc_Print( 1, "Network after reduction is empty.\n" );
+            break;
+        }
+        // check resource limits
+        if ( p->pPars->TimeLimit && (Abc_Clock() - clkTotal)/CLOCKS_PER_SEC >= p->pPars->TimeLimit )
+        {
+            fTimeOut = 1;
+            break;
+        }
+//        if ( p->nAllFailed && !p->nAllProved && !p->nAllDisproved )
+        if ( p->nAllFailed > p->nAllProved + p->nAllDisproved )
+        {
+            if ( pParsSat->nBTLimit >= 10001 ) { // org : 10001
+                printf("nBTLimit exceed limit\n");
+                Gia_ManEquivPrintClasses( p->pAig, 1, 0 );
+                if ( fOutputResult )
+                {
+                    Gia_AigerWrite( p->pAig, "./cec_giaSweep.aig", 0, 0, 0 );
+                    Abc_Print( 1,"The result is written into file \"%s\" with size %d.\n", "cec_giaSweep.aig", Gia_ManAndNum(p->pAig) );
+                }
+                break;
+            }
+            if ( pPars->fSatSweeping )
+            {
+                if ( p->pPars->fVerbose )
+                    Abc_Print( 1, "Exceeded the limit on the number of conflicts (%d).\n", pParsSat->nBTLimit );
+                break;
+            }
+            pParsSat->nBTLimit *= 10;
+            if ( p->pPars->fVerbose )
+            {
+                if ( p->pPars->fVerbose )
+                    Abc_Print( 1, "Increasing conflict limit to %d.\n", pParsSat->nBTLimit );
+                // if ( fOutputResult )
+                // {
+                //     Gia_AigerWrite( p->pAig, "gia_cec_temp.aig", 0, 0, 0 );
+                //     Abc_Print( 1,"The result is written into file \"%s\".\n", "./cec_result/gia_hard/gia_cec_temp.aig" );
+                // }
+            }
+        }
+        if ( pPars->fDualOut && pPars->fColorDiff && (Gia_ManAndNum(p->pAig) < 100000 || p->nAllProved + p->nAllDisproved < 10) )
+        {
+            if ( p->pPars->fVerbose )
+                Abc_Print( 1, "Switching into reduced mode.\n" );
+            pPars->fColorDiff = 0; 
+        }
+//        if ( pPars->fDualOut && Gia_ManAndNum(p->pAig) < 20000 )
+        else if ( pPars->fDualOut && (Gia_ManAndNum(p->pAig) < 20000 || p->nAllProved + p->nAllDisproved < 10) )
+        {
+            if ( p->pPars->fVerbose )
+                Abc_Print( 1, "Switching into normal mode.\n" );
+            pPars->fColorDiff = 0;
+            pPars->fDualOut = 0; // won't go into EquivSetColors
+        }
+    }
+    if ( pPars->fVerbose ) Abc_PrintTime( 1, "----End ManSatSweeping", Abc_Clock() - clkTotal );
+finalize:
+    if ( pPars->fVerbose )
+        printf( "Performed %d SAT calls: P = %d  D = %d  F = %d\n", 
+            p->nAllProvedS + p->nAllDisprovedS + p->nAllFailedS, p->nAllProvedS, p->nAllDisprovedS, p->nAllFailedS );
+    if ( p->pPars->fVerbose && p->pAig )
+    {
+        Abc_Print( 1, "NBeg = %d. NEnd = %d. (Gain = %6.2f %%).  RBeg = %d. REnd = %d. (Gain = %6.2f %%).\n", 
+            Gia_ManAndNum(pAig), Gia_ManAndNum(p->pAig), 
+            100.0*(Gia_ManAndNum(pAig)-Gia_ManAndNum(p->pAig))/(Gia_ManAndNum(pAig)?Gia_ManAndNum(pAig):1), 
+            Gia_ManRegNum(pAig), Gia_ManRegNum(p->pAig), 
+            100.0*(Gia_ManRegNum(pAig)-Gia_ManRegNum(p->pAig))/(Gia_ManRegNum(pAig)?Gia_ManRegNum(pAig):1) );
+        Abc_PrintTimeP( 1, "Sim ", p->timeSim, Abc_Clock() - (int)clkTotal );
+        Abc_PrintTimeP( 1, "Sat ", p->timeSat-pPat->timeTotalSave, Abc_Clock() - (int)clkTotal );
+        Abc_PrintTimeP( 1, "Pat ", p->timePat+pPat->timeTotalSave, Abc_Clock() - (int)clkTotal );
+        Abc_PrintTime( 1, "Time", (int)(Abc_Clock() - clkTotal) );
+    }
+
+    pTemp = p->pAig; p->pAig = NULL;
+    if ( pTemp == NULL && pSim->iOut >= 0 )
+    {
+        if ( !fSilent )
+        Abc_Print( 1, "Disproved at least one output of the miter (zero-based number %d).\n", pSim->iOut );
+        pPars->iOutFail = pSim->iOut;
+    }
+    else if ( pSim->pCexes && !fSilent )
+        Abc_Print( 1, "Disproved %d outputs of the miter.\n", pSim->nOuts );
+    if ( fTimeOut && !fSilent )
+        Abc_Print( 1, "Timed out after %d seconds.\n", (int)((double)Abc_Clock() - clkTotal)/CLOCKS_PER_SEC );
+
+    pAig->pCexComb = pSim->pCexComb; pSim->pCexComb = NULL;
+    Cec_ManSimStop( pSim );
+    Cec_ManPatStop( pPat );
+    Cec_ManFraStop( p );
+    if ( pTemp && !pPars->fRetainData ) ABC_FREE( pTemp->pReprs );
+    if ( pTemp && !pPars->fRetainData ) ABC_FREE( pTemp->pNexts );
+    if ( pPars->fVerbose ) Abc_PrintTime( 1, "----End ManSatSweeping with finalize", Abc_Clock() - clkTotal );
+    return pTemp;
+}
+
+// cecCec.c
+void Cec_ManPlayground(Gia_Man_t * p, Cec_ParCec_t * pPars) {
+    // Gia_WriteDotAigSimple( p, "test.dot", NULL );
+    Gia_Man_t* pTemp;
+    int buf1, buf2, buf3, bufb1, bufb2, buftt1, buftt2, buftt3, cur_gain, cnt, cnt_r, flag, dummy1, dummy2, dummy0;
+    int lit1, lit2, nid1, nid2, nid3, nidb1, nidb2, size1, size2, gain;
+    const int affclass[32] = {
+        Cec_ManAfftoSig(0), Cec_ManAfftoSig(1), Cec_ManAfftoSig(3), Cec_ManAfftoSig(7), Cec_ManAfftoSig(15), Cec_ManAfftoSig(23),
+        Cec_ManAfftoSig(31), Cec_ManAfftoSig(63), Cec_ManAfftoSig(127), Cec_ManAfftoSig(255), Cec_ManAfftoSig(279), Cec_ManAfftoSig(287),
+        Cec_ManAfftoSig(319), Cec_ManAfftoSig(383), Cec_ManAfftoSig(511), Cec_ManAfftoSig(831), Cec_ManAfftoSig(854), Cec_ManAfftoSig(855),
+        Cec_ManAfftoSig(863), Cec_ManAfftoSig(895), Cec_ManAfftoSig(1023), Cec_ManAfftoSig(1911), Cec_ManAfftoSig(1919), Cec_ManAfftoSig(2047),
+        Cec_ManAfftoSig(4095), Cec_ManAfftoSig(6014), Cec_ManAfftoSig(6015), Cec_ManAfftoSig(6143), Cec_ManAfftoSig(8191), Cec_ManAfftoSig(16383),
+        Cec_ManAfftoSig(32767),Cec_ManAfftoSig(65535) 
+    };
+    // for ( int i = 0; i < 32; i++ ) {
+    //     printf("%d: %d\n", i, affclass[i]);
+    // }
+    // return;
+    int sig_hash[256] = {0};
+    int sig_all[256] = {0};
+    int sig_xor[256] = {0};
+    int tt_hash[65536] = {0};
+    int tt_xor[65536] = {0};
+    int tt_all[65536] = {0};
+    Gia_Obj_t *pObj1, *pObj2, *pObjbuf; //, *pObjbuf2;
+    // Vec_Ptr_t *frt = Vec_PtrAlloc(1);
+    Vec_Int_t *frt = Vec_IntAlloc(1);
+    Vec_Ptr_t *conebuf;
+    Vec_Wec_t *cuts_raw, *cuts1, *cuts2, *cuts3;
+    Vec_Int_t *cutbuf1, *cutbuf2, *cutbuf3, *cut1, *cut2, *cut3, *nidbuf;
+    Cec_ManAff_t* pAff = Cec_ManAffStart();
+    // for ( int i = 0; i < 31; i++ ) {
+        // printf("%d: %d\n", i, affclass[i]);
+    // }
+    // return;
+    cut1 = NULL;
+    cut2 = NULL;
+    Gia_ObjComputeTruthTableStart( p, 4 );
+    cuts_raw = Gia_ManExploreCuts( p, 4, -1, 1 );
+    // Vec_WecPrint( cuts_raw, 0 );
+    Vec_WecForEachLevel( cuts_raw, cutbuf1, nid1 ) {
+        if (!Gia_ObjIsAnd(Gia_ManObj(p, nid1))) continue;
+        cuts1 = Cec_ManAffCutReform( cutbuf1 );
+        if (pPars->fVerbose) printf("nid: %d\n", nid1);
+        Vec_WecForEachLevel( cuts1, cutbuf2, buf2 ) {
+            buf3 = *Gia_ObjComputeTruthTableCut( p, Gia_ManObj(p, nid1), cutbuf2 );
+            buf3 &= 0xFFFF;
+            tt_all[buf3]++;
+            if (pPars->fVerbose) printf("(%d)", buf3);
+            buf3 = Cec_ManAfftoSig(buf3);
+            sig_all[buf3]++;
+            if (pPars->fVerbose) printf("%d,", buf3);
+        }
+        if (pPars->fVerbose) printf("\n");
+    }
+
+    for (nid3 = 0; nid3 < Gia_ManObjNum(p); nid3++) {
+        // nid3 = Abc_Random(0) % Gia_ManObjNum(p);
+        // printf("nid: %d\n", nid3);
+        if (!Gia_ObjIsAnd(Gia_ManObj(p, nid3))) continue;
+        cutbuf3 = Vec_WecEntry(cuts_raw, nid3);
+        cuts3 = Cec_ManAffCutReform( cutbuf3 );
+        // buf3 = Abc_Random(0) % Vec_WecSize(cuts3);
+        // cut3 = Vec_WecEntry(cuts3, buf3);
+        // if (pPars->fVerbose) Vec_IntPrint(cut3);
+
+        // nid1 = Abc_Random(0) % Vec_IntSize(cut3);
+        // nid2 = Abc_Random(0) % (Vec_IntSize(cut3) - 1);
+        // nid2 = (nid1 + nid2 + 1) % Vec_IntSize(cut3);
+        // nid1 = Vec_IntGetEntry(cut3, nid1);
+        // nid2 = Vec_IntGetEntry(cut3, nid2);
+        Vec_WecForEachLevel( cuts3, cut3, dummy0 ) {
+            
+            Vec_IntForEachEntry( cut3, nid1, dummy1 ) {
+                Vec_IntForEachEntryStart( cut3, nid2, dummy2, dummy1 + 1 ) {
+                    if (pPars->fVerbose) printf("nid: %d %d %d\n", nid3, nid1, nid2);
+                    cutbuf1 = Vec_WecEntry(cuts_raw, nid1);
+                    cutbuf2 = Vec_WecEntry(cuts_raw, nid2);
+                    cuts1 = Cec_ManAffCutReform( cutbuf1 );
+                    cuts2 = Cec_ManAffCutReform( cutbuf2 );
+                    if (pPars->fVerbose) printf("cuts1: \n");
+                    Vec_WecForEachLevel( cuts1, cut1, buf1 ) {
+                        // Vec_IntPrint(cut1);
+                        bufb1 = *Gia_ObjComputeTruthTableCut( p, Gia_ManObj(p, nid1), cut1 );
+                        // printf("(%d)", buf1);
+                        bufb1 &= 0xFFFF;
+                        if (pPars->fVerbose) printf("(%d)", bufb1);
+                        tt_hash[bufb1]++;
+                        bufb1 = Cec_ManAfftoSig(bufb1);
+                        sig_hash[bufb1]++;
+                        if (pPars->fVerbose) printf("%d,", bufb1);
+                    }
+                    if (pPars->fVerbose) printf("\n");
+                    if (pPars->fVerbose) printf("cuts2: \n");
+                    Vec_WecForEachLevel( cuts2, cut2, buf2 ) {
+                        // Vec_IntPrint(cut2);
+                        bufb2 = *Gia_ObjComputeTruthTableCut( p, Gia_ManObj(p, nid2), cut2 );
+                        bufb2 &= 0xFFFF;
+                        if (pPars->fVerbose) printf("(%d)", bufb2);
+                        tt_hash[bufb2]++;
+                        bufb2 = Cec_ManAfftoSig(bufb2);
+                        sig_hash[bufb2]++;
+                        if (pPars->fVerbose) printf("%d,", bufb2);
+                    }
+                    if (pPars->fVerbose) printf("\n");
+                    if (pPars->fVerbose) printf("cut xor: \n");
+                    Vec_WecForEachLevel( cuts1, cut1, buf1 ) {
+                        Vec_WecForEachLevel( cuts2, cut2, buf2 ) {
+                            buftt1 = *Gia_ObjComputeTruthTableCut( p, Gia_ManObj(p, nid1), cut1 );
+                            buftt1 &= 0xFFFF;
+                            size1 = Vec_IntSize(cut1);
+                            buftt2 = *Gia_ObjComputeTruthTableCut( p, Gia_ManObj(p, nid2), cut2 );
+                            buftt2 &= 0xFFFF;
+                            size2 = Vec_IntSize(cut2);
+                        
+                            // check whether cut1 and cut2 can form a 4-cut
+                            cnt = 0;
+                            Vec_IntForEachEntry( cut1, nidb1, bufb1 ) {
+                                Vec_IntForEachEntryStart( cut2, nidb2, bufb2, bufb1 ) {
+                                    if (nidb1 == nidb2) {
+                                        buftt1 = Cec_ManAffTTSwapId(buftt1, cnt, bufb1);
+                                        buftt2 = Cec_ManAffTTSwapId(buftt2, cnt, bufb2);
+                                        cnt++;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (Vec_IntSize(cut1) + Vec_IntSize(cut2) - cnt > 4) continue;
+                            cnt_r = 3;
+                            while (cnt < cnt_r) {
+                                buftt2 = Cec_ManAffTTSwapId(buftt2, cnt, cnt_r);
+                                cnt++;
+                                cnt_r--;
+                            }
+                            buftt3 = buftt1 ^ buftt2;
+                            tt_xor[buftt3]+=2;
+                            buf3 = Cec_ManAfftoSig(buftt3);
+                            sig_xor[buf3]+=2;
+                            if (pPars->fVerbose) printf("(%d)%d,", buftt3, buf3);
+                        
+                        }
+                    }
+                    if (pPars->fVerbose) printf("\n");
+                }
+            }
+        }
+    }
+    if (pPars->fVerbose) printf("\n");
+
+    printf("class, old nodes, xor nodes, all nodes\n");
+    for (int i = 0; i < 32; i++) {
+        printf("%d, %d, %d, %d\n", affclass[i], sig_hash[affclass[i]], sig_xor[affclass[i]], sig_all[affclass[i]]);
+    }
+    // for (int i = 0; i < 256; i++) {
+    //     // if (sig_hash[i] == 0) continue;
+    //     flag = 0;
+    //     for (int j = 0; j < 31; j++) {
+    //         if (affclass[j] == i) {
+    //             flag = 1;
+    //             break;
+    //         }
+    //     }
+    //     if (flag == 0 && sig_hash[i] != 0) {
+    //         printf("%d\n",i);
+    //         assert(0);
+    //     }
+    //     if (flag == 1) printf("%d, %d, %d, %d\n", i, sig_hash[i], sig_xor[i], sig_all[i]);
+    // }
+    // printf("---------------\n");
+    // // for (int i = 0; i < 65536; i++) {
+    // //     if (tt_hash[i] == 0) continue;
+    // //     printf("%d: %d\n", i, tt_hash[i]);
+    // // }
+    // printf("xor nodes(double sampled): \n");
+    // for (int i = 0; i < 256; i++) {
+    //     if (sig_xor[i] == 0) continue;
+    //     printf("%d, %d\n", i, sig_xor[i]);
+    // }
+    // printf("---------------\n");
+    // // for (int i = 0; i < 65536; i++) {
+    // //     if (tt_xor[i] == 0) continue;
+    // //     printf("%d: %d\n", i, tt_xor[i]);
+    // // }
+    // printf("For each node: \n");
+    // for (int i = 0; i < 256; i++) {
+    //     if (sig_all[i] == 0) continue;
+    //     printf("%d, %d\n", i, sig_all[i]);
+    // }
+    // printf("---------------\n");
+    // // for (int i = 0; i < 65536; i++) {
+    // //     if (tt_all[i] == 0) continue;
+    // //     printf("%d: %d\n", i, tt_all[i]);
+    // // }
+}
+
+void Cec_ManPlayground2( Gia_Man_t * p, Cec_ParCec_t * pPars ) {
+    Gia_Man_t* pTemp;
+    int buf1, buf2, buf3, buf4, cur_gain, entry, i;
+    int lit1, lit2, nid1, nid2, gain, cnt_aff;
+    Gia_Obj_t *pObj1, *pObj2, *pObjbuf; //, *pObjbuf2;
+    // Vec_Ptr_t *frt = Vec_PtrAlloc(1);
+    Vec_Int_t *frt = Vec_IntAlloc(1);
+    Vec_Ptr_t *conebuf;
+    Vec_Wec_t *cuts_raw, *cuts1, *cuts2;
+    Vec_Wec_t *cutcands1 = Vec_WecAlloc(1);
+    Vec_Wec_t *cutcands2 = Vec_WecAlloc(1);
+    Vec_Int_t *cutbuf1, *cutbuf2, *cut1, *cut2, *cutbuf;
+    Cec_ManAff_t* pAff = Cec_ManAffStart();
+
+    Gia_ManForEachCo( p, pObjbuf, buf1 ) {
+        Vec_IntPush(frt, Gia_Obj2Lit(p, Gia_ObjFanin0(pObjbuf)));
+    }
+    Vec_IntForEachEntryDouble(frt, lit1, lit2, buf1) {
+        pObj1 = Gia_ManObj( p, Abc_Lit2Var(lit1) );
+        pObj2 = Gia_ManObj( p, Abc_Lit2Var(lit2) );
+        cut1 = NULL;
+        cut2 = NULL;
+        if (p->vTtMemory == NULL) Gia_ObjComputeTruthTableStart( p, 4 );
+        cuts_raw = Gia_ManExploreCuts( p, 4, -1, 1 );
+        if (p->pReprs == NULL) {
+            p->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(p) );
+            Gia_ManForEachObj( p, pObjbuf, buf2 )
+                Gia_ObjSetRepr( p, buf2, Gia_ObjIsAnd(pObjbuf) ? 0 : GIA_VOID );
+        }
+        // Cec_ManAffSetColor( p, pObj1, pObj2 );
+        Gia_ManFillValue( p );
+        
+        nid1 = Abc_Lit2Var(lit1);
+        nid2 = Abc_Lit2Var(lit2);
+        if (nid1 > Vec_WecSize(cuts_raw) || nid2 > Vec_WecSize(cuts_raw)) continue;
+        if (Vec_WecEntry(cuts_raw, nid1)->pArray == NULL || Vec_WecEntry(cuts_raw, nid2)->pArray == NULL) continue;
+        cuts1 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid1) );
+        cuts2 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid2) );
+        cnt_aff = 0;
+        printf("nid1(%d):", nid1);
+        Vec_WecForEachLevel( cuts1, cutbuf1, buf2) {
+            buf3 = *Gia_ObjComputeTruthTableCut( p, pObj1, cutbuf1);
+            if (Abc_LitIsCompl(lit1)) buf3 = ~buf3;
+            buf3 &= 0xFFFF;
+            printf("%d ", Cec_ManAfftoSig(buf3));
+        }
+        printf("\n");
+        printf("nid2(%d):", nid2);
+        Vec_WecForEachLevel( cuts2, cutbuf2, buf2) {
+            buf3 = *Gia_ObjComputeTruthTableCut( p, pObj2, cutbuf2);
+            if (Abc_LitIsCompl(lit2)) buf3 = ~buf3;
+            buf3 &= 0xFFFF;
+            printf("%d ", Cec_ManAfftoSig(buf3));
+        }
+        printf("\n");
+
+        Vec_WecForEachLevel( cuts1, cutbuf1, buf2) {
+            if (Vec_IntSize(cutbuf1) < 2) continue;
+            Vec_WecForEachLevel( cuts2, cutbuf2, buf3) {
+                if (Vec_IntSize(cutbuf2) < 2) continue;
+                cur_gain = 0;
+                conebuf = Cec_ManSubcircuit( p, pObj1, cutbuf1, 0 );
+                cur_gain += Vec_PtrSize(conebuf);
+                // // Vec_IntPrint( cutbuf1 );
+                // // printf("%d\n",Vec_PtrSize(conebuf));
+                if (conebuf->pArray == NULL) continue;
+                Vec_PtrFree( conebuf );
+
+                conebuf = Cec_ManSubcircuit( p, pObj2, cutbuf2, 0 );
+                cur_gain += Vec_PtrSize(conebuf);
+                if (conebuf->pArray == NULL) continue;
+                Vec_PtrFree( conebuf );
+
+                buf4 = Cec_ManAffCheckAff( pAff, p, lit1, lit2, cutbuf1, cutbuf2 );
+                if (buf4 == ~0) continue;
+                printf("(%d, %d): Patch: %d ,XOR: %d\n", buf2, buf3, cur_gain, buf4);
+                cnt_aff++;
+                // cur_gain -= buf4;
+                // Vec_IntPrint(cutbuf1);
+                // Vec_IntPrint(cutbuf2);
+                // printf("find affine equivalence, %d,%d:%d\n", nid1, nid2, cur_gain);
+
+            }
+        }
+        printf("cuts1 size %d cuts2 size %d affine amount %d\n", Vec_WecSize(cuts1), Vec_WecSize(cuts2), cnt_aff);
+    }
+}
+
+void Cec_ManPlayground3( Gia_Man_t * p, Cec_ParCec_t * pPars ) {
+    Vec_Mem_t * vMem;
+    Vec_Wec_t * cuts_raw, *cuts1, *cuts2;
+    Vec_Int_t * vLeaves, * vTruth, * vVisited, * vTemp, *cutbuf1, *cutbuf2, *cut1, *cut2;
+    Gia_Man_t* pTemp, *pSub;
+    Cec_ManAff_t* pAff = Cec_ManAffStart();
+    Gia_Obj_t* pObj, *pObj1, *pObj2;
+    word* pTruth; int Class; int i, j, k, m, n, val, flag, nid1, nid2, lit1, lit2, buf1, buf2, buf3;
+    Vec_Int_t *vPI = Vec_IntAlloc( 100 );
+    Vec_Ptr_t *coneNdbuff;
+    char strbuff[100];
+    Gia_ObjComputeTruthTableStart( p, 4 );
+    cuts_raw = Gia_ManExploreCuts( p, 4, -1, 1 );
+    // Gia_ManForEachCo( p, pObj, i ) {
+    //     printf("co:%d\n", Gia_ObjId(p, Gia_ObjFanin0(pObj)));
+    //     if (Gia_ObjDiff0(pObj) == Gia_ObjId(p, pObj)) continue;
+    //     nid1 = Gia_ObjId(p, Gia_ObjFanin0(pObj));
+    //     cuts1 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid1) );
+    //     Vec_WecPrint(cuts1, 1);
+    //     Vec_WecForEachLevel( cuts1, cutbuf1, buf2) {
+    //         buf3 = *Gia_ObjComputeTruthTableCut( p, Gia_ObjFanin0(pObj), cutbuf1);
+    //         // if (Abc_LitIsCompl(lit1)) buf3 = ~buf3;
+    //         buf3 &= 0xFFFF;
+    //         printf("%d ", Cec_ManAfftoSig(buf3));
+    //     }
+    //     printf("\n");
+    // }
+    // printf("s\n");
+
+    nid1 = 69227;
+    nid2 = 70303;
+    pObj1 = Gia_ManObj(p, nid1);
+    pObj2 = Gia_ManObj(p, nid2);
+    lit1 = Gia_Obj2Lit(p, pObj1);
+    lit2 = Gia_Obj2Lit(p, pObj2);
+    cuts1 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid1) );
+    cuts2 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid2) );
+    Vec_WecPrint(cuts1, 0);
+    Vec_WecPrint(cuts2, 0);
+    printf("start\n");
+    Vec_WecForEachLevel( cuts1, cutbuf1, i) {
+        Vec_WecForEachLevel( cuts2, cutbuf2, j) {
+            if (Cec_ManAffCheckAff( pAff, p, lit1, lit2, cutbuf1, cutbuf2 ) != ~0) {
+                // printf("1\n");
+                cut1 = Vec_IntDup( cutbuf1 );
+                cut2 = Vec_IntDup( cutbuf2 );
+                pTemp = Cec_ManAffReplace( pAff, p, lit1, lit2, cut1, cut2, 0 );
+                assert(0);
+                printf("......\n");
+                Gia_ManForEachCi( pTemp, pObj, k ) {
+                    Vec_IntPush( vPI, Gia_ObjId(pTemp, pObj) );
+                }
+                Vec_IntPrint( cut1 );
+                Vec_IntPrint( cut2 );
+                printf("--------------------\n");
+                Vec_IntForEachEntry( cut1, buf1, k ) {
+                    pSub = Gia_ManStart( Gia_ManObjNum(pTemp) );
+                    Gia_ManFillValue( pTemp );
+                    Gia_ManConst0( pTemp )->Value = 0;
+                    Gia_ManForEachCi( pTemp, pObj, k ) {
+                        pObj->Value = Gia_ManAppendCi( pSub );
+                    }
+                    
+                    coneNdbuff = Cec_ManSubcircuit( pTemp, Gia_ManObj(pTemp, Abc_Lit2Var(buf1)), vPI, 0 );
+                    val = Cec_ManPatch( pSub, coneNdbuff );
+                    Gia_ManAppendCo( pSub, Abc_LitNotCond( val, Abc_LitIsCompl(buf1) ) );
+                    snprintf(strbuff, sizeof(strbuff), "./cec_result/cut_trial1/%d_%d_%d.aig", i, j, buf1);
+                    Gia_AigerWrite( pSub, strbuff, 0, 0, 0 );
+
+                    Vec_PtrFree( coneNdbuff );
+                    Gia_ManStop( pSub );
+                }
+                Vec_IntForEachEntry( cut2, buf1, k ) {
+                    pSub = Gia_ManStart( Gia_ManObjNum(pTemp) );
+                    Gia_ManFillValue( pTemp );
+                    Gia_ManConst0( pTemp )->Value = 0;
+                    Gia_ManForEachCi( pTemp, pObj, k ) {
+                        pObj->Value = Gia_ManAppendCi( pSub );
+                    }
+                    
+                    coneNdbuff = Cec_ManSubcircuit( pTemp, Gia_ManObj(pTemp, Abc_Lit2Var(buf1)), vPI, 0 );
+                    val = Cec_ManPatch( pSub, coneNdbuff );
+                    Gia_ManAppendCo( pSub, Abc_LitNotCond( val, Abc_LitIsCompl(buf1) ) );
+                    snprintf(strbuff, sizeof(strbuff), "./cec_result/cut_trial1/%d_%d_%d.aig", i, j, buf1);
+                    Gia_AigerWrite( pSub, strbuff, 0, 0, 0 );
+
+                    Vec_PtrFree( coneNdbuff );
+                    Gia_ManStop( pSub );
+                }
+            }
+        }
+    }
+}
+
+void Cec_ManPlayground4( Gia_Man_t * p, Cec_ParCec_t * pPars ) {
+    
+    int fGetCkts = pPars->fUseAffine & 1;
+    int fDist = (pPars->fUseAffine & 2) >> 1;
+    int fFdnid = ((pPars->fUseAffine & 4) >> 2) == 0 ? 0 : 1;
+    int fkeepType = (pPars->fUseAffine & 8) >> 3; // 0: no keep, 1: keep frt
+    int fpickType = (pPars->fUseAffine & 0xf0) >> 4; // 0: no shrink, 1: limit min dist to PO, 2: limit max dist to PO, 3: limit min dist to PI, 4: limit max dist to PI
+    float coef1 = (pPars->fUseAffine & 0xf00 == 0) ? 0.0 : 1.0 / ((pPars->fUseAffine & 0xf00) >> 8);
+    int i, j, k, m, n, t;
+    int nid1, nid2, nid, buf1, buf2, buf3, buf4, buf, nidbuf1, nidbuf2, nidbuf, val, flag;
+    int maxLevel, minLevel, curLevel, preSize, toShrink;
+    int ftest = 1;
+    char *str = ABC_ALLOC(char, 100);
+    
+    Aig_Man_t *pAigOld, *pAigOldTemp;
+    Gia_Man_t *pTemp, *pTemp2, *pSub;
+    Gia_Obj_t *pObj1, *pObj2, *pObj, *pObjbuf1, *pObjbuf2, *pObjbuf;
+    Vec_Int_t *vMerge, *vRwNd, *vPI;
+    Vec_Int_t *vPIBuff, *vPOBuff, *vNdBuff, *vFdSupportBuff;
+    Vec_Int_t *vCutBuff, *vCost;
+    Vec_Int_t *vIntBuff1, *vIntBuff2, *vIntBuff, *vBold;
+    // Vec_Wec_t *dist_long, *dist_short;
+    int **dist_long, **dist_short, **dist_long_sub, **dist_short_sub;
+    Vec_Wec_t *vSupport; // vec[nid] = {support in p}
+    Vec_Wec_t *vFdSupportMap;
+    Vec_Wec_t *vFdSupportFordot, *vFdSupportSplit, *vFdRwCone, *vWecBuff, *vCuts, *vAbsMap;
+    Vec_Ptr_t *vNdCone;
+    Vec_Ptr_t *vFdRwNd = NULL;
+    abctime clk;
+
+    Cec_ParSat_t ParsSat, * pParSat = &ParsSat;
+    Cec_ManSatSetDefaultParams( pParSat );
+    pParSat->nBTLimit = pPars->nBTLimit;
+
+    Cec_ParFra_t ParsFra, * pParsFra = &ParsFra;
+    Cec_ManFraSetDefaultParams( pParsFra );
+    pParsFra->nBTLimit = pPars->nBTLimit;
+    // Cec_ParSim_t ParSim, * pParSim = &ParSim;
+    // Cec_ManSimSetDefaultParams( pParSim );
+
+
+    Gia_ManFillValue( p );
+
+    dist_long = Cec_ManDist( p, 1 );
+    dist_short = Cec_ManDist( p, 0 ); // still useful
+
+    printf("fGetCkts: %d, fDist: %d, fFdnid: %d, fkeepType: %d, fpickType: %d, coef1: %f\n", 
+        fGetCkts, fDist, fFdnid, fkeepType, fpickType, coef1);
+    assert( Gia_ManCoNum(p) == 2 || Gia_ManCoNum(p) == 4 );
+    if (Gia_ManCoNum(p) == 4) {
+        pObj1 = Gia_ObjFanin0( Gia_ManCo( p, 0 ) );
+        pObj2 = Gia_ObjFanin0( Gia_ManCo( p, 2 ) );
+        // printf(Gia_ObjId(p, Gia_ObjFanin0( Gia_ManCo( p, 0 ) )))
+        assert(pObj1 != pObj2);
+    } else {
+        pObj1 = Gia_ObjFanin0( Gia_ManCo( p, 0 ) );
+        pObj2 = Gia_ObjFanin0( Gia_ManCo( p, 1 ) );
+    }
+
+    if (pObj1 == pObj2) {
+        pObj1 = Gia_ObjFanin0( pObj1 );
+        pObj2 = Gia_ObjFanin1( pObj2 );
+        if (Gia_ObjFanin0(pObj1) == Gia_ObjFanin0(pObj2) && Gia_ObjFanin1(pObj1) == Gia_ObjFanin1(pObj2)) {
+            pObj1 = Gia_ObjFanin0( pObj1 );
+            pObj2 = Gia_ObjFanin1( pObj2 );
+        }
+        // if (fGetCkts) Gia_WriteDotAigSimple( p, "check_is_miter.dot", 0);
+    }
+    nid1 = Gia_ObjId( p, pObj1 );
+    nid2 = Gia_ObjId( p, pObj2 );
+    printf("pObj1: %d, pObj2: %d\n", nid1, nid2);
+
+
+    if (p->pReprs == NULL) {
+        p->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(p) );
+        Gia_ManForEachObj( p, pObjbuf, buf2 )
+            Gia_ObjSetRepr( p, buf2, Gia_ObjIsAnd(pObjbuf) ? 0 : GIA_VOID );
+    }
+    Cec_ManSetColor( p, pObj1, pObj2 );
+
+    vPI = Vec_IntAlloc(1);
+    Gia_ManForEachCi( p, pObj, i ) {
+        Vec_IntPush( vPI, Gia_ObjId(p, pObj) );
+    }
+
+    vMerge = Vec_IntAlloc(1);
+    vBold = Vec_IntAlloc(1);
+    Gia_ManForEachObj( p, pObj, i ) {
+        if ( Gia_ObjIsAnd(pObj) == 0 ) continue;
+        if ( Gia_ObjColors(p, Gia_ObjId(p,pObj)) == 3 ) {
+            Vec_IntPush( vBold, Gia_ObjId(p,pObj) );
+            continue;
+        }
+        pObjbuf1 = Gia_ObjFanin0( pObj );
+        pObjbuf2 = Gia_ObjFanin1( pObj );
+        if ( Gia_ObjColors(p, Gia_ObjId(p,pObjbuf1)) == 3 ) Vec_IntPushUnique( vMerge, Gia_ObjId(p,pObjbuf1) );
+        if ( Gia_ObjColors(p, Gia_ObjId(p,pObjbuf2)) == 3 ) Vec_IntPushUnique( vMerge, Gia_ObjId(p,pObjbuf2) );
+    }
+    if (fGetCkts) Gia_SelfDefShow( p, "merge_frontier.dot", vBold, vMerge, 0 );
+    Vec_IntFree( vBold );
+    // Vec_IntPrint( vMerge );
+    pSub = Cec_ManGetAbs( p, pObj1, pObj2, 0 );
+    vAbsMap = Vec_IntAlloc(1);
+    Cec_ManGiaMapId( p, vAbsMap );
+
+    // Vec_IntPrint(vMerge);
+    vSupport = Vec_WecStart( Gia_ManObjNum(p) );
+    Gia_ManForEachObj( p, pObj, i ) {
+        if ( fFdnid == 0 ) break;
+        if ( Gia_ObjIsAnd(pObj) == 0 ) continue;
+        if ( Gia_ObjColors(p, Gia_ObjId(p,pObj)) == 3 ) continue;
+        Cec_ManSubcircuit( p, pObj, vPI, 0 );
+        Vec_IntForEachEntry( vMerge, nid, j ) {
+            Vec_WecPush( vSupport, Gia_ObjId(p, pObj), Gia_ObjIsTravIdCurrent(p, Gia_ManObj(p, nid)) );
+        }
+    }
+    // Vec_WecPrint( vSupport, 0 );
+    // printf("\n");
+    printf("Start FD\n");
+    vRwNd = Vec_IntAlloc(1);
+    vFdSupportMap = Vec_WecStart( Gia_ManObjNum(p) );
+    
+    // val = 0;
+
+    Gia_ManForEachObj( p, pObj, i ) {
+        if ( fFdnid == 0 ) break;
+        clk = Abc_Clock();
+
+        if ( Vec_WecLevelSize( vSupport, Gia_ObjId(p,pObj) ) == 0 ) continue;
+        if ( (Gia_ObjColors(p, Gia_ObjId(p,pObj)) & fFdnid) == 0 ) continue;
+        vIntBuff1 = Vec_WecEntry( vSupport, Gia_ObjId(p,pObj) );
+        vFdSupportBuff = Vec_IntAlloc(1);
+        Vec_WecForEachLevel( vSupport, vIntBuff2, nid ) {
+            if (Gia_ObjColors(p, nid) == 3 || Gia_ObjColors(p, nid) == 0) continue;
+            if ( (Gia_ObjColors(p, Gia_ObjId(p,pObj)) & Gia_ObjColors(p, nid)) != 0 ) continue;
+            if ( Vec_IntSize(vIntBuff2) == 0 ) continue;
+            if ( Cec_ManCheckSubset( vIntBuff1, vIntBuff2 ) ) {
+                Vec_IntPush( vFdSupportBuff, nid );
+            }
+        }
+        if (Vec_IntSize(vFdSupportBuff) == 0) {
+            continue;
+        }
+
+
+        // if (Cec_ManFdCheckFd( p, pObj, vFdSupportBuff, vPI, pParSat )) {
+        clk = Abc_Clock();
+        pTemp = Cec_ManFdGetFd( p, pObj, vFdSupportBuff, vPI );
+        printf("Node %d\n", Gia_ObjId(p,pObj));
+        if (pTemp == NULL) 
+            Abc_PrintTime(-1, "SAT time", Abc_Clock() - clk);
+        else if (pTemp == -1) 
+            Abc_PrintTime(-1, "UNSOLVED time", Abc_Clock() - clk);
+        else if (Gia_ManAndNum(pTemp) > Gia_ManAndNum(p) * coef1 && coef1 > 0) {
+            Abc_PrintTime(-1, "too large.....", Abc_Clock() - clk);
+        } 
+        else {
+            // ... use pTemp to update? or simpler?
+            Abc_PrintTime(-1, "UNSAT time", Abc_Clock() - clk);
+            printf("org size: %d\n", Gia_ManAndNum(pTemp));
+            clk = Abc_Clock(); 
+            Vec_IntPush( vRwNd, Gia_ObjId(p,pObj) );
+            toShrink = (Vec_IntSize(vFdSupportBuff) > 1) && (fpickType != 0);
+            
+            vFdSupportSplit = Vec_WecAlloc( 100 );
+            if (toShrink) {
+                Vec_IntSort( vFdSupportBuff, 0 );
+                // Vec_IntPrint(vFdSupportBuff);
+                vPOBuff = Cec_ManGetFIO( p, vFdSupportBuff, 1 );
+                vPIBuff = Cec_ManGetFIO( p, vFdSupportBuff, 0 );
+                vWecBuff = Cec_ManDistAnalyze( p, vFdSupportBuff, vPIBuff, vPOBuff, dist_long, dist_short );
+                Vec_IntPrint(Vec_WecEntryLast( vWecBuff ));
+
+                Gia_ManFillValue( p );
+                if (fpickType == 1) {
+                    Vec_IntForEachEntry( vPOBuff, nid, j ) {
+                        Gia_ObjSetValue(Gia_ManObj(p, nid), 0);
+                    }
+                }
+                
+                Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    vIntBuff = Vec_WecEntry( vWecBuff, j );
+                    if (Gia_ObjValue(Gia_ManObj(p, nid)) == 0) val = 0;
+                    else if (fpickType == 1) val = Vec_IntEntry(vIntBuff, 7) + 1;
+                    else if (fpickType == 2) val = Vec_IntEntry(vIntBuff, 2) + 1;
+                    else if (fpickType == 3) val = Vec_IntEntry(Vec_WecEntryLast( vWecBuff ), 6) - Vec_IntEntry(vIntBuff, 9) + 1;
+                    else if (fpickType == 4) val = Vec_IntEntry(Vec_WecEntryLast( vWecBuff ), 2) - Vec_IntEntry(vIntBuff, 4) + 1;
+                    else assert(0);
+                    while (Vec_IntSize(vFdSupportSplit) <= val) Vec_WecPushLevel( vFdSupportSplit );
+                    assert( Gia_ObjValue(Gia_ManObj(p, nid)) != 0 || val != 0 ); 
+                    Vec_WecPush( vFdSupportSplit, val, nid );
+                }
+                Vec_WecPrint(vFdSupportSplit, 1);                
+            }
+
+            vIntBuff = Vec_IntAlloc( Vec_IntSize(vFdSupportBuff) );
+            val = 0;
+            while (toShrink) {
+                if (val == Vec_WecSize(vFdSupportSplit)) {
+                    printf("No shrink is better with size %d\n", Gia_ManAndNum(pTemp));
+                    toShrink = 0;
+                    // Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    //     Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                    // }
+                    break;
+                }
+
+                Vec_IntForEachEntry( Vec_WecEntry(vFdSupportSplit, val), nid, j ) {
+                    Vec_IntPush( vIntBuff, nid );
+                }
+                if (Vec_IntSize(Vec_WecEntry(vFdSupportSplit, val)) == 0) {
+                    val += 1;
+                    continue;
+                }
+                
+                Gia_ManFillValue(p);
+                pTemp = Cec_ManFdGetFd( p, pObj, vIntBuff, vPI );
+                if (pTemp != NULL && pTemp != -1) {
+                    if (Gia_ManAndNum(pTemp) < Gia_ManAndNum(p) * coef1) {
+                        printf("Found FD with level %d with size %d\n", val, Gia_ManAndNum(pTemp));
+                        toShrink = 0;
+                        Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                            Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                        }
+                        
+                    } else {
+                        printf("still too large, level %d with size %d\n", val, Gia_ManAndNum(pTemp));
+                    }
+                    Gia_ManStop(pTemp);
+                }
+                // else if (val == Vec_WecSize(vFdSupportSplit) - 1) {
+                //     printf("in\n");
+                //     toShrink = 0;
+                //     Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                //         Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                //     }
+                // }
+                val += 1;
+            }
+
+            if (Vec_IntSize(Vec_WecEntry(vFdSupportMap, Gia_ObjId(p,pObj))) == 0) {
+                printf("No FD found, use original support\n");
+                Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                }
+            }
+
+            Abc_PrintTime( -1, "Shrink time", Abc_Clock() - clk );
+            Vec_IntFree( vFdSupportSplit );
+            // Vec_IntFree( vFdSupportBuff );
+            Vec_IntFree( vIntBuff );
+
+        }
+        Vec_IntFree( vFdSupportBuff );
+        printf("----------------------\n");
+    }
+
+    if (ftest) {
+        val = 0; // Vec_IntSize(vRwNd);
+        vIntBuff = Vec_IntDup( vRwNd );
+        Vec_IntPrint(vRwNd);
+        while (val < Vec_IntSize(vRwNd)) {
+            printf("start test\n");
+            val = Vec_IntSize(vRwNd);
+            // vIntBuff = Vec_IntDup( vRwNd );
+            vIntBuff1 = Vec_IntDup( vPI );
+            Vec_IntForEachEntry( vRwNd, nid, i ) {
+                Vec_IntPush( vIntBuff1, nid );
+            }
+            Gia_ManFillValue( p );
+            vNdCone = Cec_ManSubcircuit( p, pObj1, vIntBuff1, 0 );
+            Vec_IntFree( vIntBuff1 );
+            printf("Nodes to check: %d\n", Vec_PtrSize(vNdCone));
+            Vec_PtrForEachEntry( Gia_Obj_t*, vNdCone, pObj, i ) {
+                if ( fFdnid == 0 ) break;
+                clk = Abc_Clock();
+
+                if ( Vec_WecLevelSize( vSupport, Gia_ObjId(p,pObj) ) == 0 ) continue;
+                if ( (Gia_ObjColors(p, Gia_ObjId(p,pObj)) & fFdnid) == 0 ) continue;
+                vIntBuff1 = Vec_WecEntry( vSupport, Gia_ObjId(p,pObj) );
+                vFdSupportBuff = Vec_IntAlloc(1);
+                // Vec_IntForEachEntry( vRwNd, nid, j ) {
+                //     if (nid == Gia_ObjId(p,pObj)) continue;
+                // }
+                Vec_WecForEachLevel( vSupport, vIntBuff2, nid ) {
+                    if (Gia_ObjColors(p, nid) == 3 || Gia_ObjColors(p, nid) == 0) continue;
+                    if ( (Gia_ObjColors(p, Gia_ObjId(p,pObj)) & Gia_ObjColors(p, nid)) != 0 ) continue;
+                    if ( Vec_IntSize(vIntBuff2) == 0 ) continue;
+                    if ( Cec_ManCheckSubset( vIntBuff1, vIntBuff2 ) ) {
+                        Vec_IntPush( vFdSupportBuff, nid );
+                    }
+                }
+                Vec_IntForEachEntry( vRwNd, nid, j ) {
+                    if (nid == Gia_ObjId(p,pObj)) {
+                        Vec_IntClear( vFdSupportBuff );
+                        break;
+                    } else {
+                        Vec_IntPush( vFdSupportBuff, nid );
+                    }
+                }
+                if (Vec_IntSize(vFdSupportBuff) == 0) {
+                    continue;
+                }
+
+
+            // if (Cec_ManFdCheckFd( p, pObj, vFdSupportBuff, vPI, pParSat )) {
+                clk = Abc_Clock();
+                pTemp = Cec_ManFdGetFd( p, pObj, vFdSupportBuff, vPI );
+                printf("Node %d\n", Gia_ObjId(p,pObj));
+                if (pTemp == NULL) 
+                    Abc_PrintTime(-1, "SAT time", Abc_Clock() - clk);
+                else if (pTemp == -1) 
+                    Abc_PrintTime(-1, "UNSOLVED time", Abc_Clock() - clk);
+                else if (Gia_ManAndNum(pTemp) > Gia_ManAndNum(p) * coef1 && coef1 > 0) {
+                    Abc_PrintTime(-1, "too large....", Abc_Clock() - clk);
+                } 
+                else {
+                // ... use pTemp to update? or simpler?
+                    Abc_PrintTime(-1, "UNSAT time", Abc_Clock() - clk);
+                    Vec_IntPush( vRwNd, Gia_ObjId(p,pObj) );
+                    Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                        Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                    }
+                    printf("Size: %d\n", Gia_ManAndNum(pTemp));
+
+                }
+                Vec_IntFree( vFdSupportBuff );
+                printf("----------------------\n");
+            }
+            Vec_IntPrint( vRwNd );
+            // Vec_IntFree( vIntBuff1 );
+            if (val != Vec_IntSize(vRwNd)) Vec_PtrFree( vNdCone );
+        }
+        printf("done\n");
+        
+        // vNdBuff = Vec_IntAlloc( 100 );
+        // Vec_PtrForEachEntry( Gia_Obj_t*, vNdCone, pObjbuf, i ) {
+        //     Vec_IntPush( vNdBuff, Gia_ObjId(p, pObjbuf) );
+        // }
+        // Cec_ManMapId( p, vNdBuff );
+        
+        Cec_ManVecMapId( vAbsMap, vRwNd );
+        Cec_ManVecMapId( vAbsMap, vIntBuff );
+        Gia_SelfDefShow( pSub, "rewritable_global_update.dot", vRwNd, vIntBuff, 0 );
+        Gia_AigerWrite( pSub, "rewritable_global_update.aig", 0, 0, 0 );
+        Vec_IntFree( vIntBuff );
+        return;
+
+        vIntBuff1 = Vec_IntAlloc( 100 );
+        Gia_ManForEachObj( p, pObjbuf, i ) {
+            if ( Gia_ObjColors(p, Gia_ObjId(p, pObjbuf)) == 1 ) Vec_IntPush( vIntBuff1, Gia_ObjId(p, pObjbuf) );
+        }
+        printf("0\n");
+        vCost = Cec_ManCost( p, vIntBuff1, 2, 0 );
+        // Vec_IntForEachEntry( vCost, buf, i ) {
+        //     printf("Node %d: Cost %d\n", i, buf);
+        // }
+        
+        // if ( Vec_IntSize(vNdBuff) == 0 ) printf("No more nodes to check\n");
+        printf("2\n");
+        vWecBuff = Gia_ManExploreCuts( p, 8, -1, 1 ); // if use p, too much cut
+        vCuts = Cec_ManAffCutReform( Vec_WecEntry(vWecBuff, Gia_ObjId(p, pObj1)) );
+
+        buf = -1;
+        buf2 = 0;
+        buf3 = 0;
+        Gia_ManFillValue( p );
+        Vec_IntForEachEntry( vRwNd, nid, i ) {
+            // vNdBuff contain those unsolved
+            // if (Gia_ObjColors(p, Gia_ObjId(p, pObjbuf)) != 1) continue;
+            printf("Node %d\n", nid);
+            Gia_ObjSetValue( Gia_ManObj(p, nid), 1 );
+        }
+        printf("1\n");
+        Vec_WecForEachLevel( vCuts, vCutBuff, i ) {
+            val = 0;
+            buf3 = 0;
+            Vec_IntPrint( vCutBuff );
+            Vec_IntForEachEntry( vCutBuff, nid, j ) {
+                printf("Node %d val %d\n", nid, Vec_IntEntry(vCost, nid));
+                if (Gia_ObjValue( Gia_ManObj(p, nid) ) == -1) 
+                    val = Abc_MaxInt( val, Vec_IntEntry(vCost, nid) );
+                if (Gia_ObjValue( Gia_ManObj(p, nid) ) == 1) {
+                    buf3 = 1;
+                }
+            }
+            // printf("%d\n", val);
+            if (buf3 == 1) {
+                if (buf == -1) buf = val;
+                else if (val < buf) { // why so high? might need print
+                    buf = val;
+                    buf2 = i;
+                }
+            }
+            
+        }
+        Vec_IntPrint( Vec_WecEntry( vCuts, buf2 ) );
+        // Vec_IntForEachEntry( vNdBuff, nid, i ) {
+        //     if ( nid == -1 ) continue;
+        //     printf("Node %d\n", nid);
+        //     Vec_WecPrint(Cec_ManAffCutReform( Vec_WecEntry( vWecBuff, nid) ), 0); 
+        // }
+        return;
+    }
+
+    printf("start analysis\n");
+    if (fFdnid != 0 && fGetCkts) {
+        vIntBuff = Vec_IntAlloc( 1 );
+        Gia_ManForEachAnd( p, pObjbuf, i ) {
+            if (Gia_ObjColors(p, Gia_ObjId(p,pObjbuf)) == 3) Vec_IntPush( vIntBuff, Gia_ObjId(p,pObjbuf) );
+        }
+        Gia_SelfDefShow( p, "rewritable_global.dot", vRwNd, vIntBuff, 0 );
+        Vec_IntFree( vIntBuff );
+
+        // Vec_WecForEachLevel( vFdSupportMap, vIntBuff, nidbuf1 ) {
+        //     if (Vec_IntSize(vIntBuff) == 0) continue;
+        //     // Vec_IntPrint(vIntBuff);
+        //     // printf("%d\n", nidbuf1);
+        //     clk = Abc_Clock();
+        //     pObj = Gia_ManObj(p, nidbuf1);
+        //     Gia_ManFillValue(p);
+        //     pTemp = Cec_ManFdGetFd( p, pObj, vIntBuff, vPI );
+        //     Abc_PrintTime( 1, "Interpolation time", Abc_Clock() - clk );
+        //     // printf("%d\n", Gia_ManCoNum(pTemp));
+        //     // pAigOld = Gia_ManToAig( pTemp, 0 );
+        //     pTemp = Gia_ManCompress2( pTemp2 = pTemp, 1, 0 ); // stuck
+        //     Gia_ManStop( pTemp2 );
+        //     sprintf(str, "Patch_%d.dot", nidbuf1);
+        //     Gia_SelfDefShow( pTemp, str, 0, 0, 0 );
+
+        //     Gia_ManFillValue(p);
+        //     Gia_ManFillValue(pTemp);
+        //     pTemp = Cec_ManFdReplace( p, pObj, vIntBuff, pTemp2 = pTemp );
+        //     // pObjbuf1 = Abc_Lit2Var(Gia_ObjValue( pObj1 ));
+        //     // pObjbuf2 = Abc_Lit2Var(Gia_ObjValue( pObj2 ));
+        //     Gia_ManStop( pTemp2 );
+        //     Abc_PrintTime( 1, "Total computation time", Abc_Clock() - clk );
+        //     printf("Raw size: %d\n", Gia_ManAndNum(pTemp));
+
+        //     clk = Abc_Clock();
+        //     sprintf(str, "Interpolation_%d.aig", nidbuf1);
+        //     Gia_AigerWrite( pTemp, str, 0, 0, 0 );
+                
+        //     pTemp = Cec_ManSatSweeping( pTemp2 = pTemp, pParsFra, 0 );
+        //     printf("Swept size: %d\n", Gia_ManAndNum(pTemp));
+        //     Abc_PrintTime( 1, "Sweep time", Abc_Clock() - clk );
+        //     Gia_ManStop( pTemp2 );
+        //     sprintf(str, "Interpolation_swept_%d.aig", nidbuf1);
+        //     Gia_AigerWrite( pTemp, str, 0, 0, 0 );
+        //     // pTemp2 = Gia_ManFromAig( pAigOld );
+
+        //     Gia_ManStop( pTemp );
+        // }
+
+        // printf("start multi update\n");
+        // vFdRwNd = Vec_PtrAlloc( 1 );
+        // vFdRwCone = Vec_WecAlloc( 1 );
+        // Gia_ManFillValue(p);
+        // Vec_IntForEachEntry( vRwNd, nidbuf, j ) {
+        //     Gia_ObjSetValue( Gia_ManObj(p, nidbuf), 1 );
+        // }
+        // Vec_WecForEachLevelReverse( vFdSupportMap, vIntBuff, nidbuf1 ) {
+        //     if (Vec_IntSize(vIntBuff) == 0) continue;
+        //     pObj = Gia_ManObj(p, nidbuf1);
+        //     if (Gia_ObjColors(p, nidbuf1) != 1) continue;
+        //     // if (Gia_ObjValue(Gia_ObjFanin0(pObj)) == 1 && Gia_ObjValue(Gia_ObjFanin1(pObj)) == 1) {
+        //     //     continue;
+        //     // }
+        //     Vec_PtrPush( vFdRwNd, pObj );
+        //     vIntBuff2 = Vec_WecPushLevel( vFdRwCone );
+        //     Vec_IntForEachEntry( vIntBuff, nid, j ) {
+        //         Vec_IntPush( vIntBuff2, nid );
+        //     }
+        //     // if (Vec_PtrSize(vFdRwNd) == 3) break;
+        // }
+        // printf("Nodes to rewrite: ");
+        // Vec_PtrForEachEntry( Gia_Obj_t*, vFdRwNd, pObjbuf, j ) {
+        //     printf("%d ", Gia_ObjId(p, pObjbuf));
+        // }
+        // printf("\n");
+        // pTemp = Cec_ManFdReplaceMulti( p, vFdRwNd, vFdRwCone ); // I should only replace a frontier
+        // Gia_ManCombMarkUsed( pTemp2 = pTemp );
+        // pTemp = Gia_ManDupMarked( pTemp2 );
+        // // pTemp = Gia_ManEquivReduceAndRemap( pTemp2, 0, 0 );
+        // Gia_ManStop( pTemp2 );
+        // printf("Raw size: %d\n", Gia_ManAndNum(pTemp));
+
+        // clk = Abc_Clock();
+        // sprintf(str, "Interpolation_rwall.aig");
+        // Gia_AigerWrite( pTemp, str, 0, 0, 0 );
+                
+        // pTemp = Cec_ManSatSweeping( pTemp2 = pTemp, pParsFra, 0 );
+        // printf("Swept size: %d\n", Gia_ManAndNum(pTemp));
+        // Abc_PrintTime( 1, "Sweep time", Abc_Clock() - clk );
+        // Gia_ManStop( pTemp2 );
+        // sprintf(str, "Interpolation_rwall_swept.aig");
+        // Gia_AigerWrite( pTemp, str, 0, 0, 0 );
+    }
+
+    // start to analyze the circuit above merge frontier
+    printf("start to analyze the circuit above merge frontier\n");
+    Cec_ManVecMapId( vAbsMap, vRwNd );
+    if (vFdRwNd != NULL) {
+        vIntBuff = Vec_IntAlloc( Vec_PtrSize(vFdRwNd) );
+        Vec_PtrForEachEntry( Gia_Obj_t*, vFdRwNd, pObjbuf, j ) {
+            Vec_IntPush( vIntBuff, Gia_ObjId(p, pObjbuf) );
+        }
+        Cec_ManVecMapId( vAbsMap, vIntBuff );
+    }
+    
+    vPIBuff = Vec_IntAlloc( Gia_ManCiNum(pSub) );
+    Gia_ManForEachCi( pSub, pObjbuf, i ) {
+        Vec_IntPush(vPIBuff, Gia_ObjId(pSub, pObjbuf));
+    }
+    vIntBuff1 = Vec_IntAlloc( Vec_IntSize(vRwNd) );
+    vIntBuff2 = Vec_IntAlloc( Vec_IntSize(vRwNd) );
+    Vec_IntForEachEntry( vRwNd, nid, j ) {
+        assert(nid >= 0);
+        if (Gia_ObjColors(pSub, nid) == 1) { // why have color?
+            Vec_IntPush( vIntBuff1, nid);
+        } else if (Gia_ObjColors(pSub, nid) == 2) {
+            Vec_IntPush( vIntBuff2, nid);
+        } else {
+            assert(0);
+        }
+    }
+    if (fGetCkts) Gia_SelfDefShow( pSub, "frontier_as_PI.dot", 0, 0, 0 );
+    if (fGetCkts && vFdRwNd != NULL) {
+        Gia_SelfDefShow( pSub, "RewriteNodes.dot", vIntBuff, 0, 0 );
+        Vec_IntFree( vIntBuff );
+    }
+
+    if (fFdnid != 0) {
+        
+        dist_long_sub = Cec_ManDist( pSub, 1 );
+        dist_short_sub = Cec_ManDist( pSub, 0 ); 
+        vFdSupportFordot = Vec_WecStart( Gia_ManObjNum(pSub) );
+        Vec_WecForEachLevel( vFdSupportMap, vIntBuff, nidbuf1 ) {
+            if (Vec_IntSize(vIntBuff) == 0) continue;
+            assert(Gia_ObjColors(p, nidbuf1) != 3 && Gia_ObjColors(p, nidbuf1) != 0);
+            // Vec_WecPushLevel( vFdSupportFordot );
+            if (Gia_ObjColor(p, nidbuf1, 0)) { // in first cone...TODO
+                if (Gia_ManObj(p, nidbuf1)->Value == -1) printf("nid1: %d\n", nidbuf1);
+                Vec_IntForEachEntry( vIntBuff, nidbuf2, j ) {
+                    if (Gia_ManObj(p, nidbuf2)->Value == -1) printf("nid2: %d\n", nidbuf2);
+                    Vec_WecPush( vFdSupportFordot, Abc_Lit2Var(Gia_ManObj(p, nidbuf1)->Value), Abc_Lit2Var(Gia_ManObj(p, nidbuf2)->Value) );
+                    if (Abc_Lit2Var(Gia_ManObj(p, nidbuf1)->Value) > Gia_ManObjNum(pSub) || Abc_Lit2Var(Gia_ManObj(p, nidbuf2)->Value) > Gia_ManObjNum(pSub)) {
+                        printf("nid1: %d, nid2: %d\n", Abc_Lit2Var(Gia_ManObj(p, nidbuf1)->Value), Abc_Lit2Var(Gia_ManObj(p, nidbuf2)->Value));
+                        assert(0);
+                    }
+                    // Vec_IntPush(vIntBuff2, Abc_Lit2Var(Gia_ManObj(p, nid)->Value));
+                }
+            }
+        }
+
+        printf("done\n");
+        if (fGetCkts) {
+            if (fFdnid & 1) {
+                Vec_IntForEachEntry( vIntBuff1, nidbuf1, j ) {
+                    vIntBuff = Vec_IntAlloc( 1 );
+                    Vec_IntPush( vIntBuff, nidbuf1 );
+                    Gia_ManFillValue(pSub);
+                    Gia_ObjSetValue(Gia_ManObj(pSub, nidbuf1), 0);
+                    Cec_ManSubcircuit( pSub, Gia_ManCo(pSub, 0), vPIBuff, 0 );
+                    // Cec_ManSubcircuit( pSub, Gia_ManCo(pSub, 1), vPIBuff, 0 );
+                    Gia_ManForEachObj( pSub, pObj, i ) {
+                        if (Gia_ObjId(pSub, pObj) > Gia_ObjId(pSub, Gia_ManCo(pSub, 0))) continue;
+                        if (!Gia_ObjIsTravIdCurrent(pSub, pObj)) Vec_IntPush(vIntBuff, Gia_ObjId(pSub, pObj));
+                    }
+                    sprintf(str, "Support_%d.dot", nidbuf1);
+                    Gia_SelfDefShow( pSub, str, vIntBuff, Vec_WecEntry(vFdSupportFordot, nidbuf1), 0 );
+                    Vec_IntFree( vIntBuff );
+                }
+                Gia_SelfDefShow( pSub, "rewritable_all_1.dot", vIntBuff1, 0, 0 );
+                
+            }
+            if (fFdnid & 2) {
+                Vec_IntForEachEntry( vIntBuff2, nidbuf1, j ) {
+                    vIntBuff = Vec_IntAlloc( 1 );
+                    // printf("nid: %d\n", nidbuf1);
+                    Vec_IntPush( vIntBuff, nidbuf1 );
+                    Gia_ManFillValue(pSub);
+                    Gia_ObjSetValue(Gia_ManObj(pSub, nidbuf1), 0);
+                    Cec_ManSubcircuit( pSub, Gia_ManCo(pSub, 1), vPIBuff, 0 );
+                    Gia_ManForEachObj( pSub, pObj, i ) {
+                        if (Gia_ObjId(pSub, pObj) <= Gia_ObjId(pSub, Gia_ManCo(pSub, 0))) continue;
+                        if (!Gia_ObjIsTravIdCurrent(pSub, pObj)) Vec_IntPush(vIntBuff, Gia_ObjId(pSub, pObj));
+                    }
+                    sprintf(str, "Support_%d.dot", nidbuf1);
+                    Gia_SelfDefShow( pSub, str, vIntBuff, Vec_WecEntry(vFdSupportFordot, nidbuf1), 0 );
+                    Vec_IntFree( vIntBuff );
+                }
+                Gia_SelfDefShow( pSub, "rewritable_all_2.dot", vIntBuff2, 0, 0 );
+            }
+        }
+
+        if (fDist) {
+            printf("Rewritable nodes for cone 1\n");
+            printf("nid, ckt, toCo_max, toCo_min, tofrt_max, tofrt_min\n");
+            vIntBuff = Vec_IntAlloc( 1 );
+            Vec_IntPush( vIntBuff, Abc_Lit2Var(pObj1->Value) );
+            vWecBuff = Cec_ManDistAnalyze( pSub, vIntBuff1, vPIBuff, vIntBuff, dist_long_sub, dist_short_sub );
+            Vec_IntFree( vIntBuff );
+            Vec_WecForEachLevel( vWecBuff, vIntBuff, i ) {
+                if (i != Vec_WecSize(vWecBuff) - 1) printf("%d, %d, %d, %d, %d, %d\n", 
+                    Vec_IntEntry(vIntBuff, 0), 1, Vec_IntEntry(vIntBuff, 2),
+                    Vec_IntEntry(vIntBuff, 7), Vec_IntEntry(vIntBuff, 4), Vec_IntEntry(vIntBuff, 9));
+                else printf("overall: %d, %d, %d, %d\n", 
+                    Vec_IntEntry(vIntBuff, 0), Vec_IntEntry(vIntBuff, 5), Vec_IntEntry(vIntBuff, 2), Vec_IntEntry(vIntBuff, 7));
+            }
+
+            printf("nid, ckt, fd_toCo_max, fd_toCo_min, fd_tofrt_max, fd_tofrt_min\n");
+            Vec_WecFree( vWecBuff );
+            Vec_IntForEachEntry( vIntBuff1, nidbuf1, i ) {
+                vIntBuff = Vec_IntAlloc( 1 );
+                Vec_IntPush( vIntBuff, Abc_Lit2Var(pObj2->Value) );
+                vWecBuff = Cec_ManDistAnalyze( pSub, Vec_WecEntry(vFdSupportFordot, nidbuf1), vPIBuff, vIntBuff, dist_long_sub, dist_short_sub );
+                Vec_IntFree( vIntBuff );
+                vIntBuff = Vec_WecEntry( vWecBuff, Vec_WecSize(vWecBuff) - 1 );
+                printf("%d, %d, %d, %d, %d, %d\n", 
+                    nidbuf1, 1, Vec_IntEntry(vIntBuff, 0), Vec_IntEntry(vIntBuff, 5), Vec_IntEntry(vIntBuff, 2), Vec_IntEntry(vIntBuff, 7));
+                Vec_WecFree( vWecBuff );
+            }
+
+        }
+        Vec_PtrFree( vIntBuff1 );
+        Vec_PtrFree( vIntBuff2 );
+        Gia_ManStop(pSub);
+    }
+    
+
+    if (fDist) {
+        printf("merge frt\n");
+        printf("nid, ckt, max_long_FO, min_long_FO, max_long_FI, min_long_FI, max_short_FO, min_short_FO, max_short_FI, min_short_FI\n");
+        vIntBuff = Vec_IntAlloc( 1 );
+        Vec_IntPush(vIntBuff, nid1);
+        Vec_IntPush(vIntBuff, nid2);
+        vWecBuff = Cec_ManDistAnalyze( p, vMerge, vPI, vIntBuff, dist_long, dist_short );
+        Vec_WecForEachLevel( vWecBuff, vIntBuff, i ) {
+            if (i != Vec_WecSize(vWecBuff) - 1) printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", 
+                Vec_IntEntry(vIntBuff, 0), Vec_IntEntry(vIntBuff, 1), Vec_IntEntry(vIntBuff, 2),
+                Vec_IntEntry(vIntBuff, 3), Vec_IntEntry(vIntBuff, 4), Vec_IntEntry(vIntBuff, 5),
+                Vec_IntEntry(vIntBuff, 6), Vec_IntEntry(vIntBuff, 7), Vec_IntEntry(vIntBuff, 8), Vec_IntEntry(vIntBuff, 9));
+            else printf("overall: %d, %d, %d, %d, %d, %d, %d, %d\n", 
+                Vec_IntEntry(vIntBuff, 0), Vec_IntEntry(vIntBuff, 1), Vec_IntEntry(vIntBuff, 2),
+                Vec_IntEntry(vIntBuff, 3), Vec_IntEntry(vIntBuff, 4), Vec_IntEntry(vIntBuff, 5),
+                Vec_IntEntry(vIntBuff, 6), Vec_IntEntry(vIntBuff, 7));
+        }
+        
+    }
+    
+    return;
+}
+
+void Cec_ManPlayground5( Gia_Man_t * p, Cec_ParCec_t * pPars ) {
+    int fDist, fFdnid, nid, i, nidSup;
+    Cec_ManFd_t* pMan;
+    Cec_ParFd_t ParsFd, * pParsFd = &ParsFd;
+    Gia_Man_t *pTemp, *pTemp1, *pTemp2;
+    Gia_Obj_t *pObj;
+    Vec_Int_t* vUnsat, *vIntBuff, *vIntBuff2;
+    int firstStage[13] = {1814, 1838, 1842,1847, 1848, 1849, 1850, 1851, 2372};
+    Cec_ManFdSetDefaultParams( pParsFd );
+    pParsFd->fVerbose = pPars->fVerbose;
+    pParsFd->nBTLimit = pPars->nBTLimit;
+    // fUseAffine = {coefPatch(4)|costType(2),Fdnid(2)|fLocalShrink,levelType(3)|fUseFrt,fAbsItp,fAbs,getCkt}
+    // pParsFd->fUseAll = 0;
+    pParsFd->fGetCkts = pPars->fUseAffine & 0x1;
+    pParsFd->fAbs = (pPars->fUseAffine & 0x2) >> 1;
+    pParsFd->fAbsItp = (pPars->fUseAffine & 0x4) >> 2;
+    // pParsFd->fUseFrt = (pPars->fUseAffine & 0x8) >> 3;
+    pParsFd->levelType = (pPars->fUseAffine & 0x70) >> 4;
+    pParsFd->fLocalShrink = (pPars->fUseAffine & 0x80) >> 7;
+    fFdnid = (pPars->fUseAffine & 0x300) >> 8;
+    pParsFd->costType = (pPars->fUseAffine & 0xc00) >> 10;
+    pParsFd->coefPatch = ((pPars->fUseAffine & 0xf000) == 0) ? 0.0 : 1.0 / ((pPars->fUseAffine & 0xf000) >> 12);
+    
+    pMan = Cec_ManFdStart( p, pParsFd, 0 );
+    
+    // for (i = 0; i < 13; i++) {
+    //     printf("nid:%d\n", firstStage[i]);
+    //     printf("color:%d\n", Gia_ObjColors(p, firstStage[i]));
+    //     Cec_ManFdCleanOneUnknown( pMan, firstStage[i] );
+    // }
+    // vUnsat = Cec_ManFdUnsatId( pMan, -1 );
+    // Vec_IntPrint(vUnsat);
+    // Vec_IntForEachEntry( vUnsat, nid, i ) {
+    //     printf("nid:%d\n", nid);
+    //     Cec_ManFdShrink( pMan, nid );
+    // }
+    // Cec_ManFdIncreIter( pMan );
+    Cec_ManFdPrintPars( pMan );
+    
+    if (fFdnid == 3) {
+        printf("check RW at once\n");
+        Cec_ManFdCleanUnknown( pMan, 3 );
+        Gia_ManForEachObj( pMan->pGia, pObj, i ) {
+            nid = Gia_ObjId(pMan->pGia, pObj);
+            if (Gia_ObjColors(pMan->pGia, nid) == 1 || Gia_ObjColors(pMan->pGia, nid) == 2) {
+                // printf("nid:%d\n", nid);
+                Cec_ManFdShrink( pMan, nid );
+            }
+        }
+        Cec_ManFdIncreIter( pMan );
+    } else {
+        printf("Rw %d first\n", fFdnid);
+        Cec_ManFdCleanUnknown( pMan, fFdnid );
+        Gia_ManForEachObj( pMan->pGia, pObj, i ) {
+            nid = Gia_ObjId(pMan->pGia, pObj);
+            if (Gia_ObjColors(pMan->pGia, nid) == fFdnid) {
+                // printf("nid:%d\n", nid);
+                Cec_ManFdShrink( pMan, nid );
+            }
+        }
+        Cec_ManFdIncreIter( pMan );
+        fFdnid ^= 0x3;
+        printf("now rw %d\n", fFdnid);
+        Cec_ManFdCleanUnknown( pMan, fFdnid );
+        Gia_ManForEachObj( pMan->pGia, pObj, i ) {
+            nid = Gia_ObjId(pMan->pGia, pObj);
+            if (Gia_ObjColors(pMan->pGia, nid) == fFdnid) {
+                // printf("nid:%d\n", nid);
+                Cec_ManFdShrink( pMan, nid );
+            }
+        }
+        Cec_ManFdIncreIter( pMan );
+    }
+    
+    // nid = 2116;
+    // // printf("Replaced nid = %d\n", nid);
+    // // Vec_IntPrint( Vec_WecEntry(pMan->vMergeSupport, nid) );
+    // // Vec_IntForEachEntry( Vec_WecEntry(pMan->vGSupport, nid), nidSup, i ) {
+    // //     printf("Patch Ci nid = %d\n", nidSup);
+    // //     Vec_IntPrint( Vec_WecEntry(pMan->vMergeSupport, nidSup) );
+    // // }
+    // // Gia_SelfDefShow( (Gia_Man_t*) Cec_ManGetTFI( pMan->pGia, Gia_ManObj(pMan->pGia, nid), 0), "test.dot", 0, 0, 0 );
+    // Cec_ManFdCleanOneUnknown( pMan, nid );
+    // // Gia_SelfDefShow( (Gia_Man_t*) Vec_PtrEntry(pMan->vVeryStat, nid), "test1.dot", 0, 0, 0 );
+    // // return;
+    // if (Gia_ObjColors(pMan->pGia, nid) == 1 || Gia_ObjColors(pMan->pGia, nid) == 2) {
+    //     // printf("nid:%d\n", nid);
+    //     Cec_ManFdShrink( pMan, nid );
+    // }
+    // Gia_SelfDefShow( (Gia_Man_t*) Vec_PtrEntry(pMan->vVeryStat, nid), "test2.dot", 0, 0, 0 );
+    // Cec_ManFdIncreIter( pMan );
+    
+    
+    Cec_ManFdReport( pMan );
+
+    vUnsat = Cec_ManFdUnsatId( pMan, 0, 0 );
+    vIntBuff = Vec_IntAlloc( 100 );
+    vIntBuff2 = Vec_IntAlloc( 100 );
+    Vec_IntForEachEntry( vUnsat, nid, i ) {
+        if (Gia_ObjColors(pMan->pGia, nid) == 1) Vec_IntPush( vIntBuff, nid );
+        else if (Gia_ObjColors(pMan->pGia, nid) == 2) Vec_IntPush( vIntBuff2, nid );
+        else assert(0);
+    }
+    if (fFdnid == 3) {
+        Gia_AigerWrite( Cec_ManGetTFI( Cec_ManFdReplaceMulti(pMan, vIntBuff), 0, 0 ), "rewriteAll1.aig", 0, 0, 0 );
+        Gia_AigerWrite( Cec_ManGetTFI( Cec_ManFdReplaceMulti(pMan, vIntBuff2), 0, 0 ), "rewriteAll2.aig", 0, 0, 0 );
+    } else {
+        Gia_AigerWrite( Cec_ManGetTFI( Cec_ManFdReplaceMulti(pMan, vUnsat), 0, 0 ), "rewriteAll.aig", 0, 0, 0 );
+    }
+    
+    Vec_IntFree( vIntBuff );
+    Vec_IntFree( vIntBuff2 );
+    Vec_IntFree( vUnsat );
+
+    Cec_ManFdStop( pMan );
+}
+
+int Cec_ManVerifyWithAffine( Gia_Man_t * p, Cec_ParCec_t * pPars ) {
+
+    printf("test_signal\n");
+    Gia_WriteDotAigSimple( p, "test_signal_before.dot", NULL );
+    // int buf1, buf2, buf3;
+    // Vec_Bit_t *buf4;
+    Gia_Man_t* pTemp;
+    int buf1, buf2, buf3, buf4, cur_gain, entry, i;
+    int lit1, lit2, nid1, nid2, gain;
+    Gia_Obj_t *pObj1, *pObj2, *pObjbuf; //, *pObjbuf2;
+    // Vec_Ptr_t *frt = Vec_PtrAlloc(1);
+    Vec_Int_t *frt = Vec_IntAlloc(1);
+    Vec_Ptr_t *conebuf;
+    Vec_Wec_t *cuts_raw, *cuts1, *cuts2;
+    Vec_Wec_t *cutcands1 = Vec_WecAlloc(1);
+    Vec_Wec_t *cutcands2 = Vec_WecAlloc(1);
+    Vec_Int_t *cutbuf1, *cutbuf2, *cut1, *cut2, *cutbuf;
+    Cec_ManAff_t* pAff = Cec_ManAffStart();
+    
+    Gia_ManForEachCo( p, pObjbuf, buf1 ) {
+        // if (Gia_ObjId(p, pObjbuf) == ) printf("co %d\n", Gia_ObjId(p, pObjbuf));
+        // Vec_PtrPush(frt, NULL);
+        // pObj1 = Gia_ObjFanin0(pObjbuf);
+        // problem: still might push CI into frt
+        // Vec_PtrWriteEntry(frt, buf1, pObj1);
+        Vec_IntPush(frt, Gia_Obj2Lit(p, Gia_ObjFanin0(pObjbuf)));
+    }
+    printf("initial frt:");
+    Vec_IntPrint(frt);
+    // Vec_WecPrint( cuts_raw, 0 );
+    // cuts_raw = Gia_ManExploreCuts( p, 4, -1, 1 );
+    Vec_IntForEachEntryDouble(frt, lit1, lit2, buf1) {
+    // Vec_PtrForEachEntryDouble( Gia_Obj_t*, Gia_Obj_t*, frt, pObj1, pObj2, buf1) {
+        // printf("start\n");
+        pObj1 = Gia_ManObj( p, Abc_Lit2Var(lit1) );
+        pObj2 = Gia_ManObj( p, Abc_Lit2Var(lit2) );
+        gain = 0;
+        cut1 = NULL;
+        cut2 = NULL;
+        if (p->vTtMemory == NULL) Gia_ObjComputeTruthTableStart( p, 4 );
+        cuts_raw = Gia_ManExploreCuts( p, 4, -1, 1 );
+        if (p->pReprs == NULL) {
+            p->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(p) );
+            Gia_ManForEachObj( p, pObjbuf, buf2 )
+                Gia_ObjSetRepr( p, buf2, Gia_ObjIsAnd(pObjbuf) ? 0 : GIA_VOID );
+        }
+        Gia_ManEquivSetColors( p, 1 );
+        Gia_ManFillValue( p );
+        
+        nid1 = Abc_Lit2Var(lit1);
+        nid2 = Abc_Lit2Var(lit2);
+        cuts1 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid1) );
+        cuts2 = Cec_ManAffCutReform( Vec_WecEntry(cuts_raw, nid2) );
+        printf("%d, %d\n", nid1, nid2);
+        printf("cuts1 size %d cuts2 size %d\n", Vec_WecSize(cuts1), Vec_WecSize(cuts2));
+
+        Vec_WecForEachLevel( cuts1, cutbuf1, buf2) {
+            if (Vec_IntSize(cutbuf1) < 2) continue;
+            Vec_WecForEachLevel( cuts2, cutbuf2, buf3) {
+                if (Vec_IntSize(cutbuf2) < 2) continue;
+                // printf("stop 0\n");
+                cur_gain = 0;
+                conebuf = Cec_ManSubcircuit( p, pObj1, cutbuf1, 1 );
+                // Vec_IntPrint( cutbuf1 );
+                // printf("%d\n",Vec_PtrSize(conebuf));
+                if (conebuf->pArray == NULL) continue;
+                cur_gain += Vec_PtrSize(conebuf);
+                // cur_gain -= Vec_IntSize(cutbuf1);
+                Vec_PtrFree( conebuf );
+                // printf("stop 1\n");
+                conebuf = Cec_ManSubcircuit( p, pObj2, cutbuf2, 1 );
+                if (conebuf->pArray == NULL) continue;
+                cur_gain += Vec_PtrSize(conebuf);
+                // cur_gain -= Vec_IntSize(cutbuf2);
+                Vec_PtrFree( conebuf );
+                // printf("stop 2\n");
+                buf4 = Cec_ManAffCheckAff( pAff, p, lit1, lit2, cutbuf1, cutbuf2 );
+                if (buf4 == ~0) continue;
+                
+                // cur_gain -= buf4;
+                Vec_IntPrint(cutbuf1);
+                Vec_IntPrint(cutbuf2);
+                printf("find affine equivalence, %d,%d:%d\n", nid1, nid2, cur_gain);
+
+                // no constraint now
+                cutbuf = Vec_WecPushLevel(cutcands1);
+                Vec_IntForEachEntry( cutbuf1, entry, i ) {
+                    Vec_IntPush(cutbuf, entry);
+                }
+                cutbuf = Vec_WecPushLevel(cutcands2);
+                Vec_IntForEachEntry( cutbuf2, entry, i ) {
+                    Vec_IntPush(cutbuf, entry);
+                }
+
+                // cur_gain += Gia_ManAffSubcircuit( p, pObj1, cut1 );
+                if (cur_gain > gain) {
+                
+                    gain = cur_gain;
+                    cut1 = cutbuf1;
+                    cut2 = cutbuf2;
+                }
+            }
+        }
+        if (gain == 0) {
+            // printf("none is found\n");
+            continue;
+        }
+        printf("For matching %d,%d have gain %d\n",nid1, nid2, gain);
+        cut1 = Vec_IntDup( cut1 );
+        cut2 = Vec_IntDup( cut2 );
+        pTemp = Cec_ManAffReplace( pAff, p, lit1, lit2, cut1, cut2, frt ); // this line might be error
+        assert(0);
+        Vec_IntPrint(cut1);
+        Vec_IntPrint(cut2);
+        // printf("%d\n", buf1);
+        // Vec_PtrForEachEntryStart( Gia_Obj_t*, frt, pObjbuf, buf2, buf1) {
+        //     Vec_PtrWriteEntry( frt, buf2, Gia_ManObj( pTemp, Abc_Lit2Var( pObjbuf->Value )));
+        // }
+        Vec_IntForEachEntryStart( frt, buf2, buf3, buf1 + 2 ) {
+            // Do we really need to compl?
+            Vec_IntWriteEntry( frt, buf3, Abc_LitNotCond( Gia_ManObj( p, Abc_Lit2Var( buf2 ))->Value, Abc_LitIsCompl( buf2 ) ));
+        }
+        Vec_IntForEachEntryTwo( cut1, cut2, buf2, buf3, buf4 ) {
+            Vec_IntPush( frt, buf2);
+            Vec_IntPush( frt, buf3);
+        }
+        Gia_ManStop(p);
+        Vec_IntFree( cut1 );
+        Vec_IntFree( cut2 );
+        Vec_WecFree( cuts_raw );
+        Vec_WecFree( cuts1 );
+        Vec_WecFree( cuts2 );
+        p = pTemp;
+        printf("frt is now being:");
+        Vec_IntPrint(frt);
+        return 0;
+        // break;
+        // Vec_IntPrint(cut1);
+        // Vec_IntPrint(cut2);
+
+        // Gia_WriteDotAigSimple( Cec_ManSubcircuit( p, pObj1, cut1 ), "test_cut1.dot", NULL );
+        // Gia_WriteDotAigSimple( Cec_ManSubcircuit( p, pObj2, cut2 ), "test_cut2.dot", NULL );
+        // Gia_ManAffDupSubcircuit( p, pObj1, cut1 );
+        // Gia_ManAffDupSubcircuit( p, pObj2, cut2 );
+    }
+    Vec_IntFree( frt );
+
+
+
+    // int testTT1 = 138;
+    // int testTT2 = 16516;
+    // Cec_ManAff_t* pAff = Cec_ManAffStart();
+    // buf1 = Cec_ManAffTTInfo( pAff, testTT1 );
+    // printf("buf = (%d, %d, %d)\n", Cec_ManAfftoClassId(buf1), Cec_ManAfftoAId(buf1), Cec_ManAfftoB(buf1));
+    // buf1 = Cec_ManAfftoClassId(buf1);
+    // buf2 = Cec_ManAfftoClassId( Cec_ManAffTTInfo( pAff, testTT2 ) );
+    // buf3 = Cec_ManAffClassTrans(pAff, buf1, buf2);
+    // printf("A/b = (%d, %d)\n", Cec_ManAfftoAId(buf3), Cec_ManAfftoB(buf3));
+    // printf("Aops = ");
+    // buf4 = Cec_ManAffOps(pAff, Cec_ManAfftoAId(buf3));
+    // Vec_BitForEachEntry( buf4, buf1, buf2 ) {
+    //   printf("%d",buf1);
+    // }
+    // printf("\n");
+    // printf("Bops = ");
+    // buf4 = Cec_ManAfftoBarr(Cec_ManAfftoB(buf3));
+    // Vec_BitForEachEntry( buf4, buf1, buf2 ) {
+    //   printf("%d",buf1);
+    // }
+    // printf("\n");
+    // Cec_ManAffStop( pAff );
+    return 0;
+}
+
+// cecMan.c
+//// cecFd
+int  Cec_ManFdCheckFd( Gia_Man_t* pGia, Gia_Obj_t* pObj, Vec_Int_t* vFdSupport, Vec_Int_t* vPI, Cec_ParSat_t* pParSat ) {
+    Gia_Man_t   *pTemp, *pTemp2;
+    Vec_Ptr_t *vNdCone;
+    Vec_Int_t *vIntBuff1, *vIntBuff2;
+    abctime clk;
+    int i, j, k, nid, nidbuf, nidbuf1, nidbuf2, buf, buf1, buf2, status;
+
+    clk = Abc_Clock();
+    pTemp = Gia_ManStart( 2 * Gia_ManObjNum(pGia) + 4 * Vec_IntSize(vFdSupport) );
+    vIntBuff1 = Vec_IntAlloc(1);
+    vIntBuff2 = Vec_IntAlloc(1);
+
+    Gia_ManFillValue(pGia);
+    Vec_IntForEachEntry( vPI, nid, j ) { // vFdSupport?
+        Gia_ObjSetValue(Gia_ManObj(pGia, nid), Gia_ManAppendCi( pTemp ));
+    }
+        // printf("%d\n", Gia_ObjId(p, pObj));
+        // Vec_IntPrint(vFdSupport);
+        // printf("%d\n", Vec_IntSize(vFdSupport));
+        // Vec_IntPrint(Vec_WecEntry( vSupport, Gia_ObjId(p,pObj) ));
+    vNdCone = Cec_ManSubcircuit( pGia, pObj, vPI, 0 );
+    if (Vec_PtrSize(vNdCone) == 0) assert(0);
+    else buf1 = Cec_ManPatch( pTemp, vNdCone );
+    Vec_PtrFree( vNdCone );
+    Vec_IntForEachEntry( vFdSupport, nid, j ) {
+        vNdCone = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, nid), vPI, 0 );
+        if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManObj(pGia, nid)->Value;
+        else buf = Cec_ManPatch( pTemp, vNdCone );
+        Vec_IntPush( vIntBuff1, buf);
+        Vec_PtrFree( vNdCone );
+    }
+
+    Gia_ManFillValue(pGia);
+    Vec_IntForEachEntry( vPI, nid, j ) { // vFdSupport?
+        Gia_ObjSetValue(Gia_ManObj(pGia, nid), Gia_ManAppendCi( pTemp ));
+    }
+    vNdCone = Cec_ManSubcircuit( pGia, pObj, vPI, 0 );
+    if (Vec_PtrSize(vNdCone) == 0) assert(0);
+    else buf2 = Cec_ManPatch( pTemp, vNdCone );
+    Vec_PtrFree( vNdCone );
+    Vec_IntForEachEntry( vFdSupport, nid, j ) {
+        vNdCone = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, nid), vPI, 0 );
+        if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManObj(pGia, nid)->Value;
+        else buf = Cec_ManPatch( pTemp, vNdCone );
+        Vec_IntPush( vIntBuff2, buf);
+        Vec_PtrFree( vNdCone );
+    }
+        // Vec_IntPrint(vIntBuff1);
+        // Vec_IntPrint(vIntBuff2);
+    buf = Gia_ManAppendAnd( pTemp, Abc_LitNotCond(buf1, 0), Abc_LitNotCond(buf2, 1) );
+    Vec_IntForEachEntryTwo( vIntBuff1, vIntBuff2, nidbuf1, nidbuf2, k ) {
+        nidbuf = Gia_ManAppendXor( pTemp, nidbuf1, nidbuf2 );
+        buf = Gia_ManAppendAnd( pTemp, buf, Abc_LitNotCond(nidbuf, 1) );
+    }
+    Gia_ManAppendCo( pTemp, buf );
+    printf("%d:", Gia_ObjId(pGia,pObj));
+    pTemp2 = Cec_ManSatSolving( pTemp, pParSat, 1 );
+    // Gia_SelfDefShow( pTemp, "testint_org.dot", 0, 0, 0);
+    // pTemp2 = Gia_ManInterTest( pTemp );
+    // Gia_SelfDefShow( pTemp2, "testint_int.dot", 0, 0, 0);
+    // assert(0);
+    printf("\n");
+    printf("G size:%d\n", Vec_IntSize(vFdSupport));
+    Abc_PrintTime( 1, "Time:", Abc_Clock() - clk );
+    printf("\n-----------------\n");
+    status = (Gia_ManAndNum(pTemp2) == 0);
+    // printf("%d\n", Gia_ManAndNum(pTemp2));
+    Gia_ManStop(pTemp);
+    Gia_ManStop(pTemp2);
+    Vec_IntFree( vIntBuff1 );
+    Vec_IntFree( vIntBuff2 );
+
+    return status;
+}
+Gia_Man_t* Cec_ManFdGetFd( Cec_ManFd_t* pMan, int nidGlobal, Vec_Int_t* vFdSupportGlobal, Vec_Int_t* vPI ) {
+    Gia_Man_t *pGia = pMan->pPars->fAbsItp ? pMan->pAbs : pMan->pGia;
+    Gia_Man_t* pFdMiter, *pFdPatch, *pTemp;
+    Gia_Obj_t* pObjbuf;
+    Gia_Obj_t* pObj = pMan->pPars->fAbsItp ? Gia_ManObj(pGia, Cec_ManFdMapIdSingle(pMan, nidGlobal, 1)) : Gia_ManObj(pGia, nidGlobal);
+    Vec_Ptr_t *vNdCone;
+    Vec_Int_t *vFdSupport = vFdSupportGlobal ? Vec_IntDup(vFdSupportGlobal) : Vec_IntDup(Vec_WecEntry(pMan->vGSupport, nidGlobal));
+    if (pMan->pPars->fAbsItp) Cec_ManFdMapId(pMan, vFdSupport, 1);
+    int i, j, k, nid, nidbuf, nidbuf1, nidbuf2, buf, buf1, buf2, status;
+    abctime clk;
+
+    pFdMiter = Gia_ManStart( Gia_ManObjNum(pGia) );
+
+    Gia_ManFillValue(pGia);
+    Gia_ManConst0(pGia)->Value = 0;
+    clk = Abc_Clock();
+    if (vPI) {
+        Vec_IntForEachEntry( vPI, nidbuf, j ) { // vFdSupport?
+            nid = pMan->pPars->fAbsItp ? Cec_ManFdMapIdSingle(pMan, nidbuf, 1) : nidbuf;
+            Gia_ObjSetValue(Gia_ManObj(pGia, nid), Gia_ManAppendCi( pFdMiter ));
+        }
+    }
+    else
+        Gia_ManForEachCi( pGia, pObjbuf, j ) {
+            Gia_ObjSetValue(pObjbuf, Gia_ManAppendCi( pFdMiter ));
+        }
+
+    // Vec_IntPrint(vFdSupport);
+    Vec_IntForEachEntry( vFdSupport, nid, j ) {
+        if (nid == -1) continue;
+        vNdCone = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, nid), vPI, 0, 0, 1 );
+        if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManObj(pGia, nid)->Value;
+        else buf = Cec_ManPatch( pFdMiter, vNdCone );
+        // printf( "nid = %d -> %d: size = %d\n", nid, Cec_ManFdMapIdSingle(pMan, nid, 1), Vec_PtrSize(vNdCone) );
+        // printf("%d: %d\n", nid, Vec_PtrSize(vNdCone));
+        Gia_ManAppendCo( pFdMiter, buf );
+        Vec_PtrFree( vNdCone );
+    }
+    // Gia_SelfDefShow( pFdMiter, "test2.dot", 0, 0, 0 );
+    vNdCone = Cec_ManSubcircuit( pGia, pObj, vPI, 0, 0, 1 );
+    if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ObjValue(pObj); // assert(0);
+    else buf = Cec_ManPatch( pFdMiter, vNdCone );
+    // printf( "nid = %d -> %d: size = %d\n", nidGlobal, Cec_ManFdMapIdSingle(pMan, nidGlobal, 1), Vec_PtrSize(vNdCone) );
+    Gia_ManAppendCo( pFdMiter, buf );
+
+    // TODO: clean here
+    // printf("size: %d\n", Gia_ManObjNum(pFdMiter));
+    // pFdMiter = Gia_ManRehash( pTemp = pFdMiter, 0 );
+    // printf("size: %d\n", Gia_ManObjNum(pFdMiter));
+    for (i = 0; i < Gia_ManCoNum(pFdMiter); i++) {
+        for (j = 0; j < i; j++) {
+            if (Gia_ManCoDriverId(pFdMiter, i) == Gia_ManCoDriverId(pFdMiter, j)) {
+                printf("i = %d, j = %d, driver = %d\n", i, j);
+            }
+        }
+    }
+    // Gia_ManForEachCo( pFdMiter, pObjbuf, i ) {
+    //     printf( "%d: %d\n", i, Gia_ManCoDriverId( pFdMiter, i ) );
+    // }
+    // Gia_ManStop( pTemp );
+
+    Vec_PtrFree( vNdCone );
+    // return 0;
+    // printf("1\n");
+    pFdPatch = Int2_ManFdSimp( pFdMiter, pMan->pPars->nBTLimit );
+    if (pMan->pPars->fVerbose) {
+        if (pFdPatch != NULL && pFdPatch != -1) 
+            Abc_Print(1, "Find a patch for node %d with size %d for miter sized %d and G sized %d require %.6f\n", 
+                nidGlobal, Gia_ManAndNum(pFdPatch), Gia_ManAndNum(pFdMiter), Vec_IntSize(vFdSupport), 1.0*((double)(Abc_Clock() - clk))/((double)((__clock_t) 1000000)));
+        if (Vec_IntSize(vFdSupport) == 1) {
+            Gia_ManFillValue(pFdMiter);
+            Gia_ManForEachCo( pFdMiter, pObjbuf, i ) {
+                if (i == Gia_ManCoNum(pFdMiter)-1) break;
+                Cec_ManSubcircuit( pFdMiter, pObjbuf, 0, 0, 1, 0 );
+            }
+            printf("ckt1 nodes:\n");
+            Gia_ManForEachAnd( pFdMiter, pObjbuf, i ) {
+                if (pObjbuf->Value == -1) {
+                    printf("%d ", Gia_ObjId(pFdMiter, pObjbuf));
+                }
+            }
+            printf("\n");
+            Gia_ManFillValue(pFdMiter);
+            Cec_ManSubcircuit( pFdMiter, Gia_ManCo(pFdMiter, Gia_ManCoNum(pFdMiter)-1), 0, 0, 1, 0 );
+            printf("ckt2 nodes:\n");
+            Gia_ManForEachAnd( pFdMiter, pObjbuf, i ) {
+                if (pObjbuf->Value == -1) {
+                    printf("%d ", Gia_ObjId(pFdMiter, pObjbuf));
+                }
+            }
+            printf("\n");
+
+        }
+    }
+    Gia_ManStop( pFdMiter );
+
+    Vec_IntFree( vFdSupport );
+    return pFdPatch;
+}
+
+Gia_Man_t*  Cec_ManFdReplace( Gia_Man_t* pGia, Gia_Obj_t* pObj, Vec_Int_t* vFdSupport, Gia_Man_t* pFdPatch ) {
+    Gia_Man_t *pOut, *pTemp;
+    Gia_Obj_t *pObjbuf;
+    Vec_Ptr_t *vNdCone;
+    Vec_Int_t *vPI, *vPIpatch;
+    Cec_ParCec_t ParsCec, * pPars = &ParsCec;
+    int i, nid, buf, fDebug = 0, fVerb = 1, val;
+
+    assert( Gia_ManCiNum(pFdPatch) == Vec_IntSize(vFdSupport) );
+    assert( Gia_ManCoNum(pFdPatch) == 1 );
+
+    Cec_ManCecSetDefaultParams( pPars );
+
+    vPI = Vec_IntAlloc( Gia_ManCiNum(pGia) );
+    Gia_ManForEachCi( pGia, pObjbuf, i ) {
+        Vec_IntPush( vPI, Gia_ObjId(pGia, pObjbuf) );
+    }
+    vPIpatch = Vec_IntAlloc( Gia_ManCiNum(pFdPatch) );
+    Gia_ManForEachCi( pFdPatch, pObjbuf, i ) {
+        Vec_IntPush( vPIpatch, Gia_ObjId(pFdPatch, pObjbuf) );
+    }
+    
+    if (pFdPatch == 0 || pFdPatch == -1) return pGia;
+
+    pOut = Gia_ManStart( Gia_ManObjNum(pGia) + Gia_ManObjNum(pFdPatch) + 1 );
+    Gia_ManFillValue( pGia );
+    Gia_ManFillValue( pFdPatch );
+    Gia_ManForEachCi( pGia, pObjbuf, i ) {
+        Gia_ObjSetValue(pObjbuf, Gia_ManAppendCi( pOut ));
+    }
+    Gia_ManForEachCi( pFdPatch, pObjbuf, i ) {
+        nid = Vec_IntEntry( vFdSupport, i );
+        vNdCone = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, nid), vPI, 0 );
+        if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManObj(pGia, nid)->Value;
+        else buf = Cec_ManPatch( pOut, vNdCone );
+        Gia_ObjSetValue(pObjbuf, buf);
+        Vec_PtrFree( vNdCone );
+    }
+    // Gia_SelfDefShow( pOut, "fd_sup.dot", 0, 0, 0 );
+    
+    // Gia_SelfDefShow( pOut, "fd_sup.dot", 0, 0, 0 );
+    vNdCone = Cec_ManSubcircuit( pFdPatch, Gia_ManCo(pFdPatch, 0), vPIpatch, 0 );
+    // assert( Vec_PtrSize(vNdCone) > 0 );
+    if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManCo(pFdPatch, 0)->Value;
+    else buf = Cec_ManPatch( pOut, vNdCone );
+    Gia_ObjSetValue( pObj, buf );
+    Vec_PtrFree( vNdCone );
+    // Gia_SelfDefShow( pFdPatch, "fd_patch.dot", 0, 0, 0 );
+    // Gia_SelfDefShow( pOut, "fd_new.dot", 0, 0, 0 );
+
+    vNdCone = Cec_ManSubcircuit( pGia, Gia_ManCo(pGia, 0), vPI, 0 );
+    if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManCo(pGia, 0)->Value;
+    else buf = Cec_ManPatch( pOut, vNdCone );
+    Gia_ManAppendCo( pOut, buf );
+    Vec_PtrFree( vNdCone );
+
+    if (Gia_ManCoNum(pGia) == 2 && Gia_ObjId(pGia, Gia_ObjFanin0(Gia_ManCo(pGia, 1))) != Gia_ObjId(pGia, Gia_ObjFanin0(Gia_ManCo(pGia, 0)))) {
+        vNdCone = Cec_ManSubcircuit( pGia, Gia_ManCo(pGia, 1), vPI, 0 );
+        if (Vec_PtrSize(vNdCone) == 0) buf = Gia_ManCo(pGia, 1)->Value;
+        else buf = Cec_ManPatch( pOut, vNdCone );
+        Gia_ManAppendCo( pOut, buf );
+        Vec_PtrFree( vNdCone );   
+    }
+    // Gia_SelfDefShow( pOut, "fd_fin.dot", 0, 0, 0 );
+    
+
+    if (fVerb) {
+        val = 0;
+        Gia_ManForEachObj( pGia, pObjbuf, i ) {
+            if (Gia_ObjValue(pObjbuf) == -1) val += 1;
+        }
+        printf("node %d: save node: %d, add node: %d\n", Gia_ObjId(pGia, pObj), val, Gia_ManAndNum( pFdPatch ));
+    }
+
+    Vec_IntFree( vPI );
+    Vec_IntFree( vPIpatch );
+
+    if (fDebug) {
+        pTemp = Gia_ManMiter( pGia, pOut, 0, 1, 0, 0, 0 );
+        if (!Cec_ManVerify( pTemp, pPars )) {
+            Vec_IntPrint(vFdSupport);
+            Gia_AigerWrite( pGia, "fd_org.aig", 0, 0, 0 );
+            Gia_SelfDefShow( pGia, "fd_org.dot", 0, 0, 0 );
+            Gia_SelfDefShow( pFdPatch, "fd_patch.dot", 0, 0, 0 );
+            Gia_SelfDefShow( pTemp, "fd_miter.dot", 0, 0, 0 );
+            Gia_AigerWrite( pOut, "fd_new.aig", 0, 0, 0 );
+            Gia_SelfDefShow( pOut, "fd_new.dot", 0, 0, 0 );
+            assert(0);
+        }
+        Gia_ManStop( pTemp );
+        printf("successfully replace\n");
+        // assert(0);
+    }
+    return pOut;
+}
+Vec_Wec_t*           Cec_ManFdSetGSupport( Cec_ManFd_t* pMan ) {
+    abctime clk;
+    Gia_Obj_t *pObj;
+    Gia_Man_t *pTemp;
+    Vec_Int_t *vIntBuff1, *vIntBuff2, *vFdSupportBuff;// , *vFdSupportSplit, *vPOBuff, *vPIBuff;
+    int i, j, nid, nidSupport, val;
+    int toShrink;
+    Vec_IntForEachEntry( vF, nid, i ) {
+        pObj = Gia_ManObj(pGia, nid);
+        clk = Abc_Clock();
+        printf("Node %d\n", nid);
+        if ( Vec_WecLevelSize( vSupport, nid ) == 0 ) continue;
+        // if ( (Gia_ObjColors(p, Gia_ObjId(p,pObj)) & fFdnid) == 0 ) continue;
+        vIntBuff1 = Vec_WecEntry( vSupport, nid );
+        vFdSupportBuff = Vec_IntAlloc(1);
+        Vec_IntForEachEntry( vG, nidSupport, j) {
+            vIntBuff2 = Vec_WecEntry( vSupport, nidSupport );
+            if (fCheck == 0) {
+                Vec_IntPush( vFdSupportBuff, nid );
+            }
+            else if ( Vec_IntSize(vIntBuff2) > 0 && Cec_ManCheckSubset( vIntBuff1, vIntBuff2 ) ) {
+                Vec_IntPush( vFdSupportBuff, nid );
+            }
+        } 
+        if (Vec_IntSize(vFdSupportBuff) == 0) {
+            printf("No FdSupport found for %d\n", nid);
+            continue;
+        }
+        // if (Cec_ManFdCheckFd( p, pObj, vFdSupportBuff, vPI, pParSat )) {
+        clk = Abc_Clock();
+        pTemp = Cec_ManFdGetFd( pGia, pObj, vFdSupportBuff, 0 );
+        if (pTemp == NULL) 
+            Abc_PrintTime(-1, "SAT time", Abc_Clock() - clk);
+        else if (pTemp == -1) 
+            Abc_PrintTime(-1, "UNSOLVED time", Abc_Clock() - clk);
+        else if (Gia_ManAndNum(pTemp) > Gia_ManAndNum(p) * coef1 && coef1 > 0) {
+            Abc_PrintTime(-1, "too large.....", Abc_Clock() - clk);
+        } 
+        else {
+            // ... use pTemp to update? or simpler?
+            Abc_PrintTime(-1, "UNSAT time", Abc_Clock() - clk);
+            printf("org size: %d\n", Gia_ManAndNum(pTemp));
+            clk = Abc_Clock(); 
+            Vec_IntPush( vRwNd, Gia_ObjId(p,pObj) );
+            toShrink = (Vec_IntSize(vFdSupportBuff) > 1) && (fpickType != 0);            
+            vFdSupportSplit = Vec_WecAlloc( 100 );
+            if (toShrink) {
+                Vec_IntSort( vFdSupportBuff, 0 );
+                // Vec_IntPrint(vFdSupportBuff);
+                vPOBuff = Cec_ManGetFIO( p, vFdSupportBuff, 1 );
+                vPIBuff = Cec_ManGetFIO( p, vFdSupportBuff, 0 );
+                vWecBuff = Cec_ManDistAnalyze( p, vFdSupportBuff, vPIBuff, vPOBuff, dist_long, dist_short );
+                Vec_IntPrint(Vec_WecEntryLast( vWecBuff ));
+                Gia_ManFillValue( p );
+                if (fpickType == 1) {
+                    Vec_IntForEachEntry( vPOBuff, nid, j ) {
+                        Gia_ObjSetValue(Gia_ManObj(p, nid), 0);
+                    }
+                }                
+                Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    vIntBuff = Vec_WecEntry( vWecBuff, j );
+                    if (Gia_ObjValue(Gia_ManObj(p, nid)) == 0) val = 0;
+                    else if (fpickType == 1) val = Vec_IntEntry(vIntBuff, 7) + 1;
+                    else if (fpickType == 2) val = Vec_IntEntry(vIntBuff, 2) + 1;
+                    else if (fpickType == 3) val = Vec_IntEntry(Vec_WecEntryLast( vWecBuff ), 6) - Vec_IntEntry(vIntBuff, 9) + 1;
+                    else if (fpickType == 4) val = Vec_IntEntry(Vec_WecEntryLast( vWecBuff ), 2) - Vec_IntEntry(vIntBuff, 4) + 1;
+                    else assert(0);
+                    while (Vec_IntSize(vFdSupportSplit) <= val) Vec_WecPushLevel( vFdSupportSplit );
+                    assert( Gia_ObjValue(Gia_ManObj(p, nid)) != 0 || val != 0 ); 
+                    Vec_WecPush( vFdSupportSplit, val, nid );
+                }
+                Vec_WecPrint(vFdSupportSplit, 1);                
+            }
+            vIntBuff = Vec_IntAlloc( Vec_IntSize(vFdSupportBuff) );
+            val = 0;
+            while (toShrink) {
+                if (val == Vec_WecSize(vFdSupportSplit)) {
+                    printf("No shrink is better with size %d\n", Gia_ManAndNum(pTemp));
+                    toShrink = 0;
+                    // Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    //     Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                    // }
+                    break;
+                }
+                Vec_IntForEachEntry( Vec_WecEntry(vFdSupportSplit, val), nid, j ) {
+                    Vec_IntPush( vIntBuff, nid );
+                }
+                if (Vec_IntSize(Vec_WecEntry(vFdSupportSplit, val)) == 0) {
+                    val += 1;
+                    continue;
+                }                
+                Gia_ManFillValue(p);
+                pTemp = Cec_ManFdGetFd( p, pObj, vIntBuff, vPI );
+                if (pTemp != NULL && pTemp != -1) {
+                    if (Gia_ManAndNum(pTemp) < Gia_ManAndNum(p) * coef1) {
+                        printf("Found FD with level %d with size %d\n", val, Gia_ManAndNum(pTemp));
+                        toShrink = 0;
+                        Vec_IntForEachEntry( vIntBuff, nid, j ) {
+                            Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                        }                        
+                    } else {
+                        printf("still too large, level %d with size %d\n", val, Gia_ManAndNum(pTemp));
+                    }
+                    Gia_ManStop(pTemp);
+                }
+                // else if (val == Vec_WecSize(vFdSupportSplit) - 1) {
+                //     printf("in\n");
+                //     toShrink = 0;
+                //     Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                //         Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                //     }
+                // }
+                val += 1;
+            }
+            if (Vec_IntSize(Vec_WecEntry(vFdSupportMap, Gia_ObjId(p,pObj))) == 0) {
+                printf("No FD found, use original support\n");
+                Vec_IntForEachEntry( vFdSupportBuff, nid, j ) {
+                    Vec_WecPush( vFdSupportMap, Gia_ObjId(p,pObj), nid );
+                }
+            }
+            Abc_PrintTime( -1, "Shrink time", Abc_Clock() - clk );
+            Vec_IntFree( vFdSupportSplit );
+            // Vec_IntFree( vFdSupportBuff );
+            Vec_IntFree( vIntBuff );
+        }
+        Vec_IntFree( vFdSupportBuff );
+        printf("----------------------\n");
+    }
+}
+void Cec_ManFdSetLevel_old( Cec_ManFd_t* pMan ) {
+    int fAbs = pMan->pPars->fAbs;
+    // int fallMin = level_type & (1 << CEC_FD_BITALLMM);
+    int fFI = Cec_ManFdGetLevelType( pMan, 2 );
+    int ftype = Cec_ManFdGetLevelType( pMan, 0 );
+    int ftype_togFI = ftype ^ (1 << CEC_FD_LEVELBITFIO);
+    if (fFI) ftype_togFI ^= (1 << CEC_FD_LEVELBITPATH);
+    // printf("ftype: %d fFI: %d ftype_togFI: %d\n", ftype, fFI, ftype_togFI);
+    int fNorm = Cec_ManFdGetLevelType( pMan, 4 );
+    
+    Gia_Man_t *pGia = fAbs ? pMan->pAbs : pMan->pGia;
+    int** dist_long = fAbs ? pMan->dist_long_abs : pMan->dist_long;
+    int** dist_short = fAbs ? pMan->dist_short_abs : pMan->dist_short;
+
+    int maxval, int_buff, int_buff2,i, nid, nid1, nid2;
+    Vec_Int_t *vPIBuff, *vPOBuff, *vNdBuff;
+    Vec_Int_t *vIntBuff, *vIntSum;
+    Vec_Wec_t *vDistAnsysBuff;
+    Gia_Obj_t *pObjbuf;
+
+    if (fNorm) {
+        maxval = 0;
+        nid1 = fAbs ? Gia_ObjId( pMan->pAbs, pMan->pObjAbs1 ) : Gia_ObjId( pMan->pGia, pMan->pObj1 );
+        nid2 = fAbs ? Gia_ObjId( pMan->pAbs, pMan->pObjAbs2 ) : Gia_ObjId( pMan->pGia, pMan->pObj2 );
+        Gia_ManForEachCi( pGia, pObjbuf, i ) {
+            nid = Gia_ObjId(pGia, pObjbuf);
+            if (dist_long[nid1][nid] > maxval) maxval = dist_long[nid1][nid];
+            if (dist_long[nid2][nid] > maxval) maxval = dist_long[nid2][nid];
+        }
+    }
+    // printf("maxval: %d\n", maxval);
+
+    Vec_IntFill( pMan->vLevel1, Vec_IntSize(pMan->vLevel1), -1);
+    Vec_IntFill( pMan->vLevel2, Vec_IntSize(pMan->vLevel2), -1);
+
+    vIntBuff = Vec_IntStart( 1 );
+    Vec_IntWriteEntry( vIntBuff, 0, Gia_ObjId(pGia, fAbs ? pMan->pObjAbs1 : pMan->pObj1) );
+    vDistAnsysBuff = Cec_ManDistAnalyze( pGia, 0, 0, vIntBuff, dist_long, dist_short );
+    Vec_IntFree( vIntBuff );
+    vIntSum = Vec_IntStart( Vec_IntSize(pMan->vLevel1) );
+    Vec_IntFill( vIntSum, Vec_IntSize(pMan->vLevel1), -1);
+    Vec_WecForEachLevel( vDistAnsysBuff, vIntBuff, i ) {
+        // Vec_IntPrint( vIntBuff );
+        if (i == Vec_WecSize(vDistAnsysBuff) - 1) continue; // skip the last level
+        nid = fAbs ? Cec_ManFdMapIdSingle( pMan, Vec_IntEntry(vIntBuff, 0), 0 ) : Vec_IntEntry(vIntBuff, 0);
+        if (nid == -1) continue;
+        if (Gia_ObjColors( pMan->pGia, nid ) == 2) continue;
+        // printf("%d: %d\n", nid, Vec_IntEntry(vIntBuff, 0));
+        int_buff = Vec_IntEntry(vIntBuff, ftype + 2);
+        int_buff2 = Vec_IntEntry(vIntBuff, ftype_togFI + 2);
+        // int_buff2 = int_buff < 0 ? -1 : (Vec_IntEntry(vIntBuff, ftype_togFI + 2) < 0) ? -1 : Vec_IntEntry(vIntBuff, ftype_togFI + 2) + 
+        Vec_IntWriteEntry( pMan->vLevel1, nid, int_buff );
+        Vec_IntWriteEntry( vIntSum, nid, int_buff < 0 ? -1 : int_buff2 < 0 ? -1 : int_buff2 + int_buff );
+    }
+    if (fNorm) {
+        Vec_IntForEachEntryTwo( pMan->vLevel1, vIntSum, int_buff, int_buff2, i ) {
+            if (int_buff == -1 || int_buff2 == -1) continue;
+            Vec_IntWriteEntry( pMan->vLevel1, i, (maxval * int_buff) / int_buff2 );
+            // printf("%d, %d\n", i, (maxval * int_buff) / int_buff2);
+        }
+    }
+    if (fFI) { 
+        Vec_IntInversePosVal( pMan->vLevel1 );
+    }
+    // Vec_IntForEachEntry( pMan->vLevel1, int_buff, i ) {
+    //     if (int_buff != -1) continue;
+
+    // }
+    Vec_IntReplace( pMan->vLevel1, -1, Vec_IntFindMax( pMan->vLevel1 ) + 1 );
+    Vec_IntFree( vIntSum );
+    Vec_WecFree( vDistAnsysBuff );
+
+    vIntBuff = Vec_IntStart( 1 );
+    Vec_IntWriteEntry( vIntBuff, 0, Gia_ObjId(pGia, fAbs ? pMan->pObjAbs2 : pMan->pObj2) );
+    vDistAnsysBuff = Cec_ManDistAnalyze( pGia, 0, 0, vIntBuff, dist_long, dist_short );
+    Vec_IntFree( vIntBuff );
+    vIntSum = Vec_IntStart( Vec_IntSize(pMan->vLevel2) );
+    Vec_IntFill( vIntSum, Vec_IntSize(pMan->vLevel2), -1);
+    Vec_WecForEachLevel( vDistAnsysBuff, vIntBuff, i ) {
+        // Vec_IntPrint( vIntBuff );
+        if (i == Vec_WecSize(vDistAnsysBuff) - 1) continue; // skip the last level
+        nid = fAbs ? Cec_ManFdMapIdSingle( pMan, Vec_IntEntry(vIntBuff, 0), 0 ) : Vec_IntEntry(vIntBuff, 0);
+        if (nid == -1) continue;
+        if (Gia_ObjColors( pMan->pGia, nid ) == 1) continue;
+        // printf("%d: %d\n", nid, Vec_IntEntry(vIntBuff, 0));
+        Vec_IntWriteEntry( pMan->vLevel2, nid, Vec_IntEntry(vIntBuff, ftype + 2) );
+        Vec_IntWriteEntry( vIntSum, nid, Vec_IntEntry(vIntBuff, ftype_togFI + 2) + Vec_IntEntry(vIntBuff, ftype + 2) );
+    }
+    if (fNorm) {
+        Vec_IntForEachEntryTwo( pMan->vLevel2, vIntSum, int_buff, int_buff2, i ) {
+            if (int_buff == -1 || int_buff2 == -1) continue;
+            Vec_IntWriteEntry( pMan->vLevel2, i, (maxval * int_buff) / int_buff2 );
+        }
+    } 
+    if (fFI) {
+        Vec_IntInversePosVal( pMan->vLevel2 );
+    }
+    Vec_IntReplace( pMan->vLevel2, -1, Vec_IntFindMax( pMan->vLevel2 ) + 1 );
+    Vec_WecFree( vDistAnsysBuff );
+    
+}
+
+RawCost_Part() {
+    else if (fElseCost == CEC_FD_ANDNUM) {
+        Gia_ManForEachObj1( pGia, pObjbuf, i ) {
+            nid = fAbs ? Cec_ManFdMapIdSingle( pMan, Gia_ObjId(pGia, pObjbuf), 0 ) : Gia_ObjId(pGia, pObjbuf);
+            Vec_IntWriteEntry( pMan->vLevel, nid, Vec_PtrSize(Cec_ManSubcircuit(pGia, pObjbuf, 0, 0)));
+            // nid1 = (Gia_ObjIsAnd(pObjbuf) || Gia_ObjIsCo(pObjbuf)) ? 
+            //     (fAbs ? Cec_ManFdMapIdSingle( pMan, Gia_ObjId(pGia, Gia_ObjFanin0(pObjbuf)), 0 ) : Gia_ObjId(pGia, Gia_ObjFanin0(pObjbuf))) : -1;
+            // nid2 = (Gia_ObjIsAnd(pObjbuf)) ? 
+            //     (fAbs ? Cec_ManFdMapIdSingle( pMan, Gia_ObjId(pGia, Gia_ObjFanin1(pObjbuf)), 0 ) : Gia_ObjId(pGia, Gia_ObjFanin1(pObjbuf))) : -1;
+            // assert(Vec_IntEntry(pMan->vLevel, nid1) != -1 && Vec_IntEntry(pMan->vLevel, nid2) != -1);
+            // if ( Gia_ObjIsCi(pObjbuf) ) Vec_IntWriteEntry( pMan->vLevel, nid, 1 );
+            // else if ( Gia_ObjIsCo(pObjbuf) ) Vec_IntWriteEntry( pMan->vLevel, nid, Vec_IntEntry(pMan->vLevel, nid1) );
+            // else Vec_IntWriteEntry( pMan->vLevel, nid, 
+            //     Vec_IntEntry(pMan->vLevel, nid1) + Vec_IntEntry(pMan->vLevel, nid2) );
+        }
+    } else if (fElseCost == CEC_FD_DUMMY) {
+        Gia_ManForEachObj1( pGia, pObjbuf, i ) {
+            nid = fAbs ? Cec_ManFdMapIdSingle( pMan, Gia_ObjId(pGia, pObjbuf), 0 ) : Gia_ObjId(pGia, pObjbuf);
+            Vec_IntWriteEntry( pMan->vLevel, nid, 0 );
+        }
+    }
+    // case CEC_FD_COSTLEVEL:
+        //     // // if (Cec_ManFdGetLevelType(pMan, 1)) vWecBuff = Cec_ManDistAnalyze( patchEval, 0, 0, 0, 0, Cec_ManDist( patchEval, 0 ) );
+        //     // // else vWecBuff = Cec_ManDistAnalyze( patchEval, 0, 0, 0, 0, Cec_ManDist( patchEval, 0 ) );
+        //     // if (Cec_ManFdGetLevelType(pMan, 1)) {
+        //     //     dist_lib = Cec_ManDist( patchEval, 0 );
+        //     //     dist_lib_org = pMan->dist_short;
+        //     // }
+        //     // else {
+        //     //     dist_lib = Cec_ManDist( patchEval, 1 );
+        //     //     dist_lib_org = pMan->dist_long;
+        //     // }
+        //     // // printf("%d\n", nid);
+        //     // if (Cec_ManFdGetLevelType(pMan, 2)) { // PI as level plane
+        //     //     // Problemetic
+        //     //     dist = -1.0;
+        //     //     Vec_IntForEachEntry( vFdSupportEval, val, i ) {
+        //     //         dist_out = Vec_IntEntry( pMan->vLevel, 1 ) - Vec_IntEntry( pMan->vLevel, val );
+        //     //         dist_in = dist_lib[Gia_ManCoDriverId(patchEval,0)][Gia_ManCiIdToId(patchEval, i)];
+        //     //         if (dist_in == -1) continue;
+        //     //         // printf("  %d: out %d, in %d\n", val, dist_out, dist_in);
+        //     //         if (dist < 0) dist = 1.0 * (dist_in + dist_out);
+        //     //         else {
+        //     //             if (Cec_ManFdGetLevelType(pMan, 3)) { // min
+        //     //                 dist = Abc_MinFloat( dist, 1.0 * (dist_in + dist_out) ); 
+        //     //             } else { // max
+        //     //                 dist = Abc_MaxFloat( dist, 1.0 * (dist_in + dist_out) );
+        //     //             }
+        //     //         }
+        //     //     }
+        //     // } else { // PO as level plane
+        //     //     dist = -1.0;
+        //     //     dist_out = Vec_IntEntry( pMan->vLevel, nid );
+        //     //     Vec_IntForEachEntry( vFdSupportEval, val, i ) {
+        //     //         dist_in = dist_lib[Gia_ManCoDriverId(patchEval,0)][Gia_ManCiIdToId(patchEval, i)];
+        //     //         if (dist_in == -1) continue;
+        //     //         dist_in_org = dist_lib_org[nid][val];
+        //     //         // printf("  %d: out %d, in %d, in_org %d\n", val, dist_out, dist_in, dist_in_org);
+        //     //         if (dist < 0) dist = 1.0 * (dist_in + dist_out);
+        //     //         else {
+        //     //             if (Cec_ManFdGetLevelType(pMan, 3)) { // min
+        //     //                 dist = Abc_MinInt( dist, 1.0 * (dist_in + dist_out) ); // only consider self cone
+        //     //                 // if (dist_in_org == -1 || dist_out + dist_in_org != Vec_IntEntry( pMan->vLevel, val )) dist = Abc_MinInt( dist, Vec_IntEntry( pMan->vLevel, val ) );
+        //     //             } else { // max
+        //     //                 dist = Abc_MaxInt( dist, 1.0 * (dist_in + dist_out) ); // only consider self cone
+        //     //                 // if (dist_in_org == -1 || dist_out + dist_in_org != Vec_IntEntry( pMan->vLevel, val )) dist = Abc_MaxInt( dist, Vec_IntEntry( pMan->vLevel, val ) );
+        //     //             }
+        //     //         }
+        //     //     }
+        //     // }
+        //     // for (i = 0; i < Gia_ManObjNum(patchEval); i++) 
+        //     //     ABC_FREE( dist_lib[i] );
+        //     // ABC_FREE( dist_lib );
+        //     // return dist;
+
+        //     break;
+}
+int Cec_ManFdRawLevel( Cec_ManFd_t* pMan, int nid, Vec_Int_t* vFdSupport, Gia_Man_t* patch ) {
+    int level_type = pMan->pPars->levelType;
+    int fElseCost = level_type >> CEC_FD_BITELSE;
+    int fAbs = level_type & (1 << CEC_FD_BITABS);
+    // int fallMin = level_type & (1 << CEC_FD_BITALLMM);
+    int fshortdict = level_type & (1 << CEC_FD_LEVELBITPATH);
+    int fFI = level_type & (1 << CEC_FD_LEVELBITFIO);
+    int fndMin = level_type & (1 << CEC_FD_LEVELBITNDMM);
+    int ftype = (fshortdict ? 4 : 0) + (fFI ? 2 : 0) + (fndMin ? 1 : 0);
+    Gia_Man_t *pGia = fAbs ? pMan->pAbs : pMan->pGia;
+    int** dist_long = fAbs ? pMan->dist_long_abs : pMan->dist_long;
+    int** dist_short = fAbs ? pMan->dist_short_abs : pMan->dist_short;
+    int cost = 0;
+    if (fElseCost == 0) {
+        return -1; // ????
+    } else if (fElseCost == CEC_FD_ANDNUM) {
+        return Gia_ManObjNum( patch );
+    } else if (fElseCost == CEC_FD_DUMMY) {
+        return 0;
+    }
+    return cost;
+}
+// Int2_Man_t
+Gia_Man_t * Int2_ManFdSimp( Gia_Man_t * p, int nConflicts ) {
+    // extern void Sat_SolverClauseWriteDimacs( FILE * pFile, clause * pC, int fIncrement );
+    Sat_Mem_t * pSatMem;
+    clause* c;
+    sat_solver2 * pSat, *pSat2;
+    Gia_Man_t * pInter;
+    Gia_Obj_t * pObj_gia;
+    Aig_Man_t * pMan;
+    Vec_Int_t * vGVars, *vFs;
+    Cnf_Dat_t * pCnf;
+    Aig_Obj_t * pObj;
+    int varF, Lit, Cid, Var, status, const_1, debug = 0;
+    int nid, i, j, k;
+    abctime clk = Abc_Clock();
+    assert( Gia_ManRegNum(p) == 0 );
+
+    // derive CNFs
+    vGVars = Vec_IntAlloc( Gia_ManCoNum(p) );
+    Gia_ManForEachCo( p, pObj_gia, nid ) {
+        if (nid != Gia_ManCoNum(p) - 1) Vec_IntPush( vGVars, Gia_ObjId(p, pObj_gia) );
+        else varF = Gia_ObjId(p, pObj_gia); // the last one is the output variable
+    }
+
+    pMan = Gia_ManToAigSimple( p );
+    pCnf = Cnf_Derive( pMan, Gia_ManCoNum(p) );
+
+    Vec_IntForEachEntry( vGVars, nid, i ) {
+        Vec_IntWriteEntry( vGVars, i, Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(p, nid)))); // the last one is the output variable
+    }
+    varF = Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(p, varF)));
+
+    pSat = sat_solver2_new();
+    pSat->verbosity = debug;
+
+    // org: sat_solver2_setnvars( pSat, 2*pCnf->nVars + 1 );
+    sat_solver2_setnvars( pSat, 2*pCnf->nVars + 1 + Vec_IntSize(vGVars) );
+    if (pSat->verbosity) {
+        printf("SAT solver nVars = %d\n", pCnf->nVars);
+        printf("AIG has %d nodes\n", Aig_ManObjNum(pMan));
+        printf("node in ckt ref (G):");
+        Vec_IntPrint( vGVars );
+        printf("var F = %d\n", varF);
+    }
+
+    // set A-variables (all used except PI/PO, which will be global variables)
+    Aig_ManForEachObj( pMan, pObj, i ) {
+        if (pSat->verbosity) printf("AIG to CNF: %d, %d\n", pObj->Id, pCnf->pVarNums[pObj->Id]);
+        if ( pCnf->pVarNums[pObj->Id] >= 0 && !Aig_ObjIsCo(pObj) ) {
+            var_set_partA( pSat, pCnf->pVarNums[pObj->Id], 1 ); // use pCnf->pVarNums[pObj->Id] to get var of circuit nd
+        }
+    }
+    
+    Vec_IntForEachEntry( vGVars, nid, i ) {
+        pObj = (Aig_Obj_t*) Vec_PtrGetEntry(pMan->vObjs, nid);
+        assert( pCnf->pVarNums[pObj->Id] >= 0 );
+        Vec_IntWriteEntry( vGVars, i, pCnf->pVarNums[pObj->Id] );
+    }
+    
+    pObj = (Aig_Obj_t*) Vec_PtrGetEntry(pMan->vObjs, varF);
+    assert( pCnf->pVarNums[pObj->Id] >= 0 );
+    varF =  pCnf->pVarNums[pObj->Id];
+    var_set_partA( pSat, pCnf->pVarNums[pObj->Id], 1 );
+
+    // add clauses of A
+    for ( i = 0; i < pCnf->nClauses; i++ )
+    {
+        Cid = sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+        clause2_set_partA( pSat, Cid, 1 ); // this API should be called for each clause of A
+    }
+    
+    // add clauses of B (after shifting all CNF variables by pCnf->nVars)
+    Cnf_DataLift( pCnf, pCnf->nVars );
+    for ( i = 0; i < pCnf->nClauses; i++ )
+        sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+    Cnf_DataLift( pCnf, -pCnf->nVars );
+
+    // add PI equality clauses
+    Vec_IntForEachEntry( vGVars, Var, i ) {
+        // org: sat_solver2_add_buffer( pSat, Var, pCnf->nVars + Var, 0, 0, -1 );
+        lit Lits[3];
+        int Cid;
+
+        Lits[0] = toLitCond( Var, 0 );
+        Lits[1] = toLitCond( pCnf->nVars + Var, 1 );
+        Lits[2] = toLitCond( 2*pCnf->nVars + 1 + i, 0 ); // new var for equivalence
+        Cid = sat_solver2_addclause( pSat, Lits, Lits + 3, -1 );
+
+        Lits[0] = toLitCond( Var, 1 );
+        Lits[1] = toLitCond( pCnf->nVars + Var, 0 );
+        Lits[2] = toLitCond( 2*pCnf->nVars + 1 + i, 0 );
+        Cid = sat_solver2_addclause( pSat, Lits, Lits + 3, -1 );
+
+    }
+    // printf("7\n");
+
+    pSatMem = &pSat->Mem;
+    // Aig_ManForEachObj( pMan, pObj, i ) { 
+    //     if ( pCnf->pVarNums[pObj->Id] >= 0 ) {
+    //         printf("%d: %d\n", pCnf->pVarNums[pObj->Id], var_is_partA( pSat, pCnf->pVarNums[pObj->Id])  ); // use pCnf->pVarNums[pObj->Id] to get var of circuit nd
+    //     }
+    // }
+    // Sat_MemForEachClause2( pSatMem, c, k, j ) {
+    //     for (i = 0; i < c->size; i++)
+    //     {
+    //         printf("%c%d ", Abc_LitIsCompl(c->lits[i]) ? '-' : ' ', Abc_Lit2Var(c->lits[i]));
+    //     }
+    //     printf("\n");
+    //     printf("clauseA = %d, clauseLearn = %d, mark = %d\n", c->partA, c->lrn, c->mark);
+    // }
+    // Aig_ManForEachObj( pMan, pObj, i ) {
+    //     // printf("%d, %d\n", pObj->Id, pCnf->pVarNums[pObj->Id]);
+    //     if ( pCnf->pVarNums[pObj->Id] >= 0 ) {
+    //         printf("%d: %d\n", pCnf->pVarNums[pObj->Id], var_is_partA( pSat, pCnf->pVarNums[pObj->Id])  ); // use pCnf->pVarNums[pObj->Id] to get var of circuit nd
+    //         // printf("-->%d\n", pObj->Id);
+    //     }
+    // }
+        
+    if (pSat->verbosity) Sat_Solver2WriteDimacs( pSat, "patch.dimac", 0, 0, 0 ); // bound equiv vars
+
+    if (debug) {
+        vFs = Vec_IntAlloc(3);
+        Vec_IntPush( vFs, 240 );
+        Vec_IntPush( vFs, 6 );
+        Vec_IntPush( vFs, 1273 );
+        sat_solver2_addclause( pSat, Vec_IntArray(vFs), Vec_IntLimit(vFs), -1 );
+    }
+    pSat->pInt2 = Int2_ManStart( pSat, Vec_IntArray(vGVars), Vec_IntSize(vGVars) );
+    // printf("8\n");
+
+    // solve the problem
+
+    // org: vFs = Vec_IntAlloc(2);
+    vFs = Vec_IntAlloc(2+Vec_IntSize(vGVars));
+    for (int i = 0; i < Vec_IntSize(vGVars); i++) {
+        Vec_IntPush( vFs, toLitCond(2*pCnf->nVars + 1 + i, 1) ); // set all equiv vars to 0
+    }
+    Vec_IntPush( vFs, toLitCond(varF, 0) );
+    Vec_IntPush( vFs, toLitCond(varF + pCnf->nVars, 1) );
+
+    status = sat_solver2_solve( pSat, Vec_IntArray(vFs), Vec_IntLimit(vFs), nConflicts, 0, 0, 0 );
+
+    if (pSat->verbosity) Sat_Solver2WriteDimacs( pSat, "learnt.dimac", 0, 0, 0 );
+
+    printf("status = %d\n", status);
+    if ( status == l_False ) {
+        if (pSat->pInt2)
+            pInter = (Gia_Man_t *)Int2_ManReadInterpolant( pSat );
+        else {
+            Gia_SelfDefShow( p, "problemetic.dot", 0, 0, NULL );
+            pInter = -1;
+        }
+    }
+
+    // clean up
+    Vec_IntFree( vGVars );
+    Cnf_DataFree( pCnf );
+    Aig_ManStop( pMan );
+    sat_solver2_delete( pSat );
+    if ( status == l_False ) {
+        return pInter;
+    } else if ( status == l_Undef ) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+sat_solver2 * Int2_ManSolver( Gia_Man_t *p, Vec_Int_t *vVarMap ) {
+    clause* c;
+    sat_solver2 * pSat;
+    Gia_Obj_t * pObj_gia;
+    Aig_Man_t * pMan;
+    Cnf_Dat_t * pCnf;
+    Aig_Obj_t * pObj;
+    int Lit, Cid, Var, status, const_1, debug = 0;
+    int nid, i, j, k;
+    assert( Gia_ManRegNum(p) == 0 );
+    assert( vVarMap == NULL || Vec_IntSize(vVarMap) == Gia_ManObjNum(p) );
+    // derive CNFs
+    pMan = Gia_ManToAigSimple( p );
+    pCnf = Cnf_Derive( pMan, Gia_ManCoNum(p) );
+    pSat = sat_solver2_new();
+    sat_solver2_setnvars( pSat, 3*pCnf->nVars + 1 );
+    
+    Aig_ManForEachObj( pMan, pObj, i ) {
+        assert( Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(p, pObj->Id))) == pObj->Id );
+        if ( vVarMap) Vec_IntWriteEntry( vVarMap, pObj->Id, pCnf->pVarNums[pObj->Id] );
+        if ( pCnf->pVarNums[pObj->Id] >= 0 ) { // Possibly faulty
+            var_set_partA( pSat, pCnf->pVarNums[pObj->Id], 1 ); // use pCnf->pVarNums[pObj->Id] to get var of circuit nd
+        }
+    }
+    
+    for ( i = 0; i < pCnf->nClauses; i++ )
+    {
+        Cid = sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+        clause2_set_partA( pSat, Cid, 1 ); // this API should be called for each clause of A
+    }
+
+    Cnf_DataLift( pCnf, pCnf->nVars );
+    for ( i = 0; i < pCnf->nClauses; i++ )
+        sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+    Cnf_DataLift( pCnf, -pCnf->nVars );
+
+    for ( i = 0; i < pCnf->nVars; i++ )
+        sat_solver2_add_controlBuffer( pSat, i, pCnf->nVars + i, 2 * pCnf->nVars + i, 0, 0, -1 );
+    // Sat_Solver2WriteDimacs( pSat, "patch_new.dimac", 0, 0, 0 ); // bound equiv vars
+
+    Cnf_DataFree( pCnf );
+    Aig_ManStop( pMan );
+    return pSat;
+}
+Gia_Man_t * Int2_ManFd( sat_solver2 * pSat, Vec_Int_t* vG, int varF, int nConflicts, int fVerbose ) {
+    Gia_Man_t * pInter;
+    Vec_Int_t* assumptions;
+    assert( pSat->size % 3 == 1 );
+    int nVars = (pSat->size - 1) / 3;
+    int i, var, status;
+    assumptions = Vec_IntAlloc( 2 + Vec_IntSize(vG) ); // or all var should be set
+    Vec_IntForEachEntry( vG, var, i ) {
+        assert(var_is_partA( pSat, var ) == 1);
+        var_set_partA( pSat, var, 0 );
+        Vec_IntPush( assumptions, toLitCond( 2 * nVars + var, 1 ) ); // all G should be 0
+        // Vec_IntWriteEntry( vG, i, 2 * nVars + var );
+    }
+    // printf("pre:\n");
+    // Sat_Solver2WriteDimacs( pSat, "patch.dimac", 0, 0, 0 );
+    Vec_IntPush( assumptions, toLitCond( varF, 0 ) );
+    Vec_IntPush( assumptions, toLitCond( varF + nVars, 1 ) ); // F should be 1
+    pSat->pInt2 = Int2_ManStart( pSat, Vec_IntArray(vG), Vec_IntSize(vG) );
+    status = sat_solver2_solve( pSat, Vec_IntArray(assumptions), Vec_IntLimit(assumptions), nConflicts, 0, 0, 0 );
+    Vec_IntForEachEntry( vG, var, i ) {
+        var_set_partA( pSat, var, 1 );
+    }
+    // Sat_Solver2KeepLearnt( pSat );
+
+    Vec_IntFree( assumptions );
+    if ( status == l_False ) {
+        if (pSat->pInt2) {
+            printf("labeling...\n");
+            pInter = (Gia_Man_t*) Int2_ManReadInterpolant( pSat );
+        } else {
+            printf("problemetic!\n");
+            // Gia_SelfDefShow( pSat->pInt2->pGia, "problemetic.dot", 0, 0, NULL );
+            pInter = -1;
+        }
+    }
+    if ( status == l_False ) {
+        return pInter;
+    } else if ( status == l_Undef ) {
+        return -1;
+    } else {
+        // int * Sat_Solver2GetModel( sat_solver2 * p, int * pVars, int nVars )
+        return 0;
+    }
+}
+sat_solver2 * Int2_ManSolver_noctrl( Gia_Man_t *p, Vec_Int_t *vVarMap ) {
+    clause* c;
+    sat_solver2 * pSat;
+    Gia_Obj_t * pObj_gia;
+    Aig_Man_t * pMan;
+    Cnf_Dat_t * pCnf;
+    Aig_Obj_t * pObj;
+    int Lit, Cid, Var, status, const_1, debug = 0;
+    int nid, i, j, k;
+    assert( Gia_ManRegNum(p) == 0 );
+    assert( vVarMap == NULL || Vec_IntSize(vVarMap) == Gia_ManObjNum(p) );
+    // derive CNFs
+    pMan = Gia_ManToAigSimple( p );
+    pCnf = Cnf_Derive( pMan, Gia_ManCoNum(p) );
+    pSat = sat_solver2_new();
+    sat_solver2_setnvars( pSat, 2*pCnf->nVars + 1 );  
+    Aig_ManForEachObj( pMan, pObj, i ) {
+        assert( Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(p, pObj->Id))) == pObj->Id );
+        if ( vVarMap) Vec_IntWriteEntry( vVarMap, pObj->Id, pCnf->pVarNums[pObj->Id] );
+        if ( pCnf->pVarNums[pObj->Id] >= 0 ) { // Possibly faulty
+            var_set_partA( pSat, pCnf->pVarNums[pObj->Id], 1 ); // use pCnf->pVarNums[pObj->Id] to get var of circuit nd
+        }
+    }
+    
+    for ( i = 0; i < pCnf->nClauses; i++ )
+    {
+        Cid = sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+        clause2_set_partA( pSat, Cid, 1 ); // this API should be called for each clause of A
+    }
+
+    Cnf_DataLift( pCnf, pCnf->nVars );
+    for ( i = 0; i < pCnf->nClauses; i++ )
+        sat_solver2_addclause( pSat, pCnf->pClauses[i], pCnf->pClauses[i+1], -1 );
+    Cnf_DataLift( pCnf, -pCnf->nVars );
+
+    // for ( i = 0; i < pCnf->nVars; i++ )
+    //     sat_solver2_add_controlBuffer( pSat, i, pCnf->nVars + i, 2 * pCnf->nVars + i, 0, 0, -1 );
+    // Sat_Solver2WriteDimacs( pSat, "patch_new.dimac", 0, 0, 0 ); // bound equiv vars
+
+    Cnf_DataFree( pCnf );
+    Aig_ManStop( pMan );
+    return pSat;
+    
+}
+Gia_Man_t * Int2_ManFd_noctrl( sat_solver2 * pSat, Vec_Int_t* vG, int varF, int nConflicts, int fVerbose ) {
+    Gia_Man_t * pInter;
+    Vec_Int_t* assumptions;
+    assert( pSat->size % 2 == 1 );
+    int nVars = (pSat->size - 1) / 2;
+    int i, var, status;
+    assumptions = Vec_IntAlloc( 2 ); // or all var should be set
+    
+    Vec_IntForEachEntry( vG, var, i ) {
+        assert(var_is_partA( pSat, var ) == 1);
+        var_set_partA( pSat, var, 0 );
+        sat_solver2_add_buffer( pSat, var, nVars + var, 0, 0, -1 );
+    }
+    // printf("pre:\n");
+    // Sat_Solver2WriteDimacs( pSat, "patch.dimac", 0, 0, 0 );
+    Vec_IntPush( assumptions, toLitCond( varF, 0 ) );
+    Vec_IntPush( assumptions, toLitCond( varF + nVars, 1 ) ); // F should be 1
+    pSat->pInt2 = Int2_ManStart( pSat, Vec_IntArray(vG), Vec_IntSize(vG) );
+    status = sat_solver2_solve( pSat, Vec_IntArray(assumptions), Vec_IntLimit(assumptions), nConflicts, 0, 0, 0 );
+    Vec_IntForEachEntry( vG, var, i ) {
+        var_set_partA( pSat, var, 1 );
+    }
+    // Sat_Solver2KeepLearnt( pSat );
+
+    Vec_IntFree( assumptions );
+    if ( status == l_False ) {
+        if (pSat->pInt2) {
+            printf("labeling...\n");
+            pInter = (Gia_Man_t*) Int2_ManReadInterpolant( pSat );
+        } else {
+            printf("problemetic!\n");
+            // Gia_SelfDefShow( pSat->pInt2->pGia, "problemetic.dot", 0, 0, NULL );
+            pInter = -1;
+        }
+    }
+    if ( status == l_False ) {
+        return pInter;
+    } else if ( status == l_Undef ) {
+        return -1;
+    } else {
+        // int * Sat_Solver2GetModel( sat_solver2 * p, int * pVars, int nVars )
+        return 0;
+    }
+}
+
+// Cec_ManAff_t
+Cec_ManAff_t * Cec_ManAffStart() {
+    extern int Gia_FileSize( char * pFileName );
+
+    FILE* File;
+    int state, entry, i_buffer, int_buff;
+    int nFileSize;
+    char *content, *buffer;
+    int nVar = 4;
+    int buffer_size = 6;
+    int TTsize = 1 << nVar;
+    // int nNPclass = 400;
+    // int nAFFClass = 30;
+    Cec_ManAff_t * p;
+    Vec_Bit_t *vb_buff;
+
+    p = ABC_ALLOC( Cec_ManAff_t, 1 );
+    p->nVar = nVar;
+    // p->nClass = nClass;
+    // p->matrix = Vec_IntStart( 1 << TTsize ); // TT -> matrix
+    // p->matrix_inv = Vec_IntStart( 1 << TTsize ); // matrix -> inverse
+    // p->bias = Vec_BitStart( 4*(1 << TTsize) ); // TT -> bias
+    p->TT_info = Vec_IntStart( 1 << TTsize ); // TT -> (np_class, A_id to piv, b to piv)
+    p->piv_Aid = Vec_WecAlloc( 1 ); // piv -> A_id
+    p->ops = Vec_PtrAlloc(1); // matrix -> Gause
+    // --------------------------------------------------------------
+    // p->ops
+    nFileSize = Gia_FileSize( "/home/jhl/LSV/LSV-PA/affine_lib/affine_mat_ops.txt" );
+    content = ABC_ALLOC( char, nFileSize );
+    File = fopen("/home/jhl/LSV/LSV-PA/affine_lib/affine_mat_ops.txt", "r");
+    fread( content, nFileSize, 1, File );
+    // printf("update ops\n");
+    state = 0;
+    entry = 0;
+    for (int i = 0; i < nFileSize; i++) {
+        if (state == 0) {
+            if (content[i] != ':') continue;
+            else {
+              vb_buff = Vec_BitAlloc( 1 );
+              Vec_PtrPush( p->ops, vb_buff );
+              // Vec_PtrWriteEntry( p->ops, entry, vb_buff );
+              // Vec_IntWriteEntry( p->matrix_inv, entry, 0 );
+              state = 1;
+            }
+        }
+        else if (state == 1) { // state == 1
+            if (content[i] == ' ') {
+              continue;
+            } else if (content[i] == '\n') {
+              entry += 1;
+              state = 0;
+            } else {
+              // if (Vec_PtrGetEntry( p->ops, entry ) == NULL) {
+              //   vb_buff = Vec_BitAlloc( 1 );
+              //   Vec_PtrWriteEntry( p->ops, entry, vb_buff );
+              // }
+              Vec_BitPush( vb_buff, content[i] - '0' );
+            }
+            // if (content[i] == '/') {
+            //   state = 2;
+            //   num_buffer = 0;
+            // } else if...
+        }
+        // else if (state == 2) {
+        //     if (content[i] == '\n') {
+        //       buffer[num_buffer] = '\0';
+        //       Vec_IntWriteEntry( p->matrix_inv, entry, atoi(buffer) );
+        //       state = 0;
+        //       entry += 1;
+        //     } else {
+        //       buffer[num_buffer] = content[i];
+        //       num_buffer += 1;
+        //     }
+        // }
+        else assert(0);
+    }
+    ABC_FREE( content );
+    fclose(File);
+
+    // ------------------------------------------------------------- 
+    // p->piv_Aid
+    nFileSize = Gia_FileSize( "/home/jhl/LSV/LSV-PA/affine_lib/affine_TT_map.txt" );
+    content = ABC_ALLOC( char, nFileSize );
+    File = fopen("/home/jhl/LSV/LSV-PA/affine_lib/affine_TT_map.txt", "r");
+    fread( content, nFileSize, 1, File );
+    // printf("update piv_Aid\n");
+    buffer = ABC_ALLOC( char, buffer_size );
+    int_buff = 0;
+    i_buffer = 0;
+    entry = 0;
+    for (int i = 0; i < nFileSize; i++) {
+        if (content[i] == '\n') {
+          Vec_WecPushLevel( p->piv_Aid ); // p->piv_Aid
+          entry += 1;
+        } else if (content[i] == ',') {
+          Vec_WecPush( p->piv_Aid, entry, int_buff );
+          int_buff = 0;
+          i_buffer = 0;
+        } else if (content[i] == '-') {
+          int_buff = ~0;
+        } else if (content[i] == 'c') {
+          buffer[i_buffer] = '\0';
+          assert(buffer[0] != '\0');
+          int_buff += atoi(buffer);
+          int_buff <<= 16;
+          i_buffer = 0;
+        } else if (content[i] == 'A') {
+          buffer[i_buffer] = '\0';
+          assert(buffer[0] != '\0');
+          int_buff += atoi(buffer);
+          int_buff <<= 4;
+          i_buffer = 0;
+        } else if (content[i] == 'b') {
+          buffer[i_buffer] = '\0';
+          assert(buffer[0] != '\0');
+          int_buff += atoi(buffer);
+          i_buffer = 0;
+        } else {
+          buffer[i_buffer] = content[i];
+          i_buffer += 1;
+          assert( i_buffer < buffer_size );
+        }
+    }
+    ABC_FREE( content );
+    ABC_FREE( buffer );
+    fclose(File);
+
+    // -------------------------------------------------------------
+    // p->TT_info
+    nFileSize = Gia_FileSize( "/home/jhl/LSV/LSV-PA/affine_lib/np_TT_map.txt" );
+    content = ABC_ALLOC( char, nFileSize );
+    File = fopen("/home/jhl/LSV/LSV-PA/affine_lib/np_TT_map.txt", "r");
+    fread( content, nFileSize, 1, File );
+    // printf("update TT_info\n");
+    buffer = ABC_ALLOC( char, buffer_size );
+    i_buffer = 0;
+    int_buff = 0;
+    state = 0;
+    entry = 0;
+    for (int i = 0; i < nFileSize; i++) {
+        if (state == 0) {
+            if (content[i] == ':') {
+              buffer[i_buffer] = '\0';
+              entry = atoi(buffer);
+              i_buffer = 0;
+              state = 1;
+            } else {
+              buffer[i_buffer] = content[i];
+              i_buffer += 1;
+              assert( i_buffer < 6 );
+            }
+        } else if (state == 1) {
+            if (content[i] == '\n') {
+              buffer[i_buffer] = '\0';
+              int_buff += atoi(buffer); // Add in b
+              Vec_IntWriteEntry( p->TT_info, entry, int_buff );
+              int_buff = 0;
+              i_buffer = 0;
+              state = 0;
+            } else if (content[i] == 'A') {
+              buffer[i_buffer] = '\0';
+              int_buff += atoi(buffer); // Add in class id
+              int_buff <<= 16;
+              i_buffer = 0;
+            } else if (content[i] == 'b') {
+              buffer[i_buffer] = '\0';
+              int_buff += atoi(buffer); // Add in A
+              int_buff <<= 4;
+              i_buffer = 0;
+            } else {
+              buffer[i_buffer] = content[i];
+              i_buffer += 1;
+              assert( i_buffer < 6 );
+            }
+        }
+    }
+    Vec_IntWriteEntry( p->TT_info, 0, ~0 );
+    Vec_IntWriteEntry( p->TT_info, (1 << TTsize) - 1, ~0 );
+    ABC_FREE( content );
+    ABC_FREE( buffer );
+    fclose(File);
+
+    // test code
+    // Vec_PtrForEachEntry( Vec_Bit_t *, p->ops, vb_buff, entry ) {
+    //     if (vb_buff == NULL) {
+    //       // printf("%d\n", entry);
+    //       continue;
+    //     }
+    //     int i;
+    //     printf("%d: ", entry);
+    //     Vec_BitForEachEntry( vb_buff, i_buffer, i ) {
+    //       printf("%d", i_buffer);
+    //     }
+    //     printf("\n");
+    //     // printf("%d:%d\n", entry, Vec_BitSize(vb_buff));
+    // }
+    // Vec_IntPrint( p->TT_info );
+    // Vec_WecPrint( p->piv_Aid, 0 );
+
+
+    
+    // printf("Aff init finish\n");
+    return p;
+}
+
+void Cec_ManAffStop( Cec_ManAff_t * p ) {
+
+    Vec_PtrFree( p->ops );
+    Vec_IntFree( p->TT_info );
+    Vec_WecFree( p->piv_Aid );
+    ABC_FREE( p );
+    printf("Aff stop\n");
+}
+
+int Cec_ManAffCheckAff( Cec_ManAff_t * pAff, Gia_Man_t * pGia, int lit1, int lit2, Vec_Int_t* vLeaves1, Vec_Int_t* vLeaves2 ) {
+    int fVerbose = 0;
+    Gia_Obj_t * pObj1;
+    Gia_Obj_t * pObj2;
+    word* pTruth_buf;
+    int tt1, tt2, class1, class2, A_trans, b_trans;
+    int flag, buf, dummy;
+    pObj1 = Gia_ManObj( pGia, Abc_Lit2Var(lit1) );
+    pObj2 = Gia_ManObj( pGia, Abc_Lit2Var(lit2) );
+    pTruth_buf = Gia_ObjComputeTruthTableCut( pGia, pObj1, vLeaves1);
+    tt1 = *pTruth_buf;
+    if (Abc_LitIsCompl(lit1)) tt1 = ~tt1;
+    tt1 &= 0xFFFF;
+    pTruth_buf = Gia_ObjComputeTruthTableCut( pGia, pObj2, vLeaves2);
+    tt2 = *pTruth_buf;
+    if (Abc_LitIsCompl(lit2)) tt2 = ~tt2;
+    tt2 &= 0xFFFF;
+
+    if (fVerbose) {
+        printf("tt1 : %d, tt2 : %d\n", Cec_ManAfftoSig(tt1), Cec_ManAfftoSig(tt2));
+    }
+
+    buf = Cec_ManAffTTInfo( pAff, tt1 );
+    class1 = Cec_ManAfftoClassId(buf);
+    buf = Cec_ManAffTTInfo( pAff, tt2 );
+    class2 = Cec_ManAfftoClassId(buf);
+    buf = Cec_ManAffClassTrans(pAff, class1, class2);
+    if (buf == ~0) return ~0;
+    else return Cec_ManAfftoAcost(buf);
+
+}
+void Cec_ManAffRefine_step( Gia_Man_t * p, Vec_Int_t* vLeaves, int opt_type, int id_ref, int id_mod ) {
+    assert(opt_type >= 0 && opt_type <= 2);
+    int buf;
+    // Gia_Obj_t *ndbuf, *xor;
+    if (opt_type == 0) {
+      // swap
+        buf = Vec_IntEntry( vLeaves, id_ref );
+        Vec_IntWriteEntry( vLeaves, id_ref, Vec_IntEntry( vLeaves, id_mod ) );
+        Vec_IntWriteEntry( vLeaves, id_mod, buf );
+    }
+    else if (opt_type == 1) {
+      // xor
+        buf = Gia_ManAppendXor( p, Vec_IntEntry( vLeaves, id_ref ), Vec_IntEntry( vLeaves, id_mod ) );
+        // printf("%d\n", buf);
+        Vec_IntWriteEntry( vLeaves, id_mod, buf );
+    }
+    else if (opt_type == 2) {
+      // not
+        Vec_IntWriteEntry( vLeaves, id_mod, Abc_LitNot( Vec_IntEntry( vLeaves, id_mod ) ) );
+    }
+}
+void Cec_ManAffRefine( Cec_ManAff_t * pAff, Gia_Man_t* pGia, Vec_Int_t* vLeaves, int A, int b, int fReverse ) {
+    // printf("%d, %d\n", A, b);
+    // Vec_IntPrint( vLeaves );
+    Vec_Bit_t* vBitBuf;
+    int opt_type, id_ref, id_mod;
+    int state, entry;
+    vBitBuf = Cec_ManAffOps( pAff, A );
+    if (fReverse) {
+        id_mod = 0;
+        while (b > 0) {
+            if (b & 1) Cec_ManAffRefine_step( pGia, vLeaves, 2, id_mod, id_mod );
+            b >>= 1;
+            id_mod += 1;
+        }
+
+        opt_type = 0;
+        id_ref = 0;
+        id_mod = 0;
+        assert( Vec_BitSize( vBitBuf ) % 5 == 0 );
+        Vec_BitForEachEntryReverse( vBitBuf, entry, state ) {
+          // printf("%d %d\n", entry, state);
+          if (state % 5 == 0) opt_type = entry;
+          else if (state % 5 == 1) id_ref += (entry << 1);
+          else if (state % 5 == 2) id_ref += entry;
+          else if (state % 5 == 3) id_mod += (entry << 1);
+          else id_mod += entry;
+          
+          if (state % 5 == 0) {
+            // assert(id_ref != id_mod);
+            Cec_ManAffRefine_step( pGia, vLeaves, opt_type, id_ref, id_mod );
+            opt_type = 0;
+            id_ref = 0;
+            id_mod = 0;
+          }
+        }
+        // printf("\n");
+
+    } else {
+        opt_type = 0;
+        id_ref = 0;
+        id_mod = 0;
+        assert( Vec_BitSize( vBitBuf ) % 5 == 0 );
+        Vec_BitForEachEntry( vBitBuf, entry, state ) {
+          if (state % 5 == 0) opt_type = entry;
+          else if (state % 5 == 1) id_ref += (entry << 1);
+          else if (state % 5 == 2) id_ref += entry;
+          else if (state % 5 == 3) id_mod += (entry << 1);
+          else id_mod += entry;
+          
+          if (state % 5 == 4) {
+            // assert(id_ref != id_mod);
+            Cec_ManAffRefine_step( pGia, vLeaves, opt_type, id_ref, id_mod );
+            opt_type = 0;
+            id_ref = 0;
+            id_mod = 0;
+          }
+        }
+
+        id_mod = 0;
+        while (b > 0) {
+            // printf("%d %d\n", id_mod, b & 1);
+            if (b & 1) Cec_ManAffRefine_step( pGia, vLeaves, 2, id_mod, id_mod );
+            b >>= 1;
+            id_mod += 1;
+        }
+    }
+}
+// TODO: change pObj1 and pObj2 to literal
+Gia_Man_t* Cec_ManAffReplace( Cec_ManAff_t * pAff, Gia_Man_t * pGia, int lit1, int lit2, Vec_Int_t* vLeaves1, Vec_Int_t* vLeaves2, Vec_Int_t* vFrt ) {
+    // Gia_WriteDotAigSimple( pGia, "test_signal_Before.dot", NULL );
+    extern void Gia_WriteDotAigSimple(Gia_Man_t *p, char *pFileName, Vec_Int_t *vBold);
+    
+    Gia_Obj_t *pObj1, *pObj2;
+    Gia_Man_t *pNew;
+    Gia_Obj_t *pObj;
+    word* pTruth_buf;
+    Vec_Ptr_t *coneNd1, *coneNd2, *coneNdbuff;
+    Vec_Int_t *vPatch = Vec_IntAlloc(4);
+    Vec_Int_t *valFrtBuff = Vec_IntAlloc(4);
+    Vec_Int_t *valNdbuff = Vec_IntAlloc( 100 );
+    Vec_Int_t *vPI = Vec_IntStart( 100 );
+    Gia_Obj_t *nd, *nd_buff;
+    int tt1, tt2, class1, class2, A_piv1, A_piv2, A_trans, b_piv1, b_piv2, b_trans, cost_trans;
+    int buf, dummy, dummy2, entry1, entry2, entry;
+    
+    pObj1 = Gia_ManObj( pGia, Abc_Lit2Var(lit1) );
+    pObj2 = Gia_ManObj( pGia, Abc_Lit2Var(lit2) );
+    pTruth_buf = Gia_ObjComputeTruthTableCut( pGia, pObj1, vLeaves1);
+    tt1 = *pTruth_buf;
+    if (Abc_LitIsCompl(lit1)) tt1 = ~tt1;
+    tt1 &= 0xFFFF;
+    printf("tt1: %d\n", tt1);
+    pTruth_buf = Gia_ObjComputeTruthTableCut( pGia, pObj2, vLeaves2);
+    tt2 = *pTruth_buf;
+    if (Abc_LitIsCompl(lit2)) tt2 = ~tt2;
+    tt2 &= 0xFFFF;
+    printf("tt2: %d\n", tt2);
+    buf = Cec_ManAffTTInfo( pAff, tt1 );
+    class1 = Cec_ManAfftoClassId(buf);
+    A_piv1 = Cec_ManAfftoAId(buf);
+    b_piv1 = Cec_ManAfftoB(buf);
+    buf = Cec_ManAffTTInfo( pAff, tt2 );
+    class2 = Cec_ManAfftoClassId(buf);
+    A_piv2 = Cec_ManAfftoAId(buf);
+    b_piv2 = Cec_ManAfftoB(buf);
+    buf = Cec_ManAffClassTrans(pAff, class1, class2);
+    assert(buf != ~0);
+    A_trans = Cec_ManAfftoAId(buf);
+    b_trans = Cec_ManAfftoB(buf);
+    cost_trans = Cec_ManAfftoAcost(buf);
+    // printf("cost: %d\n", cost_trans);
+    coneNd1 = Cec_ManSubcircuit( pGia, pObj1, vLeaves1, 1 );
+    coneNd2 = Cec_ManSubcircuit( pGia, pObj2, vLeaves2, 1 );
+    // printf("coneNd1 size: %d\n", Vec_PtrSize(coneNd1));
+    // printf("coneNd2 size: %d\n", Vec_PtrSize(coneNd2));
+
+    // setting
+    pNew = Gia_ManStart( Gia_ManObjNum(pGia) + Vec_PtrSize(coneNd1) + 3 * cost_trans + 4 + 1 );
+    pNew->pName = Abc_UtilStrsav( pGia->pName );
+    pNew->pSpec = Abc_UtilStrsav( pGia->pSpec );
+    Gia_ManFillValue( pGia );
+    Gia_ManConst0( pGia )->Value = 0;
+    Gia_ManForEachCi( pGia, pObj, dummy ) {
+        pObj->Value = Gia_ManAppendCi( pNew );
+        Vec_IntPush( vPI, Gia_ObjId(pGia, pObj) );
+    }
+    for ( dummy = 0; dummy < 4; dummy++) {
+        Vec_IntPush( vPatch, 0 );
+    }
+
+    // dup TFI of nodes on vLeaves2
+    Vec_IntForEachEntry( vLeaves2, entry2, dummy ) {
+        coneNdbuff = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, entry2), vPI, 0 );
+        assert(coneNdbuff->pArray);
+        if (Vec_PtrSize(coneNdbuff) == 0) {
+            assert(Gia_ObjIsCi(Gia_ManObj(pGia, entry2)));
+            pObj = Gia_ManObj(pGia, entry2); // mod
+        } else {
+            // printf("%d\n", Gia_ObjIsAnd(Gia_ManObj(pGia, entry2)));
+            // printf("%d %d\n", entry2, Vec_PtrSize(coneNdbuff));
+            Vec_PtrForEachEntry( Gia_Obj_t *, coneNdbuff, pObj, dummy2 ) {
+                // printf("%d\n", Gia_ObjId(pGia, pObj));
+                if ( Gia_ObjIsXor(pObj) )
+                    pObj->Value = Gia_ManAppendXor( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                else if (Gia_ObjIsAnd(pObj)) {
+                    // printf("%d %d/%d %d\n", Gia_ObjId(pGia, Gia_ObjFanin0(pObj)), Gia_ObjId(pGia, Gia_ObjFanin1(pObj)),  Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj));
+                    pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                    // Gia_WriteDotAigSimple( pNew, "test_signal_refine.dot", NULL );
+                    // printf("%d\n", pObj->Value);
+                }
+                    // pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                else {
+                    printf("%d %d\n", Gia_ObjIsBuf(pObj), Gia_ObjIsCi(pObj));
+                    assert(0);
+                }
+            }
+        }
+        // Vec_IntPrint( vPatch );
+        Vec_IntWriteEntry( vPatch, dummy, pObj->Value );
+        // Vec_IntPrint( vPatch );
+        Vec_PtrFree( coneNdbuff );
+    }
+    // Vec_IntPrint( vFrt );
+    // printf("done vPatch\n");
+    Vec_IntForEachEntry( vFrt, entry, dummy ) {
+        entry = Abc_Lit2Var(entry);
+        // printf("%d\n", entry);
+        // printf("%d\n", Gia_ManObj(pGia, entry2)->fMark0);
+        coneNdbuff = Cec_ManSubcircuit( pGia, Gia_ManObj(pGia, entry), vPI, 0 );
+        assert(coneNdbuff->pArray);
+        if (Vec_PtrSize(coneNdbuff) == 0) {
+            assert(Gia_ManObj(pGia, entry)->Value != ~0);
+            // assert(Gia_ObjIsCi(Gia_ManObj(pGia, entry)));
+            // pObj = Gia_ManObj(pGia, entry);
+        } else {
+            // printf("%d\n", Gia_ObjIsAnd(Gia_ManObj(pGia, entry2)));
+            // printf("%d %d\n", entry2, Vec_PtrSize(coneNdbuff));
+            Vec_PtrForEachEntry( Gia_Obj_t *, coneNdbuff, pObj, dummy2 ) {
+                assert( pObj->Value == ~0 );
+                if ( Gia_ObjIsXor(pObj) )
+                    pObj->Value = Gia_ManAppendXor( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                else if (Gia_ObjIsAnd(pObj)) {
+                    // printf("%d %d/%d %d\n", Gia_ObjId(pGia, Gia_ObjFanin0(pObj)), Gia_ObjId(pGia, Gia_ObjFanin1(pObj)),  Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj));
+                    pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                    // Gia_WriteDotAigSimple( pNew, "test_signal_refine.dot", NULL );
+                    // printf("%d\n", pObj->Value);
+                }
+                    // pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+                else {
+                    printf("%d %d\n", Gia_ObjIsBuf(pObj), Gia_ObjIsCi(pObj));
+                    assert(0);
+                }
+            }
+        }
+        // Vec_IntPrint( vPatch );
+        Vec_PtrFree( coneNdbuff );
+    }
+    // Gia_WriteDotAigSimple( pNew, "test_signal_TFIleave2.dot", NULL );
+    // printf("stop 1\n");
+    // Vec_IntPrint( vPatch );
+    Cec_ManAffRefine( pAff, pNew, vPatch, A_piv2, b_piv2, 1 );
+    // Vec_IntPrint( vPatch );
+    Cec_ManAffRefine( pAff, pNew, vPatch, A_trans, b_trans, 0 );
+    // Vec_IntPrint( vPatch );
+    Cec_ManAffRefine( pAff, pNew, vPatch, A_piv1, b_piv1, 0 );
+    // Vec_IntPrint( vPatch );
+    printf("%d %d %d %d %d %d\n", A_piv1, A_piv2, A_trans, b_piv1, b_piv2, b_trans);
+    // Gia_WriteDotAigSimple( pNew, "test_signal_AddAff.dot", NULL );
+
+    // dup cut1 ckt on cut2
+    Vec_IntForEachEntry( vLeaves1, entry1, dummy ) {
+        Vec_IntPush( valFrtBuff, Gia_ManObj( pGia, entry1 )->Value );
+        Gia_ManObj( pGia, entry1 )->Value = Vec_IntGetEntry( vPatch, dummy );
+    }
+    // Vec_IntPrint( valFrtBuff );
+    Vec_PtrForEachEntry( Gia_Obj_t *, coneNd1, pObj, dummy ) {
+        Vec_IntPush(valNdbuff, pObj->Value);
+        if ( Gia_ObjIsXor(pObj) )
+            pObj->Value = Gia_ManAppendXor( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+        else
+            pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+    }
+    // Vec_IntPrint( valNdbuff );
+    pObj2->Value = pObj->Value; // warn: ‘pObj’ may be used uninitialized in this function
+    // Vec_IntPrint( vPatch );
+    Vec_IntForEachEntry( vPatch, entry2, dummy ) {
+        if (dummy < Vec_IntSize(vLeaves2)) {
+            // assert(entry2 != 0 || Vec_IntGetEntry( vLeaves2, dummy ) == 0); // is it ok to set as 0?
+            Gia_ManObj( pGia, Vec_IntGetEntry( vLeaves2, dummy ) )->Value = entry2;
+        }
+    }
+    // Vec_IntPrint( vPatch );
+
+    Vec_IntForEachEntry( vLeaves1, entry1, dummy ) {
+      // if (Gia_ObjIsCi(Gia_ManObj( pGia, entry1 ))) continue;
+        Gia_ManObj( pGia, entry1 )->Value = Vec_IntEntry( valFrtBuff, dummy );
+    }
+    Vec_PtrForEachEntry( Gia_Obj_t *, coneNd1, pObj, dummy ) {
+        pObj->Value = Vec_IntEntry( valNdbuff, dummy );
+        // pObj->Value = ~0;
+    }
+
+    // Gia_WriteDotAigSimple( pNew, "test_signal_addPatch.dot", NULL );
+    
+    // printf("stop 3\n");
+    // coneNdbuff = Cec_ManAffSubcircuit( pGia, Gia_ManCo(pGia, 1), vPI, 0 );
+    coneNdbuff = Cec_ManSubcircuit( pGia, Gia_ManCo(pGia, 0), vPI, 0 );
+    Vec_PtrForEachEntry( Gia_Obj_t *, coneNdbuff, pObj, dummy ) {
+        if ( Gia_ObjIsXor(pObj) )
+            pObj->Value = Gia_ManAppendXor( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+        else
+            pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+    }
+    // printf("%d\n", Vec_PtrSize(coneNdbuff));
+    // printf("%d, %d\n", pObj->Value, pObj1->Value); // pObj1->Value == -1
+    if (Vec_PtrSize(coneNdbuff) != 0) 
+        Gia_ManAppendCo( pNew, Abc_LitNotCond( pObj->Value, 0 ) );
+    else
+        Gia_ManAppendCo( pNew, Abc_LitNotCond( pObj1->Value, 0 ) );
+    // Gia_ManAppendCo( pNew, Abc_LitNotCond( pObj->Value, 0 ) );
+    Vec_PtrFree( coneNdbuff );
+    // Gia_WriteDotAigSimple( pNew, "test_signal_addCone2.dot", NULL );
+    // printf("stop 4\n");
+
+    // coneNdbuff = Cec_ManAffSubcircuit( pGia, Gia_ManCo(pGia, 0), vPI, 0 );
+    coneNdbuff = Cec_ManSubcircuit( pGia, Gia_ManCo(pGia, 1), vPI, 0 );
+    // printf("%d\n", Vec_PtrSize(coneNdbuff));
+    Vec_PtrForEachEntry( Gia_Obj_t *, coneNdbuff, pObj, dummy ) {
+        if ( Gia_ObjIsXor(pObj) )
+            pObj->Value = Gia_ManAppendXor( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+        else
+            pObj->Value = Gia_ManAppendAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+        // printf("%d %d\n", Gia_ObjId(pGia, pObj), pObj->Value);
+    }
+    // printf("%d\n", Vec_PtrSize(coneNdbuff));
+    // printf("%d, %d\n", pObj->Value, pObj2->Value);
+    if (Vec_PtrSize(coneNdbuff) != 0) 
+        Gia_ManAppendCo( pNew, Abc_LitNotCond( pObj->Value, 0 ) );
+    else
+        Gia_ManAppendCo( pNew, Abc_LitNotCond( pObj2->Value, 0 ) );
+    Vec_PtrFree( coneNdbuff );
+
+    // Gia_WriteDotAigSimple( pNew, "test_signal_done.dot", NULL );
+    
+    // Gia_ManForEachAnd( pGia, pObj, dummy ){
+    //     printf("%d:%d\n", Gia_ObjId(pGia, pObj), pObj->Value);
+    // }
+    
+    Vec_IntForEachEntryTwo( vLeaves1, vLeaves2, entry1, entry2, dummy ) {
+        // printf("%d %d\n", entry1, entry2);
+        assert( Gia_ManObj( pGia, entry2 )->Value != ~0 && Gia_ManObj( pGia, entry1 )->Value != ~0 );
+        // Vec_IntWriteEntry( vLeaves1, dummy, Gia_ManObj( pGia, entry2 )->Value );
+        // Vec_IntWriteEntry( vLeaves2, dummy, Gia_ManObj( pGia, entry1 )->Value );
+        Vec_IntWriteEntry( vLeaves1, dummy, Gia_ManObj( pGia, entry1 )->Value );
+        Vec_IntWriteEntry( vLeaves2, dummy, Gia_ManObj( pGia, entry2 )->Value );
+    }
+
+    // Vec_IntPrint( vLeaves1 );
+    // Vec_IntPrint( vLeaves2 );
+    // Vec_IntPrint( vPatch );
+    // Vec_PtrFree( coneNdbuff );
+    Vec_PtrFree( coneNd1 );
+    Vec_PtrFree( coneNd2 );
+    // Gia_WriteDotAigSimple( pNew, "test_signal_done.dot", NULL );
+    return pNew;
+}
+static inline int           Cec_ManAffTTInfo( Cec_ManAff_t * p, int Truth ) { return Vec_IntGetEntry(p->TT_info, Truth); }
+static inline int           Cec_ManAffClassTrans( Cec_ManAff_t * p, int class_id1, int class_id2 ) {  assert(class_id1 < Vec_WecSize(p->piv_Aid)); assert(class_id2 < Vec_WecSize(p->piv_Aid)); return Vec_WecEntryEntry(p->piv_Aid, class_id1, class_id2); }
+static inline Vec_Bit_t*    Cec_ManAffOps( Cec_ManAff_t * p, int i ) { assert( i < Vec_PtrSize(p->ops) ); return Vec_PtrEntry( p->ops, i ); }
+static inline int           Cec_ManAfftoClassId( int i ) { return i >> 20; }
+static inline int           Cec_ManAfftoAcost( int i ) { return i >> 20; }
+static inline int           Cec_ManAfftoAId( int i ) { return (i >> 4) & 0xFFFF; }
+static inline int           Cec_ManAfftoB( int i ) { return i & 0xF; }
+
+static inline Vec_Bit_t*    Cec_ManAfftoBarr( int i ) {
+  // return array = [b[0], b[1], b[2], b[3]]
+  Vec_Bit_t * p = Vec_BitAlloc(4);
+  int buf = i;
+  for (int j = 0; j < 4; j++) {
+    Vec_BitPush( p, buf & 0x1 );
+    buf >>= 1;
+  }
+  return p;
+}
+static inline int           Cec_ManAfftoSig( int tt ) {
+    assert(tt <= 0xFFFF);
+    int entry, w, dot_buf, cnt_bit, walsh_buf, tt_buf;
+    int cnt_onset = 0;
+    // int walsh_sig[16] = {0};
+    int walsh_sig = 0;
+    // printf("tt = %d\n", tt);
+    for (w = 0; w < 16; w++) {
+      tt_buf = tt;
+      walsh_buf = 0;
+      for (entry = 0; entry < 16; entry++ ) {
+        cnt_bit = 0;
+        dot_buf = w & entry;
+        while (dot_buf) {
+          if (dot_buf & 0x1) cnt_bit += 1;
+          dot_buf >>= 1;
+        }
+        cnt_bit += (tt_buf & 0x1);
+        if (cnt_bit & 0x1) {
+          if (w == 0) cnt_onset++;
+          walsh_buf -= 1;
+        }
+        else walsh_buf += 1;
+        tt_buf >>= 1;
+      }
+      // printf("%d ",walsh_buf);
+      if (walsh_buf < 0) walsh_buf = -walsh_buf;
+      // if (walsh_buf == 0) walsh_buf = 0;
+      // if (walsh_buf == 16) walsh_buf = 15; 
+      if (walsh_buf > 2) walsh_sig++;
+      // walsh_sig[w] = walsh_buf;
+    }
+    // printf("\n");
+    // printf("%d\n", (walsh_sig << 4) + cnt_onset);
+    if (cnt_onset == 16) cnt_onset = 0; // let constant 0 and 1 be same class
+    if (walsh_sig == 16) walsh_sig = 15;
+    return (walsh_sig << 4) + cnt_onset;
+}
+static inline int           Cec_ManAffGetVal( int tt, int fi ) { assert(fi < 16); return (tt >> fi) & 0x1; }
+static inline int           Cec_ManAffTTSwapId( int tt, int nid1, int nid2 ) { 
+  assert(nid1 < 4); assert(nid2 < 4);
+  int buf = 0;
+  int perm_id;
+  int swap_v = (nid1 + 1) * (nid2 + 1);
+  const int perm[6][16] = {
+    {0, 2, 1, 3, 4, 6, 5, 7, 8, 10, 9, 11, 12, 14, 13, 15}, // 0,1
+    {0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15}, // 0,2
+    {0, 8, 2, 10, 4, 12, 6, 14, 1, 9, 3, 11, 5, 13, 7, 15}, // 0,3
+    {0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15}, // 1,2
+    {0, 1, 8, 9, 4, 5, 12, 13, 2, 3, 10, 11, 6, 7, 14, 15}, // 1,3
+    {0, 1, 2, 3, 8, 9, 10, 11, 4, 5, 6, 7, 12, 13, 14, 15}  // 2,3
+  };
+  if (nid1 == nid2) return tt;
+  else if (swap_v == 2) perm_id = 0;
+  else if (swap_v == 3) perm_id = 1;
+  else if (swap_v == 4) perm_id = 2;
+  else if (swap_v == 6) perm_id = 3;
+  else if (swap_v == 8) perm_id = 4;
+  else if (swap_v == 12) perm_id = 5;
+  else assert(0);
+
+  for (int i = 15; i >= 0; i--) {
+    buf <<= 1;
+    buf += Cec_ManAffGetVal(tt, perm[perm_id][i]);
+  }
+  return buf;
+}
+static inline int           Cec_ManAffTTReform( int tt, int n ) { 
+    if (n == 2) {
+      tt &= 0xF;
+      tt = (tt % 2) + ((tt / 2) % 2) * 16 + ((tt / 4) % 2) * 256 + ((tt / 8) % 2) * 4096;
+      tt *= 0xE;
+    } else if (n == 3) {
+      tt &= 0xFF;
+      tt = (tt % 2) + ((tt / 2) % 2) * 4 + ((tt / 4) % 2) * 16 + ((tt / 8) % 2) * 64 + ((tt / 16) % 2) * 256 + 
+              ((tt / 32) % 2) * 1024 + ((tt / 64) % 2) * 4096 + ((tt / 128) % 2) * 16384;
+      tt *= 0x3;
+    }
+    return tt & 0xFFFF;
+}
+
+
+// other
+void Gia_ManSubcircuit_rec( Gia_Man_t * p, Gia_Obj_t * pObj, Vec_Ptr_t * vNodes, int fSetVal ) {   
+    // printf("%d\n", vNodes);
+    Gia_Obj_t* pNd; int dummy;
+    if ( Gia_ObjIsTravIdCurrent(p, pObj) ) return;
+    Gia_ObjSetTravIdCurrent(p, pObj);
+    // if (vNodes->pArray == NULL) return;
+    if ( fSetVal >= 0 && pObj->Value != ~0 ) return;
+    if ( fSetVal != 0 ) {
+        pObj->Value += Abc_AbsInt(fSetVal);
+    }
+
+    if ( pObj->fMark0 ) return;
+    
+    if ( Gia_ObjIsAnd(pObj) ) {
+        Gia_ManSubcircuit_rec( p, Gia_ObjFanin0(pObj), vNodes, fSetVal );
+        Gia_ManSubcircuit_rec( p, Gia_ObjFanin1(pObj), vNodes, fSetVal );
+        // printf("%d\n", vNodes);
+        if (vNodes != NULL) Vec_PtrPush( vNodes, pObj );
+        if (Gia_ObjFanin0(pObj)->fMark1 || Gia_ObjFanin1(pObj)->fMark1) pObj->fMark1 = 1;
+    }
+    else if ( Gia_ObjIsCo(pObj) ) {
+        Gia_ManSubcircuit_rec( p, Gia_ObjFanin0(pObj), vNodes, fSetVal );
+        if (vNodes != NULL) Vec_PtrPush( vNodes, pObj );
+        if (Gia_ObjFanin0(pObj)->fMark1) pObj->fMark1 = 1;
+    }
+    else if ( Gia_ObjIsCi(pObj) ) {
+        printf("Value: %d\n", pObj->Value);
+        assert( 0 );
+    } else {
+        assert(0);
+    }
+}
+
+Vec_Ptr_t* Cec_ManSubcircuit( Gia_Man_t * p, Gia_Obj_t * pObj, Vec_Int_t * vLeaveId, Vec_Int_t * vCheckTFO, int fSetVal, int fGetNodes ) {
+    // printf("in subcircuit\n");
+    int i, entry;
+    Gia_Obj_t* pObjbuf;
+    Vec_Ptr_t* vNodes = fGetNodes ? Vec_PtrAlloc( 100 ) : NULL;
+    // printf("%d\n", vNodes->pArray);
+    Gia_ManIncrementTravId( p );
+    Gia_ObjSetTravIdCurrent( p, Gia_ManConst0(p) );
+    
+    if (vLeaveId) {
+        Vec_IntForEachEntry( vLeaveId, entry, i ) {
+            Gia_ManObj( p, entry )->fMark0 = 1;
+        }
+    }
+    if (vCheckTFO) {
+        Vec_IntForEachEntry( vCheckTFO, entry, i ) {
+            Gia_ManObj( p, entry )->fMark1 = 1;
+        }
+    }
+    Gia_ManForEachCi( p, pObjbuf, i ) {
+        pObjbuf->fMark0 = 1;
+    }
+    
+    Gia_ManSubcircuit_rec( p, pObj, vNodes, fSetVal );
+    if (vLeaveId) {
+        Vec_IntForEachEntry( vLeaveId, entry, i ) {
+            Gia_ManObj( p, entry )->fMark0 = 0;
+        }
+    }
+    if (vCheckTFO && fSetVal != 0) {
+        
+    }
+    Gia_ManForEachCi( p, pObjbuf, i ) {
+        pObjbuf->fMark0 = 0;
+    }
+    
+    // printf("%d\n", vNodes->pArray);
+    return vNodes;
+
+}
+Vec_Int_t* Cec_ManCost( Gia_Man_t* pGia, Vec_Int_t* targets, int ftype, int fReverse ) {
+    int** dist_long, **dist_short;
+    int maxval, int_buff, i;
+    Vec_Int_t *vPIBuff, *vPOBuff, *vNdBuff, *vCost;
+    Vec_Int_t *vIntBuff;
+    Vec_Wec_t *vDistAnsysBuff;
+    Gia_Obj_t *pObjbuf;
+    if (targets != NULL) vNdBuff = Vec_IntDup( targets );
+    else {
+        vNdBuff = Vec_IntAlloc( 1 );
+        Gia_ManForEachObj( pGia, pObjbuf, i )
+            Vec_IntPush( vNdBuff, Gia_ObjId(pGia, pObjbuf) );
+        
+    }
+    vPIBuff = Cec_ManGetFIO( pGia, vNdBuff, 0 );
+    vPOBuff = Cec_ManGetFIO( pGia, vNdBuff, 1 );
+    // printf(".\n");
+    dist_long = Cec_ManDist( pGia, 1 );
+    dist_short = Cec_ManDist( pGia, 0 ); 
+    vDistAnsysBuff = Cec_ManDistAnalyze( pGia, vNdBuff, vPIBuff, vPOBuff, dist_long, dist_short );
+    // printf("..\n");
+    vCost = Vec_IntStart( Gia_ManObjNum(pGia) );
+
+    if (ftype < 8) {
+        Vec_WecForEachLevel( vDistAnsysBuff, vIntBuff, i ) {
+            Vec_IntPrint( vIntBuff );
+            if (i == Vec_WecSize(vDistAnsysBuff) - 1) continue; // skip the last level
+            Vec_IntWriteEntry( vCost, Vec_IntEntry(vIntBuff, 0), Vec_IntEntry(vIntBuff, ftype + 2) );
+        }
+        printf(".\n");
+    } else if (ftype == 8) {
+        Vec_IntForEachEntry( vCost, int_buff, i ) {
+            pObjbuf = Gia_ManObj(pGia, i);
+            if ( Gia_ObjIsCi(pObjbuf) ) Vec_IntWriteEntry( vCost, i, 1 );
+            else if ( Gia_ObjIsCo(pObjbuf) ) Vec_IntWriteEntry( vCost, i, Vec_IntEntry(vCost, Gia_ObjId(pGia, Gia_ObjFanin0(pObjbuf))) );
+            else Vec_IntWriteEntry( vCost, i, 
+                Vec_IntEntry(vCost, Gia_ObjId(pGia, Gia_ObjFanin0(pObjbuf))) + Vec_IntEntry(vCost, Gia_ObjId(pGia, Gia_ObjFanin1(pObjbuf))) );
+        }
+    }
+    
+    if (fReverse) {
+        maxval = -1;
+        Vec_IntForEachEntry( vCost, int_buff, i ) {
+            if (int_buff < 0) continue;
+            else maxval = Abc_MaxInt(maxval, int_buff);
+        }
+        if (maxval > 0) {
+            Vec_IntForEachEntry( vCost, int_buff, i ) {
+                if (int_buff < 0) continue;
+                else Vec_IntWriteEntry( vCost, i, maxval - int_buff );
+            }
+        } 
+    }
+    return vCost;
+}
+static inline Vec_Int_t*    Cec_ManMapInv( Vec_Int_t* vMap ) {
+  Vec_Int_t* vInv = Vec_IntStart( Vec_IntSize(vMap) );
+  Vec_IntFill( vInv, Vec_IntSize(vMap), -1 );
+  int nid, i;
+  int val = 0;
+  Vec_IntForEachEntry( vMap, nid, i ) {
+    if (nid < 0) continue;
+    if (nid >= Vec_IntSize(vInv)) Vec_IntFillExtra( vInv, nid + 1, -1 );
+    Vec_IntWriteEntry( vInv, nid, i );
+    if (val < nid) val = nid;
+  }
+  Vec_IntShrink( vInv, val + 1 );
+  return vInv;
+}

@@ -18,11 +18,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **************************************************************************************************/
 
-#include "sat/bsat2/Sort.h"
-#include "sat/bsat2/SimpSolver.h"
-#include "sat/bsat2/System.h"
-
-ABC_NAMESPACE_IMPL_START
+#include "Sort.h"
+#include "SimpSolver.h"
+#include "System.h"
 
 using namespace Minisat;
 
@@ -230,12 +228,10 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, vec<Lit>& ou
         if (var(qs[i]) != v){
             for (j = 0; j < ps.size(); j++)
                 if (var(ps[j]) == var(qs[i]))
-                {
                     if (ps[j] == ~qs[i])
                         return false;
                     else
                         goto next;
-                }
             out_clause.push(qs[i]);
         }
         next:;
@@ -266,12 +262,10 @@ bool SimpSolver::merge(const Clause& _ps, const Clause& _qs, Var v, int& size)
         if (var(__qs[i]) != v){
             for (int j = 0; j < ps.size(); j++)
                 if (var(__ps[j]) == var(__qs[i]))
-                {
                     if (__ps[j] == ~__qs[i])
                         return false;
                     else
                         goto next;
-                }
             size++;
         }
         next:;
@@ -724,5 +718,3 @@ void SimpSolver::garbageCollect()
                ca.size()*ClauseAllocator::Unit_Size, to.size()*ClauseAllocator::Unit_Size);
     to.moveTo(ca);
 }
-
-ABC_NAMESPACE_IMPL_END

@@ -75,6 +75,66 @@ struct Cec_ParSim_t_
     int              fVerbose;      // verbose stats
 };
 
+#define CEC_FD_LEVELBITNDMM 0
+#define CEC_FD_LEVELBITFIO 1
+#define CEC_FD_LEVELBITPATH 2
+#define CEC_FD_LEVELBITNORM 3
+
+#define CEC_FD_COSTDUMMY 0
+#define CEC_FD_COSTANDNUM 1
+#define CEC_FD_COSTFIXANDNUM 2
+#define CEC_FD_COSTHIERANDNUM 3
+#define CEC_FD_COSTMFFC 4
+// #define CEC_FD_COSTAPPROXANDNUM 5
+#define CEC_FD_COSTTWOPATHOLD 6
+#define CEC_FD_COSTTWOPATHRMS 12
+#define CEC_FD_COSTTWOPATHMAX 13
+#define CEC_FD_COSTTWOPATHMIN 15
+#define CEC_FD_COSTHEIGHT 7
+// #define CEC_FD_COSTLEVEL 8
+#define CEC_FD_COSTCINUM 9
+#define CEC_FD_COSTSUPRMS 10
+#define CEC_FD_COSTSUPMAX 11
+#define CEC_FD_COSTSUPMIN 14
+
+#define CEC_FD_GSUB 0
+#define CEC_FD_GUPPER 1
+#define CEC_FD_GABS 2
+#define CEC_FD_GALLUPPER 3
+#define CEC_FD_GALL 4
+#define CEC_FD_GLOWER 5
+#define CEC_FD_GALLLOWER 6
+#define CEC_FD_GINITLOWER 7
+// #define CEC_FD_GSUBLOWER 8
+typedef struct Cec_ParFd_t_ Cec_ParFd_t;
+struct Cec_ParFd_t_
+{
+    int             nBTLimit;      // conflict limit at a node
+    int             fPickType;     // keep some node in Gsupport first before shrink
+    // int             fKeepType;
+    // int             fUseAll;         // check whether F has support subset the support of Gs
+    // int             fUseFrt;        // use merge frontier as Gsupport
+    int             fVerbose;       // verbose stats
+    int             fGetCkts;       // To get the circuits
+    int             fAbsItp;        // use pAbs to compute interpolation
+    int             GType;          // the candidates of G
+    int             levelType;      // how to set the levels
+    int             costType;       // the cost function
+    int             fAbs;           // use pAbs to compute cost and levels
+    int             fLocalShrink;   // shrink base on the Gsupport set, or the pAbs (pGia)
+    int             fTrim;          // do trim on patch
+    int             fSyn;           // do synthesis on circuit
+    int             fInc;           // use incremental sat solver
+    float           coefPatch;      // the ratio for limit size of patch
+    FILE*           pMerge;         // the file to print output
+};
+static inline void Cec_ParFdSetLevelType( Cec_ParFd_t* pPars, int fShort, int fFI, int fNdMin, int fNorm) {
+    pPars->levelType = (fShort << CEC_FD_LEVELBITPATH) 
+                        + (fFI << CEC_FD_LEVELBITFIO) 
+                        + (fNdMin << CEC_FD_LEVELBITNDMM)
+                        + (fNorm << CEC_FD_LEVELBITNORM);
+}
+
 // semiformal parameters
 typedef struct Cec_ParSmf_t_ Cec_ParSmf_t;
 struct Cec_ParSmf_t_
@@ -120,9 +180,7 @@ struct Cec_ParFra_t_
     int              fVeryVerbose;  // verbose stats
     int              fVerbose;      // verbose stats
     int              iOutFail;      // the failed output
-    int              fBMiterInfo;   // printing BMiter information
-    int              nPO;           // number of po in original design given a bmiter
-    char *           pDumpName;     // file name to dump statistics
+    int              fRetainData;    // the failed output
 };
 
 // combinational equivalence checking parameters
@@ -135,14 +193,12 @@ struct Cec_ParCec_t_
     int              fUseSmartCnf;  // use smart CNF computation
     int              fRewriting;    // enables AIG rewriting
     int              fNaive;        // performs naive SAT-based checking
-    int              fUseOrigIds;   // enable recording of original IDs 
     int              fSilent;       // print no messages
     int              fVeryVerbose;  // verbose stats
     int              fVerbose;      // verbose stats
     int              iOutFail;      // the number of failed output
-    const char *     pNameSpec;     // name of the first (spec) network
-    const char *     pNameImpl;     // name of the second (impl) network
-    Vec_Ptr_t *      vNamesIn;      // input names of the first network
+    int              fUseAffine;    // the number of failed output
+    // char*            taskName;      // the name of the output
 };
 
 // sequential register correspodence parameters
@@ -205,27 +261,6 @@ struct Cec_ParSeq_t_
     int              fVerbose;      // verbose stats
 };
 
-// CEC SimGen parameters
-typedef struct Cec_ParSimGen_t_ Cec_ParSimGen_t;
-struct Cec_ParSimGen_t_
-{
-    int              fVerbose;          // verbose flag
-    int              fVeryVerbose;      // verbose flag
-    int              expId;             // experiment ID for SimGen
-    int              bitwidthOutgold;   // bitwidth of the output gold
-    int              nSimWords;       // number of words in a round of random simulation
-    int              nMaxIter;          // maximum number of rounds of random simulation
-    char *           outGold;           // data containing outgold
-    float            timeOutSim;        // timeout for simulation
-    int              fUseWatchlist;     // use watchlist
-    float            fImplicationTime;  // time spent in implication
-    int              nImplicationExecution; // number of times implication was executed
-    int              nImplicationSuccess; // number of times implication was successful
-    int              nImplicationTotalChecks; // number of times implication was checked
-    int              nImplicationSuccessChecks; // number of times implication was successful
-    char *           pFileName;         // file name to dump simulation vectors
-};
-
 ////////////////////////////////////////////////////////////////////////
 ///                      MACRO DEFINITIONS                           ///
 ////////////////////////////////////////////////////////////////////////
@@ -239,6 +274,9 @@ extern int           Cec_ManVerify( Gia_Man_t * p, Cec_ParCec_t * pPars );
 extern int           Cec_ManVerifyTwo( Gia_Man_t * p0, Gia_Man_t * p1, int fVerbose );
 extern int           Cec_ManVerifyTwoInv( Gia_Man_t * p0, Gia_Man_t * p1, int fVerbose );
 extern int           Cec_ManVerifySimple( Gia_Man_t * p );
+extern int           Cec_ManVerifyWithAffine( Gia_Man_t * p, Cec_ParCec_t * pPars );
+extern Gia_Man_t *   Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwNd, char* pStat );
+extern void          Cec_ManFdStatUpdate( Gia_Man_t * pOld, Gia_Man_t * pNew, char* pStat );
 /*=== cecChoice.c ==========================================================*/
 extern Gia_Man_t *   Cec_ManChoiceComputation( Gia_Man_t * pAig, Cec_ParChc_t * pPars );
 /*=== cecCorr.c ==========================================================*/
@@ -252,6 +290,7 @@ extern void          Cec_ManFraSetDefaultParams( Cec_ParFra_t * p );
 extern void          Cec_ManCecSetDefaultParams( Cec_ParCec_t * p );
 extern void          Cec_ManCorSetDefaultParams( Cec_ParCor_t * p );
 extern void          Cec_ManChcSetDefaultParams( Cec_ParChc_t * p );
+extern void          Cec_ManFdSetDefaultParams( Cec_ParFd_t * p );
 extern Gia_Man_t *   Cec_ManSatSweeping( Gia_Man_t * pAig, Cec_ParFra_t * pPars, int fSilent );
 extern Gia_Man_t *   Cec_ManSatSolving( Gia_Man_t * pAig, Cec_ParSat_t * pPars, int f0Proved );
 extern void          Cec_ManSimulation( Gia_Man_t * pAig, Cec_ParSim_t * pPars );
@@ -276,3 +315,4 @@ ABC_NAMESPACE_HEADER_END
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
+

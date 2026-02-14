@@ -32,6 +32,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "satClause.h"
 #include "misc/vec/vecSet.h"
 #include "satProof2.h"
+#include "aig/gia/gia.h"
 
 ABC_NAMESPACE_HEADER_START
 
@@ -59,6 +60,8 @@ extern void         sat_solver2_setnvars(sat_solver2* s,int n);
 
 extern void         Sat_Solver2WriteDimacs( sat_solver2 * p, char * pFileName, lit* assumptionsBegin, lit* assumptionsEnd, int incrementVars );
 extern void         Sat_Solver2PrintStats( FILE * pFile, sat_solver2 * p );
+extern void         Sat_Solver2KeepLearnt( sat_solver2 * p );
+extern void         Sat_Solver2Learnts( sat_solver2 * p, Vec_Wec_t * vLearnts );
 extern int *        Sat_Solver2GetModel( sat_solver2 * p, int * pVars, int nVars );
 extern void         Sat_Solver2DoubleClauses( sat_solver2 * p, int iVar );
 
@@ -80,6 +83,9 @@ extern int          Int2_ManChainStart( Int2_Man_t * p, clause * c );
 extern int          Int2_ManChainResolve( Int2_Man_t * p, clause * c, int iLit, int varA );
 extern void *       Int2_ManReadInterpolant( sat_solver2 * s );
 
+extern sat_solver2 *Int2_ManSolver( Gia_Man_t *p, Vec_Int_t *vNdMap );
+extern Gia_Man_t *  Int2_ManFd( sat_solver2 * pSat, Vec_Int_t* vG, int varF, int nConflicts, int fVerbose );
+extern Gia_Man_t *  Int2_ManFdSimp( Gia_Man_t * p, int nConflim, int* nConf );
 
 //=================================================================================================
 // Solver representation:
@@ -350,6 +356,27 @@ static inline int sat_solver2_add_xor( sat_solver2 * pSat, int iVarA, int iVarB,
     if ( fMark )
         clause2_set_partA( pSat, Cid, 1 );
     return 4;
+}
+
+static inline int sat_solver2_add_controlBuffer( sat_solver2 * pSat, int iVarA, int iVarB, int iVarC, int fCompl, int fMark, int Id ) {
+    lit Lits[3];
+    int Cid;
+    assert( iVarA >= 0 && iVarB >= 0 );
+
+    Lits[0] = toLitCond( iVarA, 0 );
+    Lits[1] = toLitCond( iVarB, !fCompl );
+    Lits[2] = toLitCond( iVarC, 0 );
+    Cid = sat_solver2_addclause( pSat, Lits, Lits + 3, Id );
+    if ( fMark )
+        clause2_set_partA( pSat, Cid, 1 );
+
+    Lits[0] = toLitCond( iVarA, 1 );
+    Lits[1] = toLitCond( iVarB, fCompl );
+    Lits[2] = toLitCond( iVarC, 0 );
+    Cid = sat_solver2_addclause( pSat, Lits, Lits + 3, Id );
+    if ( fMark )
+        clause2_set_partA( pSat, Cid, 1 );
+    return 2;
 }
 static inline int sat_solver2_add_constraint( sat_solver2 * pSat, int iVar, int iVar2, int fCompl, int fMark, int Id )
 {

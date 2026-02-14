@@ -21,10 +21,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef Minisat_Alloc_h
 #define Minisat_Alloc_h
 
-#include "sat/bsat2/XAlloc.h"
-#include "sat/bsat2/Vec.h"
-
-ABC_NAMESPACE_CXX_HEADER_START
+#include "XAlloc.h"
+#include "Vec.h"
 
 namespace Minisat {
 
@@ -99,11 +97,7 @@ void RegionAllocator<T>::capacity(uint32_t min_cap)
         cap += delta;
 
         if (cap <= prev_cap)
-#ifdef __wasm
-            abort();
-#else
             throw OutOfMemoryException();
-#endif
     }
     // printf(" .. (%p) cap = %u\n", this, cap);
 
@@ -125,11 +119,7 @@ RegionAllocator<T>::alloc(int size)
     
     // Handle overflow:
     if (sz < prev_sz)
-#ifdef __wasm
-        abort();
-#else
         throw OutOfMemoryException();
-#endif
 
     return prev_sz;
 }
@@ -137,7 +127,5 @@ RegionAllocator<T>::alloc(int size)
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

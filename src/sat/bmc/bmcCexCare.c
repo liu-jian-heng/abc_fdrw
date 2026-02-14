@@ -455,9 +455,8 @@ Abc_Cex_t * Bmc_CexCareSatBasedMinimize( Aig_Man_t * p, int nRealPis, Abc_Cex_t 
   SeeAlso     []
 
 ***********************************************************************/
-int Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose )
+void Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose )
 {
-    int result;
     Gia_Man_t * pGia = Gia_ManFromAigSimple( p );
     if ( fVerbose )
     {
@@ -466,13 +465,11 @@ int Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int
         printf( "Minimized:    " );
         Bmc_CexPrint( pCexMin, Gia_ManPiNum(pGia), 0 );
     }
-    result = Bmc_CexVerify( pGia, pCex, pCexMin );
-    if ( !result )
+    if ( !Bmc_CexVerify( pGia, pCex, pCexMin ) )
         printf( "Counter-example verification has failed.\n" );
     else 
         printf( "Counter-example verification succeeded.\n" );
     Gia_ManStop( pGia );
-    return result;
 }
 /*
     {
@@ -482,37 +479,6 @@ int Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int
         Abc_CexFree( pCex );
     }
 */
-
-/**Function*************************************************************
-
-  Synopsis    [Verifies the care set of the counter-example.]
-
-  Description []
-
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int Bmc_CexCareVerifyAnyPo( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose )
-{
-    int iPo;
-    Gia_Man_t * pGia = Gia_ManFromAigSimple( p );
-    if ( fVerbose )
-    {
-        printf( "Original :    " );
-        Bmc_CexPrint( pCex, Gia_ManPiNum(pGia), 0 );
-        printf( "Minimized:    " );
-        Bmc_CexPrint( pCexMin, Gia_ManPiNum(pGia), 0 );
-    }
-    iPo = Bmc_CexVerifyAnyPo( pGia, pCex, pCexMin );
-    if ( iPo < 0 )
-        printf( "Counter-example verification has failed.\n" );
-    else
-        printf( "Counter-example verification succeeded.\n" );
-    Gia_ManStop( pGia );
-    return iPo;
-}
 
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///

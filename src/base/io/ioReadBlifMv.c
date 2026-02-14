@@ -698,35 +698,6 @@ static char * Io_MvLoadFile( char * pFileName )
 
 /**Function*************************************************************
 
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-void Io_MvReplaceBuffersByShorts( char * p )
-{
-    if ( !strstr(p, ".gate") )
-        return;
-    char * q, * pNext, * pShort = (char *)".short"; int i;
-    for ( q = p; *q && (pNext = strstr(q, ".names")); q = pNext ) {
-        for ( i = 0; i < 6; i++ )
-            pNext[i] = pShort[i];
-        while ( *pNext && *pNext++ != '\n' );
-        if ( *pNext == 0 )
-            return;
-        while ( *pNext && *pNext != '\n' )
-            *pNext++ = ' ';
-        if ( *pNext == 0 )
-            return;
-    }
-}
-
-/**Function*************************************************************
-
   Synopsis    [Prepares the parsing.]
 
   Description [Performs several preliminary operations:
@@ -746,8 +717,6 @@ static void Io_MvReadPreparse( Io_MvMan_t * p )
 {
     char * pCur, * pPrev;
     int i, fComment = 0;
-    //Io_MvReplaceBuffersByShorts( p->pBuffer );
-
     // parse the buffer into lines and remove comments
     Vec_PtrPush( p->vLines, p->pBuffer );
     for ( pCur = p->pBuffer; *pCur; pCur++ )
@@ -1442,14 +1411,14 @@ static int Io_MvParseLineSubckt( Io_MvMod_t * p, char * pLine )
                 Last = k+Last+1;
                 break;
             }
-
+/*
         if ( k == nEquals )
         {
             sprintf( p->pMan->sError, "Line %d: Cannot find PI \"%s\" of the model \"%s\" as a formal input of the subcircuit.", 
                 Io_MvGetLine(p->pMan, pToken), pName, Abc_NtkName(pModel) );
             return 0;
         }
-
+*/
         if ( pName2 == NULL )
         {
             Abc_Obj_t * pNode = Abc_NtkCreateNodeConst0( p->pNtk );

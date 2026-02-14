@@ -869,7 +869,7 @@ void Glucose2_SolveCnf( char * pFileName, Glucose2_Pars * pPars )
     if ( pPars->pre ) 
     {
         S.eliminate(true);
-        printf( "c Simplification removed %d variables and %d clauses.  ", S.eliminated_vars, S.eliminated_clauses );
+        printf( "c Simplication removed %d variables and %d clauses.  ", S.eliminated_vars, S.eliminated_clauses );
         Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
     }
 
@@ -903,7 +903,7 @@ Vec_Int_t * Glucose_SolverFromAig( Gia_Man_t * p, SimpSolver& s )
             lits->push( toLit(*pLit) ), s.addVar( *pLit >> 1 );
         s.addClause(*lits);
     }
-    Vec_Int_t * vCnfIds = Vec_IntAllocArrayCopy(pCnf->pVarNums, Gia_ManObjNum(p));
+    Vec_Int_t * vCnfIds = Vec_IntAllocArrayCopy(pCnf->pVarNums,pCnf->nVars);
     printf( "CNF stats: Vars = %6d. Clauses = %7d. Literals = %8d. ", pCnf->nVars, pCnf->nClauses, pCnf->nLiterals );
     Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
     Cnf_DataFree(pCnf);
@@ -917,7 +917,7 @@ Vec_Int_t * Glucose_SolverFromAig2( Gia_Man_t * p, SimpSolver& S )
     for ( int i = 0; i < pCnf->nClauses; i++ )
         if ( !glucose2_solver_addclause( &S, pCnf->pClauses[i], pCnf->pClauses[i+1]-pCnf->pClauses[i] ) )
             assert( 0 );
-    Vec_Int_t * vCnfIds = Vec_IntAllocArrayCopy(pCnf->pVarNums, Gia_ManObjNum(p));
+    Vec_Int_t * vCnfIds = Vec_IntAllocArrayCopy(pCnf->pVarNums,pCnf->nVars);
     //printf( "CNF stats: Vars = %6d. Clauses = %7d. Literals = %8d. ", pCnf->nVars, pCnf->nClauses, pCnf->nLiterals );
     //Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
     Cnf_DataFree(pCnf);
@@ -1528,7 +1528,7 @@ int Glucose2_SolveAig(Gia_Man_t * p, Glucose2_Pars * pPars)
     if (pPars->pre) 
     {
         S.eliminate(true);
-        printf( "c Simplification removed %d variables and %d clauses.  ", S.eliminated_vars, S.eliminated_clauses );
+        printf( "c Simplication removed %d variables and %d clauses.  ", S.eliminated_vars, S.eliminated_clauses );
         Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
     }
     

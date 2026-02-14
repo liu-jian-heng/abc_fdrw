@@ -47,7 +47,7 @@ static int Mio_CommandPrintProfile( Abc_Frame_t * pAbc, int argc, char **argv );
 
 /*
 // internal version of genlib library
-static char * pMcncGenlib[] = {
+static char * pMcncGenlib[25] = {
     "GATE inv1    1   O=!a;             PIN * INV     1 999 0.9 0.0 0.9 0.0\n",
     "GATE inv2    2   O=!a;             PIN * INV     2 999 1.0 0.0 1.0 0.0\n",
     "GATE inv3    3   O=!a;             PIN * INV     3 999 1.1 0.0 1.1 0.0\n",
@@ -68,121 +68,12 @@ static char * pMcncGenlib[] = {
     "GATE oai22   4   O=!((a+b)*(c+d)); PIN * INV     1 999 2.0 0.0 2.0 0.0\n",
     "GATE buf     1   O=a;              PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
     "GATE zero    0   O=CONST0;\n",
-    "GATE one     0   O=CONST1;\n",
-    NULL
+    "GATE one     0   O=CONST1;\n"
 };
 */
-
-// internal version of genlib library
-static char * pAndGenlib[] = {
-    "GATE zero    0   O=CONST0;\n",
-    "GATE one     0   O=CONST1;\n",
-    "GATE buf     1   O=a;              PIN * NONINV  1 999 0.0 0.0 0.0 0.0\n",
-    "GATE inv     1   O=!a;             PIN * INV     1 999 0.0 0.0 0.0 0.0\n",
-    "GATE and00   1   O=a*b;            PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE and01   1   O=a*!b;           PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE and10   1   O=!a*b;           PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE and11   1   O=!a*!b;          PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand00  1   O=!(a*b);         PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand01  1   O=!(a*!b);        PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand10  1   O=!(!a*b);        PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand11  1   O=!(!a*!b);       PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    NULL
-};
-
-// internal version of genlib library
-static char * pSimpleGenlib[] = {
-    "GATE zero    0   O=CONST0;\n",
-    "GATE one     0   O=CONST1;\n",
-    "GATE buf     4   O=a;              PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE inv     2   O=!a;             PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand2   4   O=!(a*b);         PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand3   6   O=!(a*b*c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nor2    4   O=!(a+b);         PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nor3    6   O=!(a+b+c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE aoi21   6   O=!(a*b+c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE oai21   6   O=!((a+b)*c);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE aoi22   8   O=!(a*b+c*d);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE oai22   8   O=!((a+b)*(c+d)); PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    NULL
-};
-
-// internal version of genlib library
-static char * pSimpleGenlib2[] = {
-    "GATE zero    0   O=CONST0;\n",
-    "GATE one     0   O=CONST1;\n",
-    "GATE buf     4   O=a;              PIN * NONINV  1 999 1.0 0.0 1.0 0.0\n",
-    "GATE inv     2   O=!a;             PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand2   4   O=!(a*b);         PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand3   6   O=!(a*b*c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nand4   8   O=!(a*b*c*d);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nor2    4   O=!(a+b);         PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nor3    6   O=!(a+b+c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE nor4    6   O=!(a+b+c+d);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE aoi21   6   O=!(a*b+c);       PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE oai21   6   O=!((a+b)*c);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE aoi22   8   O=!(a*b+c*d);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE oai22   8   O=!((a+b)*(c+d)); PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE aoi211  8   O=!(a*b+c+d);     PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    "GATE oai211  8   O=!((a+b)*c*d);   PIN * INV     1 999 1.0 0.0 1.0 0.0\n",
-    NULL
-};
-
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-void Mio_IntallAndLibrary()
-{
-    extern Mio_Library_t * Mio_LibraryReadBuffer( char * pBuffer, int fExtendedFormat, st__table * tExcludeGate, int nFaninLimit, int fVerbose );
-    Vec_Str_t * vLibStr = Vec_StrAlloc( 1000 );
-    for ( int i = 0; pAndGenlib[i]; i++ )
-        Vec_StrAppend( vLibStr, pAndGenlib[i] );
-    Vec_Str_t * vLibStr2 = Vec_StrDup( vLibStr );
-    Vec_StrAppend( vLibStr2, ".end\n" );
-    Vec_StrPush( vLibStr2, '\0' );
-    Vec_StrPush( vLibStr, '\0' );
-    Mio_UpdateGenlib2( vLibStr, vLibStr2, "and.genlib", 0 );
-    Vec_StrFree( vLibStr );    
-    Vec_StrFree( vLibStr2 );
-}
-void Mio_IntallSimpleLibrary()
-{
-    extern Mio_Library_t * Mio_LibraryReadBuffer( char * pBuffer, int fExtendedFormat, st__table * tExcludeGate, int nFaninLimit, int fVerbose );
-    Mio_Library_t * pLib;  int i;
-    Vec_Str_t * vLibStr = Vec_StrAlloc( 1000 );
-    for ( i = 0; pSimpleGenlib[i]; i++ )
-        Vec_StrAppend( vLibStr, pSimpleGenlib[i] );
-    Vec_StrPush( vLibStr, '\0' );
-    pLib = Mio_LibraryReadBuffer( Vec_StrArray(vLibStr), 0, NULL, 0, 0 );
-    Mio_LibrarySetName( pLib, Abc_UtilStrsav("simple.genlib") );
-    Mio_UpdateGenlib( pLib );
-    Vec_StrFree( vLibStr );
-}
-void Mio_IntallSimpleLibrary2()
-{
-    extern Mio_Library_t * Mio_LibraryReadBuffer( char * pBuffer, int fExtendedFormat, st__table * tExcludeGate, int nFaninLimit, int fVerbose );
-    Mio_Library_t * pLib;  int i;
-    Vec_Str_t * vLibStr = Vec_StrAlloc( 1000 );
-    for ( i = 0; pSimpleGenlib2[i]; i++ )
-        Vec_StrAppend( vLibStr, pSimpleGenlib2[i] );
-    Vec_StrPush( vLibStr, '\0' );
-    pLib = Mio_LibraryReadBuffer( Vec_StrArray(vLibStr), 0, NULL, 0, 0 );
-    Mio_LibrarySetName( pLib, Abc_UtilStrsav("simple2.genlib") );
-    Mio_UpdateGenlib( pLib );
-    Vec_StrFree( vLibStr );
-}
 
 /**Function*************************************************************
 
@@ -261,7 +152,7 @@ int Mio_UpdateGenlib2( Vec_Str_t * vStr, Vec_Str_t * vStr2, char * pFileName, in
 {
     Mio_Library_t * pLib;
     // set the new network
-    pLib = Mio_LibraryRead( pFileName, Vec_StrArray(vStr), NULL, 0, fVerbose );  
+    pLib = Mio_LibraryRead( pFileName, Vec_StrArray(vStr), NULL, fVerbose );  
     if ( pLib == NULL )
         return 0;
 
@@ -400,13 +291,12 @@ int Mio_CommandReadGenlib( Abc_Frame_t * pAbc, int argc, char **argv )
     char * pExcludeFile = NULL;
     double WireDelay = 0.0;
     int fShortNames = 0;
-    int nFaninLimit = 0;
-    int c, fVerbose = 0;
+    int c, fVerbose = 1;
 
     pOut = Abc_FrameReadOut(pAbc);
     pErr = Abc_FrameReadErr(pAbc);
     Extra_UtilGetoptReset();
-    while ( (c = Extra_UtilGetopt(argc, argv, "WEKnvh")) != EOF ) 
+    while ( (c = Extra_UtilGetopt(argc, argv, "WEnvh")) != EOF ) 
     {
         switch (c) 
         {
@@ -428,15 +318,6 @@ int Mio_CommandReadGenlib( Abc_Frame_t * pAbc, int argc, char **argv )
                     goto usage;
                 }
                 pExcludeFile = argv[globalUtilOptind];
-                globalUtilOptind++;
-                break;
-            case 'K':
-                if ( globalUtilOptind >= argc )
-                {
-                    Abc_Print( -1, "Command line switch \"-K\" should be followed by a file name.\n" );
-                    goto usage;
-                }
-                nFaninLimit = atoi(argv[globalUtilOptind]);
                 globalUtilOptind++;
                 break;
             case 'n':
@@ -470,7 +351,7 @@ int Mio_CommandReadGenlib( Abc_Frame_t * pAbc, int argc, char **argv )
     fclose( pFile );
 
     // set the new network
-    pLib = Mio_LibraryRead( pFileName, NULL, pExcludeFile, nFaninLimit, fVerbose );  
+    pLib = Mio_LibraryRead( pFileName, NULL, pExcludeFile, fVerbose );  
     if ( pLib == NULL )
     {
         fprintf( pErr, "Reading genlib library has failed.\n" );
@@ -501,14 +382,13 @@ int Mio_CommandReadGenlib( Abc_Frame_t * pAbc, int argc, char **argv )
     return 0;
 
 usage:
-    fprintf( pErr, "usage: read_genlib [-W float] [-E filename] [-K num] [-nvh]\n");
+    fprintf( pErr, "usage: read_genlib [-W float] [-E filename] [-nvh]\n");
     fprintf( pErr, "\t           read the library from a genlib file\n" );  
     fprintf( pErr, "\t           (if the library contains more than one gate\n" );  
     fprintf( pErr, "\t           with the same Boolean function, only the gate\n" );  
     fprintf( pErr, "\t           with the smallest area will be used)\n" );  
     fprintf( pErr, "\t-W float : wire delay (added to pin-to-pin gate delays) [default = %g]\n", WireDelay );  
-    fprintf( pErr, "\t-E file  : the file name with gates to be excluded [default = none]\n" );
-    fprintf( pErr, "\t-K num   : the max number of gate fanins (0 = no limit) [default = %d]\n", nFaninLimit );
+    fprintf( pErr, "\t-E file :  the file name with gates to be excluded [default = none]\n" );
     fprintf( pErr, "\t-n       : toggle replacing gate/pin names by short strings [default = %s]\n", fShortNames? "yes": "no" );
     fprintf( pErr, "\t-v       : toggle verbose printout [default = %s]\n", fVerbose? "yes": "no" );
     fprintf( pErr, "\t-h       : enable verbose output\n");

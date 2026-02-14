@@ -85,6 +85,44 @@ void Cec_ManSimSetDefaultParams( Cec_ParSim_t * p )
     p->fVerbose       =       0;  // verbose stats
 } 
 
+
+/**Function*************************************************************
+
+  Synopsis    [Sets default parameters for SAT operations.]
+
+  Description [Initializes the Cec_ParSat_t structure with default 
+               values for various parameters, including solver type, 
+               conflict limits, SAT variable constraints, and options 
+               for backtracking, polarity flipping, and verbosity.]
+
+  SideEffects [Modifies the input structure to contain the default 
+               parameter values.]
+
+  SeeAlso     []
+
+***********************************************************************/
+
+void Cec_ManFdSetDefaultParams( Cec_ParFd_t * p )
+{
+    memset( p, 0, sizeof(Cec_ParFd_t) );
+    p->nBTLimit       =       10000;  // conflict limit at a node
+    p->fPickType      =       0;    // type of picking
+    // p->fKeepType      =       64;    // type of keeping
+
+    p->GType          =       0;    // the candidates of G
+    p->fVerbose       =       0;    // verbose stats
+    p->fGetCkts       =       0;    // get circuits
+    p->fAbs           =       0;
+    p->fAbsItp        =       0;
+    p->levelType      =       0;
+    p->costType       =       CEC_FD_COSTDUMMY;
+    p->fTrim          =       1;
+    p->fSyn           =       0;
+    p->fLocalShrink   =       0;
+    p->fInc           =       0;
+    p->coefPatch      =       0.0;
+    p->pMerge         =       NULL;
+}  
 /**Function************  *************************************************
 
   Synopsis    [This procedure sets default parameters.]
@@ -167,9 +205,7 @@ void Cec_ManCecSetDefaultParams( Cec_ParCec_t * p )
     p->fVeryVerbose   =       0;  // verbose stats
     p->fVerbose       =       0;  // verbose stats
     p->iOutFail       =      -1;  // the number of failed output
-    p->pNameSpec      =    NULL;  // name of the first (spec) network
-    p->pNameImpl      =    NULL;  // name of the second (impl) network
-    p->vNamesIn       =    NULL;  // input names of the first network
+    p->fUseAffine     =       0;  // the number of failed output
 }  
 
 /**Function*************************************************************
@@ -335,7 +371,8 @@ void Cec_ManSimulation( Gia_Man_t * pAig, Cec_ParSim_t * pPars )
 
 /**Function*************************************************************
 
-  Synopsis    [Core procedure for SAT sweeping.]
+  Synopsis    [Core procedure for SAT sweeping.
+  identify and merge equivalent nodes]
 
   Description []
                
@@ -346,14 +383,14 @@ void Cec_ManSimulation( Gia_Man_t * pAig, Cec_ParSim_t * pPars )
 ***********************************************************************/
 Gia_Man_t * Cec_ManSatSweeping( Gia_Man_t * pAig, Cec_ParFra_t * pPars, int fSilent )
 {
-    int fOutputResult = 0;
+    int fOutputResult = 1;
     Cec_ParSat_t ParsSat, * pParsSat = &ParsSat;
     Cec_ParSim_t ParsSim, * pParsSim = &ParsSim;
     Gia_Man_t * pIni, * pSrm, * pTemp;
     Cec_ManFra_t * p;
     Cec_ManSim_t * pSim;
     Cec_ManPat_t * pPat;
-    int i, fTimeOut = 0, nMatches = 0;
+    int i, fTimeOut = 0, nMatches = 0, test = 1;
     abctime clk, clk2, clkTotal = Abc_Clock();
     if ( pPars->fVerbose )
         printf( "Simulating %d words for %d rounds. SAT solving with %d conflicts.\n", pPars->nWords, pPars->nRounds, pPars->nBTLimit );
@@ -507,8 +544,8 @@ p->timeSat += Abc_Clock() - clk;
                     Abc_Print( 1, "Increasing conflict limit to %d.\n", pParsSat->nBTLimit );
                 if ( fOutputResult )
                 {
-                    Gia_AigerWrite( p->pAig, "gia_cec_temp.aig", 0, 0, 0 );
-                    Abc_Print( 1,"The result is written into file \"%s\".\n", "gia_cec_temp.aig" );
+                    Gia_AigerWrite( p->pAig, "./cec_giaSweep.aig", 0, 0, 0 );
+                    Abc_Print( 1,"The result is written into file \"%s\".\n", "cec_giaSweep.aig" );
                 }
             }
         }
@@ -564,11 +601,10 @@ finalize:
     if ( pTemp ) ABC_FREE( pTemp->pNexts );
     return pTemp;
 }
-
-
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
 
 ABC_NAMESPACE_IMPL_END
+

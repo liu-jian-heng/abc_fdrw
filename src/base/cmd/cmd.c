@@ -22,7 +22,6 @@
 #include <process.h>
 #else
 #include <unistd.h>
-#include <dirent.h>
 #endif
 
 #include "base/abc/abc.h"
@@ -37,7 +36,6 @@ ABC_NAMESPACE_IMPL_START
 ////////////////////////////////////////////////////////////////////////
 
 static int CmdCommandTime          ( Abc_Frame_t * pAbc, int argc, char ** argv );
-static int CmdCommandSleep         ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandEcho          ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandQuit          ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandAbcrc         ( Abc_Frame_t * pAbc, int argc, char ** argv );
@@ -51,22 +49,18 @@ static int CmdCommandUnsetVariable ( Abc_Frame_t * pAbc, int argc, char ** argv 
 static int CmdCommandUndo          ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandRecall        ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandEmpty         ( Abc_Frame_t * pAbc, int argc, char ** argv );
-#if defined(WIN32)
+#if defined(WIN32) && !defined(__cplusplus)
 static int CmdCommandScanDir       ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandRenameFiles   ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandLs            ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandScrGen        ( Abc_Frame_t * pAbc, int argc, char ** argv );
-#else
-static int CmdCommandScrGenLinux   ( Abc_Frame_t * pAbc, int argc, char ** argv );
 #endif
 static int CmdCommandVersion       ( Abc_Frame_t * pAbc, int argc, char ** argv );
-static int CmdCommandSGen          ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandSis           ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandMvsis         ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandCapo          ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandStarter       ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int CmdCommandAutoTuner     ( Abc_Frame_t * pAbc, int argc, char ** argv );
-static int CmdCommandSolver        ( Abc_Frame_t * pAbc, int argc, char ** argv );
 
 extern int Cmd_CommandAbcLoadPlugIn( Abc_Frame_t * pAbc, int argc, char ** argv );
 
@@ -92,7 +86,6 @@ void Cmd_Init( Abc_Frame_t * pAbc )
     Cmd_HistoryRead( pAbc );
 
     Cmd_CommandAdd( pAbc, "Basic", "time",          CmdCommandTime,            0 );
-    Cmd_CommandAdd( pAbc, "Basic", "sleep",         CmdCommandSleep,           0 );
     Cmd_CommandAdd( pAbc, "Basic", "echo",          CmdCommandEcho,            0 );
     Cmd_CommandAdd( pAbc, "Basic", "quit",          CmdCommandQuit,            0 );
     Cmd_CommandAdd( pAbc, "Basic", "abcrc",         CmdCommandAbcrc,           0 );
@@ -106,23 +99,19 @@ void Cmd_Init( Abc_Frame_t * pAbc )
     Cmd_CommandAdd( pAbc, "Basic", "undo",          CmdCommandUndo,            0 );
     Cmd_CommandAdd( pAbc, "Basic", "recall",        CmdCommandRecall,          0 );
     Cmd_CommandAdd( pAbc, "Basic", "empty",         CmdCommandEmpty,           0 );
-#if defined(WIN32)
+#if defined(WIN32) && !defined(__cplusplus)
     Cmd_CommandAdd( pAbc, "Basic", "scandir",       CmdCommandScanDir,         0 );
     Cmd_CommandAdd( pAbc, "Basic", "renamefiles",   CmdCommandRenameFiles,     0 );
     Cmd_CommandAdd( pAbc, "Basic", "ls",            CmdCommandLs,              0 );
     Cmd_CommandAdd( pAbc, "Basic", "scrgen",        CmdCommandScrGen,          0 );
-#else
-    Cmd_CommandAdd( pAbc, "Basic", "scrgen",        CmdCommandScrGenLinux,     0 );
 #endif
     Cmd_CommandAdd( pAbc, "Basic", "version",       CmdCommandVersion,         0 );
-    Cmd_CommandAdd( pAbc, "Basic", "sgen",          CmdCommandSGen,            0 );
 
     Cmd_CommandAdd( pAbc, "Various", "sis",         CmdCommandSis,             1 );
     Cmd_CommandAdd( pAbc, "Various", "mvsis",       CmdCommandMvsis,           1 );
     Cmd_CommandAdd( pAbc, "Various", "capo",        CmdCommandCapo,            0 );
     Cmd_CommandAdd( pAbc, "Various", "starter",     CmdCommandStarter,         0 );
     Cmd_CommandAdd( pAbc, "Various", "autotuner",   CmdCommandAutoTuner,       0 );
-    Cmd_CommandAdd( pAbc, "Various", "&solver",     CmdCommandSolver,          0 );
 
     Cmd_CommandAdd( pAbc, "Various", "load_plugin", Cmd_CommandAbcLoadPlugIn,  0 );
 }
@@ -232,65 +221,6 @@ int CmdCommandTime( Abc_Frame_t * pAbc, int argc, char **argv )
     return 1;
 }
 
-/**Function********************************************************************
-
-  Synopsis    []
-
-  Description []
-
-  SideEffects []
-
-  SeeAlso     []
-
-******************************************************************************/
-int CmdCommandSleep( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    abctime clkStop;
-    char * pFileName = NULL;
-    int c, nSecs = 1;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "Nh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-        case 'N':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-N\" should be followed by an integer.\n" );
-                goto usage;
-            }
-            nSecs = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nSecs < 0 )
-                goto usage;
-            break;
-        case 'h':
-            goto usage;
-        default:
-            goto usage;
-        }
-    }
-
-    if ( argc == globalUtilOptind + 1 ) {
-        FILE * pFile = NULL;
-        pFileName = argv[globalUtilOptind];
-        while ( (pFile = fopen(pFileName, "rb")) == NULL );
-        if ( pFile != NULL )
-            fclose( pFile );
-    }
-
-    clkStop = Abc_Clock() + nSecs * CLOCKS_PER_SEC;
-    while ( Abc_Clock() < clkStop );
-    return 0;
-
-  usage:
-    fprintf( pAbc->Err, "usage: sleep [-N <num>] [-h] <file_name>\n" );
-    fprintf( pAbc->Err, "\t              puts ABC to sleep for some time\n" );
-    fprintf( pAbc->Err, "\t-N num      : time duration in seconds [default = %d]\n", nSecs );    
-    fprintf( pAbc->Err, "\t-h          : toggle printing the command usage\n" );
-    fprintf( pAbc->Err, "\t<file_name> : (optional) waiting begins after the file is created\n" );    
-    return 1;
-}
 /**Function********************************************************************
 
   Synopsis    []
@@ -438,7 +368,7 @@ int CmdCommandAbcrc( Abc_Frame_t * pAbc, int argc, char **argv )
 ******************************************************************************/
 int CmdCommandHistory( Abc_Frame_t * pAbc, int argc, char **argv )
 {
-    char * pName, * pStr = NULL;
+    char * pName;
     int i, c;
     int nPrints = 20;
     Extra_UtilGetoptReset();
@@ -455,19 +385,11 @@ int CmdCommandHistory( Abc_Frame_t * pAbc, int argc, char **argv )
     if ( argc > globalUtilOptind + 1 )
         goto usage;
     // get the number from the command line
-    pStr = argc == globalUtilOptind+1 ? argv[globalUtilOptind] : NULL;
-    if ( pStr && pStr[0] >= '1' && pStr[0] <= '9' )
-        nPrints = atoi(pStr), pStr = NULL;
+    if ( argc == globalUtilOptind + 1 )
+        nPrints = atoi(argv[globalUtilOptind]);
     // print the commands
-    if ( pStr == NULL ) {
-        Vec_PtrForEachEntryStart( char *, pAbc->aHistory, pName, i, Abc_MaxInt(0, Vec_PtrSize(pAbc->aHistory)-nPrints) )
-            fprintf( pAbc->Out, "%2d : %s\n", Vec_PtrSize(pAbc->aHistory)-i, pName );
-    }
-    else {
-        Vec_PtrForEachEntry( char *, pAbc->aHistory, pName, i )
-            if ( strstr(pName, pStr) )
-                fprintf( pAbc->Out, "%2d : %s\n", Vec_PtrSize(pAbc->aHistory)-i, pName );
-    }
+    Vec_PtrForEachEntryStart( char *, pAbc->aHistory, pName, i, Abc_MaxInt(0, Vec_PtrSize(pAbc->aHistory)-nPrints) )
+        fprintf( pAbc->Out, "%2d : %s\n", Vec_PtrSize(pAbc->aHistory)-i, pName );
     return 0;
 
 usage:
@@ -1219,7 +1141,7 @@ usage:
 #endif
 
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(__cplusplus)
 #include <direct.h>
 #include <io.h>
 
@@ -1405,10 +1327,10 @@ int CmfFindNumber( char * pName )
 ***********************************************************************/
 void CnfDupFileUnzip( char * pOldName )
 {
-    extern char * Io_MvLoadFileBz2( char * pFileName, long * pnFileSize );
+    extern char * Io_MvLoadFileBz2( char * pFileName, int * pnFileSize );
     char pNewName[1000];
     FILE * pFile;
-    long nFileSize;
+    int nFileSize;
     char * pBuffer = Io_MvLoadFileBz2( pOldName, &nFileSize );
     assert( strlen(pOldName) < 1000 );
     sprintf( pNewName, "%s.v", pOldName );
@@ -1706,11 +1628,11 @@ int CmdCommandScrGen( Abc_Frame_t * pAbc, int argc, char **argv )
     int    nFileNameMax, nFileNameCur;
     int    Counter = 0;
     int    fUseCurrent;
-    int    c;
+    char   c;
 
     fUseCurrent = 0;
     Extra_UtilGetoptReset();
-    while ( (c = Extra_UtilGetopt(argc, argv, "FRCWch") ) != EOF )
+    while ( (c = Extra_UtilGetopt(argc, argv, "FDCWch") ) != EOF )
     {
         switch (c)
         {
@@ -1723,7 +1645,7 @@ int CmdCommandScrGen( Abc_Frame_t * pAbc, int argc, char **argv )
             pFileStr = argv[globalUtilOptind];
             globalUtilOptind++;
             break;
-        case 'R':
+        case 'D':
             if ( globalUtilOptind >= argc )
             {
                 fprintf( pAbc->Err, "Command line switch \"-D\" should be followed by a string.\n" );
@@ -1873,7 +1795,7 @@ int CmdCommandScrGen( Abc_Frame_t * pAbc, int argc, char **argv )
                         Line[c] = '/';
                 fprintf( pFile, "%s", Line );
             }
-            fprintf( pFile, "\n" );
+            fprintf( pFile, "\n", Line );
         }
         while( _findnext( hFile, &c_file ) == 0 );
         _findclose( hFile );
@@ -1893,178 +1815,17 @@ int CmdCommandScrGen( Abc_Frame_t * pAbc, int argc, char **argv )
     return 0;
 
 usage:
-    fprintf( pAbc->Err, "usage: scrgen -F <str> -R <str> -C <str> -W <str> -ch\n" );
+    fprintf( pAbc->Err, "usage: scrgen -F <str> -D <str> -C <str> -W <str> -ch\n" );
     fprintf( pAbc->Err, "\t          generates script for running ABC\n" );
     fprintf( pAbc->Err, "\t-F str  : the name of the script file [default = \"test.s\"]\n" );
-    fprintf( pAbc->Err, "\t-R str  : the directory to read files from [default = current]\n" );
+    fprintf( pAbc->Err, "\t-D str  : the directory to read files from [default = current]\n" );
     fprintf( pAbc->Err, "\t-C str  : the sequence of commands to run [default = \"ps\"]\n" );
     fprintf( pAbc->Err, "\t-W str  : the directory to write the resulting files [default = no writing]\n" );
     fprintf( pAbc->Err, "\t-c      : toggle placing file in current/target dir [default = %s]\n", fUseCurrent? "current": "target" );
     fprintf( pAbc->Err, "\t-h      : print the command usage\n\n");
-    fprintf( pAbc->Err, "\tExample : scrgen -F test1.s -R a/in -C \"ps; st; ps\" -W a/out\n" );
+    fprintf( pAbc->Err, "\tExample : scrgen -F test1.s -D a/in -C \"ps; st; ps\" -W a/out\n" );
     return 1;
 }
-
-#else
-
-Vec_Ptr_t * CmdReturnFileNames( char * pDirStr ) 
-{
-    Vec_Ptr_t * vRes = Vec_PtrAlloc( 100 );
-    struct dirent **namelist;
-    int num_files = scandir(pDirStr, &namelist, NULL, alphasort);
-    if (num_files == -1) {
-        printf("Error opening directory.\n");
-        return NULL;
-    }
-    for (int i = 0; i < num_files; i++) {
-        char * pExt = strstr(namelist[i]->d_name, ".");
-        if ( !pExt || !strcmp(pExt, ".") || !strcmp(pExt, "..") || !strcmp(pExt, ".s") || !strcmp(pExt, ".txt") )
-            continue;    
-        Vec_PtrPush( vRes, Abc_UtilStrsav(namelist[i]->d_name) );
-        free(namelist[i]);
-    }
-    free(namelist);
-    return vRes;
-}
-
-int CmdCommandScrGenLinux( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    Vec_Ptr_t * vNames = NULL;
-    FILE * pFile = NULL;
-    char * pFileStr = (char *)"test.s";
-    char * pDirStr = (char *)".";
-    char * pComStr = (char *)"ps";
-    char * pWriteStr = NULL;
-    char * pWriteExt = NULL;    
-    char   Line[2000], * pName;
-    int    nFileNameMax;
-    int    fBatch = 0;
-    int    c, k;
-
-    Extra_UtilGetoptReset();
-    while ( (c = Extra_UtilGetopt(argc, argv, "FRCWEbh") ) != EOF )
-    {
-        switch (c)
-        {
-        case 'F':
-            if ( globalUtilOptind >= argc )
-            {
-                fprintf( pAbc->Err, "Command line switch \"-F\" should be followed by a string.\n" );
-                goto usage;
-            }
-            pFileStr = argv[globalUtilOptind];
-            globalUtilOptind++;
-            break;
-        case 'R':
-            if ( globalUtilOptind >= argc )
-            {
-                fprintf( pAbc->Err, "Command line switch \"-D\" should be followed by a string.\n" );
-                goto usage;
-            }
-            pDirStr = argv[globalUtilOptind];
-            globalUtilOptind++;
-            break;
-        case 'C':
-            if ( globalUtilOptind >= argc )
-            {
-                fprintf( pAbc->Err, "Command line switch \"-C\" should be followed by a string.\n" );
-                goto usage;
-            }
-            pComStr = argv[globalUtilOptind];
-            globalUtilOptind++;
-            break;
-        case 'W':
-            if ( globalUtilOptind >= argc )
-            {
-                fprintf( pAbc->Err, "Command line switch \"-W\" should be followed by a string.\n" );
-                goto usage;
-            }
-            pWriteStr = argv[globalUtilOptind];
-            globalUtilOptind++;
-            break;
-        case 'E':
-            if ( globalUtilOptind >= argc )
-            {
-                fprintf( pAbc->Err, "Command line switch \"-E\" should be followed by a string.\n" );
-                goto usage;
-            }
-            pWriteExt = argv[globalUtilOptind];
-            globalUtilOptind++;
-            break;            
-        case 'b':
-            fBatch ^= 1;
-            break;
-        default:
-            goto usage;
-        }
-    }
-    pFile = fopen( pFileStr, "w" );
-    if ( pFile == NULL )
-    {
-        printf( "Cannot open output file %s.\n", pFileStr );
-        return 0;
-    }
-    vNames = CmdReturnFileNames( pDirStr );
-    if ( !vNames || !Vec_PtrSize(vNames) )
-    {
-        if ( vNames )
-            printf( "It looks like the directory \"%s\" does not contain any relevant files.\n", pDirStr );
-        Vec_PtrFreeP(&vNames);
-        return 0;
-    }
-    nFileNameMax = 0;
-    Vec_PtrForEachEntry( char *, vNames, pName, k )
-        if ( nFileNameMax < strlen(pName) )
-            nFileNameMax = strlen(pName);
-    {
-        int fAndSpace = pComStr[0] == '&';
-        fprintf( pFile, "# Script file produced by ABC on %s\n", Extra_TimeStamp() );
-        fprintf( pFile, "# Command line was: scrgen -F %s -D %s -C \"%s\"%s%s%s%s\n",
-            pFileStr, pDirStr, pComStr, 
-            pWriteStr?" -W ":"", pWriteStr?pWriteStr:"", 
-            pWriteExt?" -E ":"", pWriteExt?pWriteExt:"" );
-        Vec_PtrForEachEntry( char *, vNames, pName, k ) {
-            char * pExt = strstr(pName, ".");
-            if ( !pExt || !strcmp(pExt, ".") || !strcmp(pExt, "..") || !strcmp(pExt, ".s") || !strcmp(pExt, ".txt") )
-                continue;
-            sprintf( Line, "%s%sread %s%s%-*s ; %s", fBatch ? "./abc -q \"":"", fAndSpace ? "&" : "", pDirStr?pDirStr:"", pDirStr?"/":"", nFileNameMax, pName, pComStr );
-            for ( c = (int)strlen(Line)-1; c >= 0; c-- )
-                if ( Line[c] == '\\' )
-                    Line[c] = '/';
-            fprintf( pFile, "%s", Line );
-            if ( pWriteStr )
-            {
-                char * pFNameOut = pWriteExt ? Extra_FileNameGenericAppend(pName, pWriteExt) : pName;
-                sprintf( Line, " ; %swrite %s/%-*s", fAndSpace ? "&" : "", pWriteStr, nFileNameMax, pFNameOut );
-                for ( c = (int)strlen(Line)-1; c >= 0; c-- )
-                    if ( Line[c] == '\\' )
-                        Line[c] = '/';
-                fprintf( pFile, "%s", Line );
-            }
-            if ( fBatch )
-                fprintf( pFile, "\"" );
-            fprintf( pFile, "\n" );
-        }
-    }
-    fclose( pFile );
-    printf( "Script file \"%s\" with command lines for %d files.\n", pFileStr, Vec_PtrSize(vNames) );
-    Vec_PtrFreeFree( vNames );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: scrgen -F <str> -R <str> -C <str> -W <str> -E <str> -bh\n" );
-    fprintf( pAbc->Err, "\t          generates script for running ABC\n" );
-    fprintf( pAbc->Err, "\t-F str  : the name of the script file [default = \"test.s\"]\n" );
-    fprintf( pAbc->Err, "\t-R str  : the directory to read files from [default = current]\n" );
-    fprintf( pAbc->Err, "\t-C str  : the sequence of commands to run [default = \"ps\"]\n" );
-    fprintf( pAbc->Err, "\t-W str  : the directory to write the resulting files [default = no writing]\n" );
-    fprintf( pAbc->Err, "\t-E str  : the output files extension (with \".\") [default = the same as input files]\n" );
-    fprintf( pAbc->Err, "\t-b      : toggles adding batch mode support [default = %s]\n", fBatch? "yes": "no" );    
-    fprintf( pAbc->Err, "\t-h      : print the command usage\n\n");
-    fprintf( pAbc->Err, "\tExample : scrgen -F test1.s -R a/in -C \"ps; st; ps\" -W a/out -E .blif\n" );
-    return 1;
-}
-
 #endif
 
 
@@ -2414,11 +2175,7 @@ void Gia_ManGnuplotShow( char * pPlotFileName )
     {
         char Command[1000];
         sprintf( Command, "%s %s ", pProgNameGnuplot, pPlotFileName );
-#if defined(__wasm)
-        if ( 1 )
-#else
         if ( system( Command ) == -1 )
-#endif
         {
             fprintf( stdout, "Cannot execute \"%s\".\n", Command );
             return;
@@ -2624,18 +2381,18 @@ usage:
 ***********************************************************************/
 int CmdCommandStarter( Abc_Frame_t * pAbc, int argc, char ** argv )
 {
-    extern void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores, int fVerbose );
+    extern void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores );
     FILE * pFile;
     char * pFileName;
     char * pCommand = NULL;
     int c, nCores    =  3;
     int fVerbose     =  0;
     Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "PCvh" ) ) != EOF )
+    while ( ( c = Extra_UtilGetopt( argc, argv, "NCvh" ) ) != EOF )
     {
         switch ( c )
         {
-        case 'P':
+        case 'N':
             if ( globalUtilOptind >= argc )
             {
                 Abc_Print( -1, "Command line switch \"-N\" should be followed by an integer.\n" );
@@ -2682,13 +2439,13 @@ int CmdCommandStarter( Abc_Frame_t * pAbc, int argc, char ** argv )
     }
     fclose( pFile );
     // run commands
-    Cmd_RunStarter( pFileName, pAbc->sBinary, pCommand, nCores, fVerbose );
+    Cmd_RunStarter( pFileName, pAbc->sBinary, pCommand, nCores );
     return 0;
 
 usage:
-    Abc_Print( -2, "usage: starter [-P num] [-C cmd] [-vh] <file>\n" );
+    Abc_Print( -2, "usage: starter [-N num] [-C cmd] [-vh] <file>\n" );
     Abc_Print( -2, "\t         runs command lines listed in <file> concurrently on <num> CPUs\n" );
-    Abc_Print( -2, "\t-P num : the number of concurrent jobs including the controller [default = %d]\n", nCores );
+    Abc_Print( -2, "\t-N num : the number of concurrent jobs including the controller [default = %d]\n", nCores );
     Abc_Print( -2, "\t-C cmd : (optional) ABC command line to execute on benchmarks in <file>\n" );
     Abc_Print( -2, "\t-v     : toggle printing verbose information [default = %s]\n", fVerbose? "yes": "no" );
     Abc_Print( -2, "\t-h     : print the command usage\n");
@@ -2810,129 +2567,6 @@ usage:
 
 /**Function********************************************************************
 
-  Synopsis    [Calls Capo internally.]
-
-  Description []
-
-  SideEffects []
-
-  SeeAlso     []
-
-******************************************************************************/
-int CmdCommandSolver( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    extern void Gia_AigerWrite( Gia_Man_t * p, char * pFileName, int fWriteSymbols, int fCompact, int fWriteNewLine );
-    FILE * pFile;
-    char Command[1000];
-    char TempFileName[100];
-    unsigned int RandomNum;
-    int i;
-
-    // Check for help flags
-    if ( argc > 1 )
-    {
-        if ( strcmp( argv[1], "-h" ) == 0 )
-            goto usage;
-        if ( strcmp( argv[1], "-?" ) == 0 )
-            goto usage;
-    }
-
-    // Check if AIG is available
-    if ( pAbc->pGia == NULL )
-    {
-        fprintf( pAbc->Err, "The current AIG is not available.\n" );
-        goto usage;
-    }
-
-#if defined(__wasm)
-    fprintf( pAbc->Err, "Unsupported command.\n" );
-    return 1;
-#else
-    // Check if solver binary exists in current directory or PATH
-    char * pSolverName;
-    if ( (pFile = fopen( "./solver", "r" )) != NULL )
-    {
-        pSolverName = "./solver";
-        fclose( pFile );
-    }
-    else
-    {
-        // Check if solver exists in PATH
-        char CheckCommand[100];
-        sprintf( CheckCommand, "which solver > /dev/null 2>&1" );
-        if ( system( CheckCommand ) == 0 )
-        {
-            pSolverName = "solver";
-        }
-        else
-        {
-            fprintf( pAbc->Err, "Cannot find \"solver\" binary in the current directory or in PATH.\n" );
-            goto usage;
-        }
-    }
-
-    // Generate random 8-hex-character temporary filename
-    RandomNum = (unsigned int)(ABC_PTRUINT_T)pAbc ^
-                (unsigned int)(ABC_PTRUINT_T)pAbc->pGia ^
-                (unsigned int)time(NULL) ^
-                (unsigned int)getpid();
-    sprintf( TempFileName, "%08X.aig", RandomNum );
-
-    // Write the current AIG to the temporary file
-    Gia_AigerWrite( pAbc->pGia, TempFileName, 0, 0, 1 );
-
-    // Verify the file was created successfully
-    if ( (pFile = fopen( TempFileName, "r" )) == NULL )
-    {
-        fprintf( pAbc->Err, "Failed to create temporary AIG file \"%s\".\n", TempFileName );
-        return 1;
-    }
-    fclose( pFile );
-
-    // Build the command string
-    sprintf( Command, "%s", pSolverName );
-
-    // Add all user arguments
-    for ( i = 1; i < argc; i++ )
-    {
-        strcat( Command, " " );
-        strcat( Command, argv[i] );
-    }
-
-    // Add the AIG filename at the end
-    strcat( Command, " " );
-    strcat( Command, TempFileName );
-
-    // Debug: Show what command is being executed
-    fprintf( pAbc->Out, "Executing command: %s\n", Command );
-
-    // Execute the solver command
-    if ( system( Command ) == -1 )
-    {
-        fprintf( pAbc->Err, "The following command has failed:\n" );
-        fprintf( pAbc->Err, "\"%s\"\n", Command );
-        unlink( TempFileName );
-        return 1;
-    }
-
-    // Clean up the temporary file
-    unlink( TempFileName );
-#endif
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "\tusage: &solver <args>\n");
-    fprintf( pAbc->Err, "\t           run the external solver binary on the current AIG\n" );
-    fprintf( pAbc->Err, "\t-h      :  print the command usage\n" );
-    fprintf( pAbc->Err, "\t<args>  :  arguments to pass to the solver\n" );
-    fprintf( pAbc->Err, "\t           The current AIG will be written to a temporary file\n" );
-    fprintf( pAbc->Err, "\t           and passed as the last argument to the solver.\n" );
-    fprintf( pAbc->Err, "\t           Example: solver -h\n" );
-    return 1;
-}
-
-/**Function********************************************************************
-
   Synopsis    [Print the version string.]
 
   Description []
@@ -2968,79 +2602,6 @@ usage:
     return 1;
 }
 
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int CmdCommandSGen( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern void Cmd_CommandSGen( Abc_Frame_t * pAbc, int nParts, int nIters, int fVerbose );
-    int c, nParts    = 10;
-    int nIters       = 10;
-    int fVerbose     =  0;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "NIvh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-        case 'N':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-N\" should be followed by an integer.\n" );
-                goto usage;
-            }
-            nParts = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nParts < 0 ) 
-                goto usage;
-            break;
-        case 'I':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-I\" should be followed by a string (possibly in quotes).\n" );
-                goto usage;
-            }
-            nIters = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            break;
-        case 'v':
-            fVerbose ^= 1;
-            break;
-        case 'h':
-            goto usage;
-        default:
-            goto usage;
-        }
-    }
-    if ( Abc_FrameReadNtk(pAbc) == NULL )
-    {
-        Abc_Print( -2, "There is no current network.\n" );
-        return 1;
-    }
-    if ( !Abc_NtkIsStrash(Abc_FrameReadNtk(pAbc)) )    
-    {
-        Abc_Print( -2, "The current network is not an AIG.\n" );
-        return 1;
-    }
-    Cmd_CommandSGen( pAbc, nParts, nIters, fVerbose );
-    return 0;
-
-usage:
-    Abc_Print( -2, "usage: sgen [-N num] [-I num] [-vh]\n" );
-    Abc_Print( -2, "\t         experiment with script generation\n" );
-    Abc_Print( -2, "\t-N num : the number of commands to use [default = %d]\n", nParts );
-    Abc_Print( -2, "\t-I num : the number of iterations to perform [default = %d]\n", nIters );
-    Abc_Print( -2, "\t-v     : toggle printing verbose information [default = %s]\n", fVerbose? "yes": "no" );
-    Abc_Print( -2, "\t-h     : print the command usage\n");
-    return 1;
-}
 
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///

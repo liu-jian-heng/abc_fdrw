@@ -74,8 +74,6 @@ struct Ssw_Pars_t_
     int              fEquivDump;    // enables dumping equivalences
     int              fEquivDump2;   // enables dumping equivalences
     int              fStopWhenGone; // stop when PO output is not a candidate constant
-    int              nSkip;
-    int              nSkipLimit;
     // optimized latch correspondence
     int              fLatchCorrOpt; // perform register correspondence (optimized)
     int              nSatVarMax;    // max number of SAT vars before recycling SAT solver (optimized latch corr only)
@@ -115,8 +113,6 @@ struct Ssw_RarPars_t_
     int              nSolved;
     Abc_Cex_t *      pCex;
     int(*pFuncOnFail)(int,Abc_Cex_t*); // called for a failed output in MO mode
-    int(*pFuncProgress)(void *, int, unsigned); // progress/termination callback
-    void *           pProgress;        // progress callback data
 };
 
 typedef struct Ssw_Sml_t_ Ssw_Sml_t; // sequential simulation manager

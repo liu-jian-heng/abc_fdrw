@@ -21,7 +21,6 @@
 #ifndef ABC__aig__gia__giaNewTt_h
 #define ABC__aig__gia__giaNewTt_h
 
-#include <cstdlib>
 #include <limits>
 #include <iomanip>
 #include <iostream>
@@ -42,11 +41,6 @@ namespace NewTt {
   static inline ref  RefMax()  { return std::numeric_limits<ref>::max();  }
   static inline size SizeMax() { return std::numeric_limits<size>::max(); }
 
-  static void fatal_error(const char* message) {
-    std::cerr << message << std::endl;
-    std::abort();
-  }
-
   struct Param {
     int  nObjsAllocLog;
     int  nObjsMaxLog;
@@ -54,7 +48,6 @@ namespace NewTt {
     bool fCountOnes;
     int  nGbc;
     int  nReo; // dummy
-    std::vector<int> *pVar2Level; // dummy
     Param() {
       nObjsAllocLog = 15;
       nObjsMaxLog   = 20;
@@ -188,35 +181,35 @@ namespace NewTt {
   public:
     Man(int nVars, Param p): nVars(nVars) {
       if(p.nObjsMaxLog < p.nObjsAllocLog)
-        fatal_error("nObjsMax must not be smaller than nObjsAlloc");
+        throw std::invalid_argument("nObjsMax must not be smaller than nObjsAlloc");
       if(nVars >= lww())
         nSize = 1ull << (nVars - lww());
       else
         nSize = 1;
       if(!nSize)
-        fatal_error("Memout (nVars) in init");
+        throw std::length_error("Memout (nVars) in init");
       if(!(nSize << p.nObjsMaxLog))
-        fatal_error("Memout (nObjsMax) in init");
+        throw std::length_error("Memout (nObjsMax) in init");
       lit nObjsMaxLit = (lit)1 << p.nObjsMaxLog;
       if(!nObjsMaxLit)
-        fatal_error("Memout (nObjsMax) in init");
+        throw std::length_error("Memout (nObjsMax) in init");
       if(nObjsMaxLit > (lit)BvarMax())
         nObjsMax = BvarMax();
       else
         nObjsMax = (bvar)nObjsMaxLit;
       lit nObjsAllocLit = (lit)1 << p.nObjsAllocLog;
       if(!nObjsAllocLit)
-        fatal_error("Memout (nObjsAlloc) in init");
+        throw std::length_error("Memout (nObjsAlloc) in init");
       if(nObjsAllocLit > (lit)BvarMax())
         nObjsAlloc = BvarMax();
       else
         nObjsAlloc = (bvar)nObjsAllocLit;
       if(nObjsAlloc <= (bvar)nVars)
-        fatal_error("nObjsAlloc must be larger than nVars");
+        throw std::invalid_argument("nObjsAlloc must be larger than nVars");
       nTotalSize = nSize << p.nObjsAllocLog;
       vVals.resize(nTotalSize);
       if(p.fCountOnes && nVars > 63)
-        fatal_error("nVars must be less than 64 to count ones");
+        throw std::length_error("nVars must be less than 64 to count ones");
       nObjs = 1;
       for(int i = 0; i < 6 && i < nVars; i++) {
         for(size j = 0; j < nSize; j++)
@@ -245,7 +238,7 @@ namespace NewTt {
         if(nGbc > 1)
           fRemoved = Gbc();
         if(!Resize() && !fRemoved && (nGbc != 1 || !Gbc()))
-          fatal_error("Memout (node)");
+          throw std::length_error("Memout (node)");
       }
       bvar zvar;
       if(nObjs < nObjsAlloc)
@@ -268,13 +261,9 @@ namespace NewTt {
       for(size_t i = 0; i < vLits.size(); i++)
         IncRef(vLits[i]);
     }
-    void RemoveRefIfUnused() {
+    void TurnOffReo() {
       if(!nGbc)
         vRefs.clear();
-    }
-    void TurnOffReo() {}
-    int GetNumVars() const {
-      return nVars;
     }
     void PrintNode(lit x) const {
       bvar a = Lit2Bvar(x);

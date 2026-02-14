@@ -25,48 +25,11 @@
 
 #ifdef ABC_USE_PTHREADS
 
-#if defined(_WIN32) && !defined(__MINGW32__)
-#include <windows.h>
-#include <time.h>
+#ifdef _WIN32
 #include "../lib/pthread.h"
-// nanosleep implementation for Windows
-static inline int nanosleep(const struct timespec *req, struct timespec *rem) {
-    LARGE_INTEGER li;
-    li.QuadPart = -((LONGLONG)req->tv_sec * 10000000 + req->tv_nsec / 100);
-    HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    if (!timer) return -1;
-    SetWaitableTimer(timer, &li, 0, NULL, NULL, 0);
-    WaitForSingleObject(timer, INFINITE);
-    CloseHandle(timer);
-    return 0;
-}
 #else
 #include <pthread.h>
 #include <unistd.h>
-#endif
-
-#ifdef __cplusplus
-#include <atomic>
-using namespace std;
-#else
-#ifndef _WIN32
-#include <stdatomic.h>
-#else
-// MSVC doesn't have stdatomic.h, use Interlocked functions instead
-#define atomic_bool volatile LONG
-#define atomic_int volatile LONG
-#define atomic_store(obj, val) InterlockedExchange((LONG*)obj, val)
-#define atomic_load(obj) (*(volatile LONG*)obj)
-#define atomic_compare_exchange_strong(obj, expected, desired) \
-    (InterlockedCompareExchange((LONG*)obj, desired, *expected) == *expected ? \
-     (*expected = desired, 1) : (*expected = *(volatile LONG*)obj, 0))
-#define atomic_store_explicit(obj, val, order) InterlockedExchange((LONG*)obj, val)
-#define atomic_load_explicit(obj, order) (*(volatile LONG*)obj)
-#define memory_order_acquire 0
-#define memory_order_release 0
-#define memory_order_seq_cst 0
-#endif
-#include <stdbool.h>
 #endif
 
 #endif
@@ -135,20 +98,17 @@ typedef struct Par_ScorrThData_t_
     int *        pMap;
     int          iThread;
     int          nTimeOut;
-    atomic_bool  fWorking;
+    int          fWorking;
 } Par_ScorrThData_t;
 
 void * Ssw_GiaWorkerThread( void * pArg )
 {
-    struct timespec pause_duration;
-    pause_duration.tv_sec = 0;
-    pause_duration.tv_nsec = 10000000L; // 10 milliseconds
-
     Par_ScorrThData_t * pThData = (Par_ScorrThData_t *)pArg;
+    volatile int * pPlace = &pThData->fWorking;
     while ( 1 )
     {
-        while ( !atomic_load_explicit((atomic_bool *)&pThData->fWorking, memory_order_acquire) )
-            nanosleep(&pause_duration, NULL);
+        while ( *pPlace == 0 );
+        assert( pThData->fWorking );
         if ( pThData->p == NULL )
         {
             pthread_exit( NULL );
@@ -156,7 +116,7 @@ void * Ssw_GiaWorkerThread( void * pArg )
             return NULL;
         }
         Cec_ManLSCorrespondenceClasses( pThData->p, &pThData->CorPars );
-        atomic_store_explicit(&pThData->fWorking, false, memory_order_release);
+        pThData->fWorking = 0;
     }
     assert( 0 );
     return NULL;
@@ -184,46 +144,37 @@ void Ssw_SignalCorrespondenceArray( Vec_Ptr_t * vGias, Ssw_Pars_t * pPars )
     {
         ThData[i].CorPars  = *pCorPars;
         ThData[i].iThread  = i;
-        atomic_store_explicit(&ThData[i].fWorking, false, memory_order_release);
+        //ThData[i].nTimeOut = pPars->nTimeOut;
+        ThData[i].fWorking = 0;
         status = pthread_create( WorkerThread + i, NULL, Ssw_GiaWorkerThread, (void *)(ThData + i) );  assert( status == 0 );
     }
-
-    struct timespec pause_duration;
-    pause_duration.tv_sec = 0;
-    pause_duration.tv_nsec = 10000000L; // 10 milliseconds
-
     // look at the threads
     vStack = Vec_PtrDup( vGias );
     while ( Vec_PtrSize(vStack) > 0 )
     {
         for ( i = 0; i < nProcs; i++ )
         {
-            if ( atomic_load_explicit(&ThData[i].fWorking, memory_order_acquire) )
+            if ( ThData[i].fWorking )
                 continue;
             ThData[i].p = (Gia_Man_t*)Vec_PtrPop( vStack );
-            atomic_store_explicit(&ThData[i].fWorking, true, memory_order_release);
+            ThData[i].fWorking = 1;   
             break;
         }
     }
     Vec_PtrFree( vStack );    
     // wait till threads finish
     for ( i = 0; i < nProcs; i++ )
-    {
-        if ( atomic_load_explicit(&ThData[i].fWorking, memory_order_acquire) )
-            i = -1; // Start from the beginning again
-        nanosleep(&pause_duration, NULL);
-    }
-
+        if ( ThData[i].fWorking )
+            i = -1;
     // stop threads
     for ( i = 0; i < nProcs; i++ )
     {
+        assert( !ThData[i].fWorking );
+        // stop
         ThData[i].p = NULL;
-        atomic_store_explicit(&ThData[i].fWorking, true, memory_order_release);
+        ThData[i].fWorking = 1;
     }
 
-    // Join threads
-    for ( i = 0; i < nProcs; i++ )
-        pthread_join( WorkerThread[i], NULL );
 }
 
 #endif // pthreads are used

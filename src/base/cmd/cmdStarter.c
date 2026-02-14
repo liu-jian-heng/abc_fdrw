@@ -27,7 +27,7 @@
 
 #ifdef ABC_USE_PTHREADS
 
-#if defined(_WIN32) && !defined(__MINGW32__)
+#ifdef _WIN32
 #include "../lib/pthread.h"
 #else
 #include <pthread.h>
@@ -44,7 +44,7 @@ ABC_NAMESPACE_IMPL_START
 
 #ifndef ABC_USE_PTHREADS
 
-void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores, int fVerbose ) {}
+void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores ) {}
 
 #else // pthreads are used
 
@@ -104,7 +104,7 @@ void * Abc_RunThread( void * pCommand )
   SeeAlso     []
 
 ***********************************************************************/
-void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores, int fVerbose )
+void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCores )
 {
     FILE * pFile, * pFileTemp;
     pthread_t * pThreadIds;
@@ -204,10 +204,8 @@ void Cmd_RunStarter( char * pFileName, char * pBinary, char * pCommand, int nCor
         }
         else
             BufferCopy = Abc_UtilStrsav( Buffer );
-        if ( fVerbose ) {
-            fprintf( stdout, "Calling:  %s\n", (char *)BufferCopy );  
-            fflush( stdout );
-        }
+        fprintf( stdout, "Calling:  %s\n", (char *)BufferCopy );  
+        fflush( stdout );
 
         // wait till there is an empty thread
         while ( 1 )

@@ -21,13 +21,12 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef Minisat_Solver_h
 #define Minisat_Solver_h
 
-#include "sat/bsat2/Vec.h"
-#include "sat/bsat2/Heap.h"
-#include "sat/bsat2/Alg.h"
-#include "sat/bsat2/Options.h"
-#include "sat/bsat2/SolverTypes.h"
+#include "Vec.h"
+#include "Heap.h"
+#include "Alg.h"
+#include "Options.h"
+#include "SolverTypes.h"
 
-ABC_NAMESPACE_CXX_HEADER_START
 
 namespace Minisat {
 
@@ -370,7 +369,5 @@ inline void     Solver::toDimacs     (const char* file, Lit p, Lit q, Lit r){ ve
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

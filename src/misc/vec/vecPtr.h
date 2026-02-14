@@ -455,7 +455,6 @@ static inline void Vec_PtrGrow( Vec_Ptr_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
-    assert( p->nCap < ABC_INT_MAX );
     p->pArray = ABC_REALLOC( void *, p->pArray, nCapMin ); 
     p->nCap   = nCapMin;
 }
@@ -507,7 +506,7 @@ static inline void Vec_PtrFillExtra( Vec_Ptr_t * p, int nSize, void * Fill )
     if ( nSize > 2 * p->nCap )
         Vec_PtrGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_PtrGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+        Vec_PtrGrow( p, 2 * p->nCap );
     for ( i = p->nSize; i < nSize; i++ )
         p->pArray[i] = Fill;
     p->nSize = nSize;
@@ -664,13 +663,6 @@ static inline void Vec_PtrPrintNames( Vec_Ptr_t * p )
         printf( "%s ", pName );
     printf( " }\n" );
 }
-static inline void Vec_PtrPrintPointers( Vec_Ptr_t * p )
-{
-    void * pTemp; int i;
-    printf( "Vector has %d pointer entries:\n", Vec_PtrSize(p) );
-    Vec_PtrForEachEntry( void *, p, pTemp, i )
-        printf( "%2d = %p\n", i, pTemp );
-}
 
 /**Function*************************************************************
 
@@ -690,7 +682,7 @@ static inline void Vec_PtrPush( Vec_Ptr_t * p, void * Entry )
         if ( p->nCap < 16 )
             Vec_PtrGrow( p, 16 );
         else
-            Vec_PtrGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_PtrGrow( p, 2 * p->nCap );
     }
     p->pArray[p->nSize++] = Entry;
 }
@@ -725,7 +717,7 @@ static inline void Vec_PtrPushFirst( Vec_Ptr_t * p, void * Entry )
         if ( p->nCap < 16 )
             Vec_PtrGrow( p, 16 );
         else
-            Vec_PtrGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_PtrGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize - 1; i >= 1; i-- )

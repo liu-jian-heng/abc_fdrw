@@ -460,11 +460,6 @@ cuddZddUniqueCompare(
   int * ptr_x,
   int * ptr_y)
 {
-//#if 0
-    if (zdd_entry[*ptr_y] == zdd_entry[*ptr_x]) {
-        return((*ptr_x) - (*ptr_y));
-    }
-//#endif
     return(zdd_entry[*ptr_y] - zdd_entry[*ptr_x]);
 
 } /* end of cuddZddUniqueCompare */
@@ -1669,4 +1664,5 @@ zddFixTree(
 
 
 ABC_NAMESPACE_IMPL_END
+
 

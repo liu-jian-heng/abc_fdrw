@@ -26,8 +26,6 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include "misc/zlib/zlib.h"
 
-ABC_NAMESPACE_CXX_HEADER_START
-
 namespace Minisat {
 
 //-------------------------------------------------------------------------------------------------
@@ -120,7 +118,5 @@ static bool eagerMatch(B& in, const char* str) {
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

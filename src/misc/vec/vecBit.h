@@ -350,7 +350,6 @@ static inline void Vec_BitGrow( Vec_Bit_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
-    assert( p->nCap < ABC_INT_MAX );
     nCapMin = (nCapMin >> 5) + ((nCapMin & 31) > 0);
     p->pArray = ABC_REALLOC( int, p->pArray, nCapMin ); 
     assert( p->pArray );
@@ -406,7 +405,7 @@ static inline void Vec_BitFillExtra( Vec_Bit_t * p, int nSize, int Fill )
     if ( nSize > 2 * p->nCap )
         Vec_BitGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_BitGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+        Vec_BitGrow( p, 2 * p->nCap );
 
     assert( p->nSize < nSize );
     if ( (p->nSize >> 5) == (nSize >> 5) )
@@ -528,13 +527,16 @@ static inline void Vec_BitPush( Vec_Bit_t * p, int Entry )
         if ( p->nCap < 16 )
             Vec_BitGrow( p, 16 );
         else
-            Vec_BitGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_BitGrow( p, 2 * p->nCap );
     }
     if ( Entry == 1 )
         p->pArray[p->nSize >> 5] |=  (1 << (p->nSize & 31));
     else if ( Entry == 0 )
         p->pArray[p->nSize >> 5] &= ~(1 << (p->nSize & 31));
-    else assert( 0 );
+    else {
+        printf( "Vec_BitPush: Entry = %d\n", Entry );
+        assert( 0 );
+    }
     p->nSize++;
 }
 
@@ -625,27 +627,6 @@ static inline void Vec_BitReset( Vec_Bit_t * p )
     int i, nWords = (p->nSize >> 5) + ((p->nSize & 31) > 0);
     for ( i = 0; i < nWords; i++ )
         p->pArray[i] = 0;
-}
-
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-static inline void Vec_BitPrint( Vec_Bit_t * p )
-{
-    int i, Entry;
-    printf( "Vector has %d entries: {", Vec_BitSize(p) );
-    Vec_BitForEachEntry( p, Entry, i )
-        printf( " %d", Entry );
-    printf( " }\n" );
 }
 
 ABC_NAMESPACE_HEADER_END

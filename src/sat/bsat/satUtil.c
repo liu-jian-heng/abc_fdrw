@@ -137,7 +137,8 @@ void Sat_Solver2WriteDimacs( sat_solver2 * p, char * pFileName, lit* assumpBegin
             nUnits++;
 
     // start the file
-    pFile = fopen( pFileName, "wb" );
+    // pFile = fopen( pFileName, "wb" );
+    pFile = fopen( pFileName, "w" );
     if ( pFile == NULL )
     {
         printf( "Sat_SolverWriteDimacs(): Cannot open the ouput file.\n" );
@@ -151,8 +152,16 @@ void Sat_Solver2WriteDimacs( sat_solver2 * p, char * pFileName, lit* assumpBegin
         Sat_SolverClauseWriteDimacs( pFile, c, incrementVars );
 
     // write the learned clauses
-//    Sat_MemForEachLearned( pMem, c, i, k )
-//        Sat_SolverClauseWriteDimacs( pFile, c, incrementVars );
+    if (p->verbosity) {
+        Sat_MemForEachLearned( pMem, c, i, k ) {
+            // Sat_SolverClauseWriteDimacs( pFile, c, incrementVars );
+            int t;
+            printf("learnt clause: ");
+            for ( t = 0; t < (int)c->size; t++ )
+                printf( "%s%d ", (lit_sign(c->lits[t])? "-": ""),  lit_var(c->lits[t]) );
+            printf( "is clause A ? %d\n", c->partA );
+        }
+    }
 
     // write zero-level assertions
     for ( i = 0; i < p->size; i++ )
@@ -175,8 +184,51 @@ void Sat_Solver2WriteDimacs( sat_solver2 * p, char * pFileName, lit* assumpBegin
     fprintf( pFile, "\n" );
     fclose( pFile );
 }   
-  
 
+void Sat_Solver2KeepLearnt( sat_solver2 * p ) {
+    Sat_Mem_t * pMem = &p->Mem;
+    FILE * pFile;
+    clause * c;
+    int t, isA;
+    int i, k, nUnits;
+    Sat_MemForEachClause2( pMem, c, i, k ) {
+        clause_set_id( c, -1 );
+    }
+    Sat_MemForEachLearned( pMem, c, i, k ) {
+        if (c->lrn == false) continue;
+        isA = true;
+        for ( t = 0; t < (int)c->size; t++ ) {
+            if ( var_is_partA(p, lit_var(c->lits[t])) == 0 ) {
+                isA = false;
+                break;
+            }
+        }
+        c->partA = isA;
+        c->lrn = 0;
+        // clause_set_id( c, -1 );
+
+        printf("learnt clause: ");
+        for ( t = 0; t < (int)c->size; t++ )
+            printf( "%s%d ", (lit_sign(c->lits[t])? "-": ""),  lit_var(c->lits[t]) );
+        printf( "is clause A ? %d, is Learnt ? %d, clauseId = %d\n", c->partA, c->lrn, clause_id(c));
+    }
+    (&p->claProofs)->size = 0;
+}
+
+void Sat_Solver2Learnts( sat_solver2 * p, Vec_Wec_t * vLearnts ) {
+    clause * c;
+    int t, isA;
+    int i, k, nUnits;
+    Sat_Mem_t * pMem = &p->Mem;
+    Sat_MemForEachLearned( pMem, c, i, k ) {
+        // for ( int i = 0; i <= c->size; i++ ) {
+        //     printf("%c%d ", Abc_LitIsCompl(c->lits[i]) ? '-' : ' ', Abc_Lit2Var(c->lits[i]));
+        // }
+        // printf("\n");
+        if (c->size > 3) continue; 
+        Vec_IntPushArray(Vec_WecPushLevel( vLearnts ), c->lits, c->size);
+    }
+}
 /**Function*************************************************************
 
   Synopsis    [Writes the given clause in a file in DIMACS format.]

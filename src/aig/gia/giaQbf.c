@@ -23,9 +23,7 @@
 #include "sat/bsat/satStore.h"
 #include "misc/extra/extra.h"
 #include "sat/glucose/AbcGlucose.h"
-#include "sat/cadical/cadicalSolver.h"
 #include "misc/util/utilTruth.h"
-#include "base/io/ioResub.h"
 
 ABC_NAMESPACE_IMPL_START
 
@@ -46,7 +44,6 @@ struct Qbf_Man_t_
     sat_solver *    pSatVer;        // verification instance
     sat_solver *    pSatSyn;        // synthesis instance
     bmcg_sat_solver*pSatSynG;       // synthesis instance
-    cadical_solver* pSatSynC;       // synthesis instance
     Vec_Int_t *     vValues;        // variable values
     Vec_Int_t *     vParMap;        // parameter mapping
     Vec_Int_t *     vLits;          // literals for the SAT solver
@@ -536,7 +533,7 @@ void Gia_QbfDumpFileInv( Gia_Man_t * pGia, int nPars )
   SeeAlso     []
 
 ***********************************************************************/
-Qbf_Man_t * Gia_QbfAlloc( Gia_Man_t * pGia, int nPars, int fGlucose, int fCadical, int fVerbose )
+Qbf_Man_t * Gia_QbfAlloc( Gia_Man_t * pGia, int nPars, int fGlucose, int fVerbose )
 {
     Qbf_Man_t * p;
     Cnf_Dat_t * pCnf;
@@ -553,13 +550,11 @@ Qbf_Man_t * Gia_QbfAlloc( Gia_Man_t * pGia, int nPars, int fGlucose, int fCadica
     p->pSatVer    = (sat_solver *)Cnf_DataWriteIntoSolver( pCnf, 1, 0 );
     p->pSatSyn    = sat_solver_new();
     p->pSatSynG   = fGlucose ? bmcg_sat_solver_start() : NULL; 
-    p->pSatSynC   = fCadical ? cadical_solver_new() : NULL; 
     p->vValues    = Vec_IntAlloc( Gia_ManPiNum(pGia) );
     p->vParMap    = Vec_IntStartFull( nPars );
     p->vLits      = Vec_IntAlloc( nPars );
     sat_solver_setnvars( p->pSatSyn, nPars );
     if ( p->pSatSynG ) bmcg_sat_solver_set_nvars( p->pSatSynG, nPars );
-    if ( p->pSatSynC ) cadical_solver_setnvars( p->pSatSynC, nPars );
     Cnf_DataFree( pCnf );
     return p;
 }
@@ -568,7 +563,6 @@ void Gia_QbfFree( Qbf_Man_t * p )
     sat_solver_delete( p->pSatVer );
     sat_solver_delete( p->pSatSyn );
     if ( p->pSatSynG ) bmcg_sat_solver_stop( p->pSatSynG );
-    if ( p->pSatSynC ) cadical_solver_delete( p->pSatSynC );
     Vec_IntFree( p->vLits );
     Vec_IntFree( p->vValues );
     Vec_IntFree( p->vParMap );
@@ -754,21 +748,6 @@ int Gia_QbfAddCofactorG( Qbf_Man_t * p, Gia_Man_t * pCof )
     Cnf_DataFree( pCnf );
     return 1;
 }
-int Gia_QbfAddCofactorC( Qbf_Man_t * p, Gia_Man_t * pCof )
-{
-    Cnf_Dat_t * pCnf = (Cnf_Dat_t *)Mf_ManGenerateCnf( pCof, 8, 0, 1, 0, 0 );
-    int i, iFirstVar = pCnf->nVars - Gia_ManPiNum(pCof); //-1   
-    pCnf->pMan = NULL;
-    Cnf_SpecialDataLift( pCnf, cadical_solver_nvars(p->pSatSynC), iFirstVar, iFirstVar + Gia_ManPiNum(p->pGia) );
-    for ( i = 0; i < pCnf->nClauses; i++ )
-        if ( !cadical_solver_addclause( p->pSatSynC, pCnf->pClauses[i], pCnf->pClauses[i+1] ) )
-        {
-            Cnf_DataFree( pCnf );
-            return 0;
-        }
-    Cnf_DataFree( pCnf );
-    return 1;
-}
 
 /**Function*************************************************************
 
@@ -786,20 +765,16 @@ void Gia_QbfOnePattern( Qbf_Man_t * p, Vec_Int_t * vValues )
     int i;
     Vec_IntClear( vValues );
     for ( i = 0; i < p->nPars; i++ )
-        Vec_IntPush( vValues, p->pSatSynC ? cadical_solver_get_var_value(p->pSatSynC, i) :
-                              p->pSatSynG ? bmcg_sat_solver_read_cex_varvalue(p->pSatSynG, i) : sat_solver_var_value(p->pSatSyn, i) );
+        Vec_IntPush( vValues, p->pSatSynG ? bmcg_sat_solver_read_cex_varvalue(p->pSatSynG, i) : sat_solver_var_value(p->pSatSyn, i) );
 }
 void Gia_QbfPrint( Qbf_Man_t * p, Vec_Int_t * vValues, int Iter )
 {
     printf( "%5d : ", Iter );
     assert( Vec_IntSize(vValues) == p->nVars );
     Vec_IntPrintBinary( vValues ); printf( "  " );
-    printf( "Var =%7d  ",  p->pSatSynC ? cadical_solver_nvars(p->pSatSynC)        :
-                           p->pSatSynG ? bmcg_sat_solver_varnum(p->pSatSynG)      : sat_solver_nvars(p->pSatSyn)      );
-    printf( "Cla =%7d  ",  p->pSatSynC ? cadical_solver_nclauses(p->pSatSynC)     :
-                           p->pSatSynG ? bmcg_sat_solver_clausenum(p->pSatSynG)   : sat_solver_nclauses(p->pSatSyn)   );
-    printf( "Conf =%9d  ", p->pSatSynC ? cadical_solver_nconflicts(p->pSatSynC)   :
-                           p->pSatSynG ? bmcg_sat_solver_conflictnum(p->pSatSynG) : sat_solver_nconflicts(p->pSatSyn) );
+    printf( "Var =%7d  ",  p->pSatSynG ? bmcg_sat_solver_varnum(p->pSatSynG)      : sat_solver_nvars(p->pSatSyn)      );
+    printf( "Cla =%7d  ",  p->pSatSynG ? bmcg_sat_solver_clausenum(p->pSatSynG)   : sat_solver_nclauses(p->pSatSyn)   );
+    printf( "Conf =%9d  ", p->pSatSynG ? bmcg_sat_solver_conflictnum(p->pSatSynG) : sat_solver_nconflicts(p->pSatSyn) );
     Abc_PrintTime( 1, "Time", Abc_Clock() - p->clkStart );
 }
 
@@ -893,9 +868,9 @@ void Gia_QbfLearnConstraint( Qbf_Man_t * p, Vec_Int_t * vValues )
   SeeAlso     []
 
 ***********************************************************************/
-int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, int nTimeOut, int nEncVars, int fGlucose, int fCadical, int fSilent, int fVerbose )
+int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, int nTimeOut, int nEncVars, int fGlucose, int fVerbose )
 {
-    Qbf_Man_t * p = Gia_QbfAlloc( pGia, nPars, fGlucose, fCadical, fVerbose );
+    Qbf_Man_t * p = Gia_QbfAlloc( pGia, nPars, fGlucose, fVerbose );
     Gia_Man_t * pCof;
     int i, status, RetValue = 0;
     abctime clk;
@@ -910,15 +885,12 @@ int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, i
         // generate next constraint
         assert( Vec_IntSize(p->vValues) == p->nVars );
         pCof = Gia_QbfCofactor( pGia, nPars, p->vValues, p->vParMap );
-        status = p->pSatSynC ? Gia_QbfAddCofactorC( p, pCof ) :
-                 p->pSatSynG ? Gia_QbfAddCofactorG( p, pCof ) : Gia_QbfAddCofactor( p, pCof );
+        status = p->pSatSynG ? Gia_QbfAddCofactorG( p, pCof ) : Gia_QbfAddCofactor( p, pCof );
         Gia_ManStop( pCof );
         if ( status == 0 )       { RetValue =  1; break; }
         // synthesize next assignment
         clk = Abc_Clock();
-        if ( p->pSatSynC )
-            status = cadical_solver_solve( p->pSatSynC, NULL, NULL, 0, 0, 0, 0 );
-        else if ( p->pSatSynG )
+        if ( p->pSatSynG )
             status = bmcg_sat_solver_solve( p->pSatSynG, NULL, 0 );
         else
             status = sat_solver_solve( p->pSatSyn, NULL, NULL, (ABC_INT64_T)nConfLimit, 0, 0, 0 );
@@ -939,18 +911,9 @@ int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, i
     if ( RetValue == 0 )
     {
         int nZeros = Vec_IntCountZero( p->vValues );
-        printf( "Parameters (%d): 0x", nPars );
+        printf( "Parameters: " );
         assert( Vec_IntSize(p->vValues) == nPars );
-        //Vec_IntPrintBinary( p->vValues );
-        while ( Vec_IntSize(p->vValues) % 4 )
-            Vec_IntPush(p->vValues, 0);
-        for ( int i = Vec_IntSize(p->vValues)/4 - 1; i >= 0; i-- ) {
-            int Digit = Vec_IntEntry(p->vValues, 4*i+0);
-            Digit |= Vec_IntEntry(p->vValues, 4*i+1) << 1;
-            Digit |= Vec_IntEntry(p->vValues, 4*i+2) << 2;
-            Digit |= Vec_IntEntry(p->vValues, 4*i+3) << 3;
-            printf( "%x", Digit );
-        }
+        Vec_IntPrintBinary( p->vValues );
         printf( "  Statistics: 0=%d 1=%d\n", nZeros, Vec_IntSize(p->vValues) - nZeros );
         if ( nEncVars )
         {
@@ -965,9 +928,9 @@ int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, i
         printf( "The problem aborted after %d conflicts.  ", nConfLimit );
     else if ( RetValue == -1 && nIterLimit )
         printf( "The problem aborted after %d iterations.  ", nIterLimit );
-    else if ( RetValue == 1 && !fSilent )
+    else if ( RetValue == 1 )
         printf( "The problem is UNSAT after %d iterations.  ", i );
-    else if ( !fSilent )
+    else 
         printf( "The problem is SAT after %d iterations.  ", i );
     if ( fVerbose )
     {
@@ -976,305 +939,10 @@ int Gia_QbfSolve( Gia_Man_t * pGia, int nPars, int nIterLimit, int nConfLimit, i
         Abc_PrintTime( 1, "Other", Abc_Clock() - p->clkStart - p->clkSat );
         Abc_PrintTime( 1, "TOTAL", Abc_Clock() - p->clkStart );
     }
-    else if ( !fSilent )
+    else
         Abc_PrintTime( 1, "Time", Abc_Clock() - p->clkStart );
     Gia_QbfFree( p );
     return RetValue;
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Derive the SAT solver.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-sat_solver * Gia_ManGenSolver( Gia_Man_t * p, Vec_Int_t * vInsOuts, int nIns )
-{
-    Gia_Obj_t * pObj; int i, nObjs = Gia_ManObjNum(p);
-    sat_solver * pSat = sat_solver_new();
-    sat_solver_setnvars( pSat, 2 * nObjs );
-    Gia_ManIncrementTravId(p);
-    Gia_ManForEachObjVecStart( vInsOuts, p, pObj, i, nIns )
-        Gia_ObjSetTravIdCurrent(p, pObj);
-    Gia_ManForEachAnd( p, pObj, i )
-        if ( !Gia_ObjIsTravIdCurrent(p, pObj) )
-            sat_solver_add_and( pSat, i, Gia_ObjFaninId0(pObj, i), Gia_ObjFaninId1(pObj, i), Gia_ObjFaninC0(pObj), Gia_ObjFaninC1(pObj), 0 );
-    Gia_ManForEachAnd( p, pObj, i )
-        sat_solver_add_and( pSat, nObjs+i, nObjs+Gia_ObjFaninId0(pObj, i), nObjs+Gia_ObjFaninId1(pObj, i), Gia_ObjFaninC0(pObj), Gia_ObjFaninC1(pObj), 0 );
-    Gia_ManForEachCi( p, pObj, i )
-        if ( !Gia_ObjIsTravIdCurrent(p, pObj) )
-            sat_solver_add_buffer( pSat, nObjs+Gia_ObjId(p, pObj), Gia_ObjId(p, pObj), 0 );
-    Gia_ManForEachCo( p, pObj, i )
-        if ( Gia_ObjFaninId0p(p, pObj) > 0 ) {
-            sat_solver_add_buffer( pSat, Gia_ObjId(p, pObj), Gia_ObjFaninId0p(p, pObj), Gia_ObjFaninC0(pObj) );
-            sat_solver_add_buffer( pSat, nObjs+Gia_ObjId(p, pObj), nObjs+Gia_ObjFaninId0p(p, pObj), Gia_ObjFaninC0(pObj) );
-            sat_solver_add_buffer( pSat, nObjs+Gia_ObjId(p, pObj), Gia_ObjId(p, pObj), 0 );
-        }
-    return pSat;
-}
-Vec_Int_t * Gia_ManGenCombs( Gia_Man_t * p, Vec_Int_t * vInsOuts, int nIns, int fVerbose )
-{
-    int nTimeOut = 600, nConfLimit = 1000000;
-    int i, iSatVar, Iter, Mask, nSolutions = 0, RetValue = 0;
-    abctime clkStart  = Abc_Clock();
-    sat_solver * pSat = Gia_ManGenSolver( p, vInsOuts, nIns );
-    Vec_Int_t * vLits = Vec_IntAlloc( 100 );
-    Vec_Int_t * vRes  = Vec_IntAlloc( 1000 );
-    for ( Iter = 0; Iter < 1000000; Iter++ )
-    {        
-        int status = sat_solver_solve( pSat, NULL, NULL, (ABC_INT64_T)nConfLimit, 0, 0, 0 );
-        if ( status == l_False ) { RetValue =  1; break; }
-        if ( status == l_Undef ) { RetValue =  0; break; }
-        nSolutions++;
-        // extract SAT assignment
-        Mask = 0;
-        Vec_IntClear( vLits );
-        Vec_IntForEachEntry( vInsOuts, iSatVar, i ) {
-            Vec_IntPush( vLits, Abc_Var2Lit(iSatVar, sat_solver_var_value(pSat, iSatVar)) );
-            if ( sat_solver_var_value(pSat, iSatVar) )
-                Mask |= 1 << (Vec_IntSize(vInsOuts)-1-i); 
-        }
-        Vec_IntPush( vRes, Mask );
-        if ( fVerbose )
-        {
-            printf( "%5d : ", Iter );
-            Vec_IntForEachEntry( vInsOuts, iSatVar, i ) {
-                if ( i == nIns )  printf( " " );
-                printf( "%d", (Mask >> (Vec_IntSize(vInsOuts)-1-i)) & 1 );
-            }
-            printf( "\n" );
-        }
-        // add clause
-        if ( !sat_solver_addclause( pSat, Vec_IntArray(vLits), Vec_IntArray(vLits) + Vec_IntSize(vLits) ) )
-            { RetValue =  1; break; }
-        if ( nTimeOut && (Abc_Clock() - clkStart)/CLOCKS_PER_SEC >= nTimeOut ) { RetValue = 0; break; }
-    }
-    Vec_IntSort( vRes, 0 );
-    Vec_IntFree( vLits );
-    sat_solver_delete( pSat );
-    if ( RetValue == 0 )
-        Vec_IntFreeP( &vRes );
-    if ( fVerbose )
-        Abc_PrintTime( 1, "Time", Abc_Clock() - clkStart );
-    return vRes;
-}
-void Gia_ManGenWriteRel( Vec_Int_t * vRes, int nIns, int nOuts, char * pFileName )
-{
-    int i, k, Mask, nVars = nIns + nOuts;    
-    Abc_RData_t * p2, * p = Abc_RDataStart( nIns, nOuts, Vec_IntSize(vRes) );    
-    Vec_IntForEachEntry( vRes, Mask, i ) {
-        for ( k = 0; k < nVars; k++ )
-            if ( (Mask >> (nVars-1-k)) & 1 ) { // the bit is 1
-                if ( k < nIns )
-                    Abc_RDataSetIn( p, k, i );
-                else
-                    Abc_RDataSetOut( p, 2*(k-nIns)+1, i );
-            }
-            else { // the bit is zero
-                if ( k >= nIns )
-                    Abc_RDataSetOut( p, 2*(k-nIns), i );
-            }
-    }
-    Abc_WritePla( p, pFileName, 0 );
-    p2 = Abc_RData2Rel( p );
-    Abc_WritePla( p2, Extra_FileNameGenericAppend(pFileName, "_rel.pla"), 1 );
-    Abc_RDataStop( p2 );
-    Abc_RDataStop( p );
-}
-void Gia_ManGenRel2( Gia_Man_t * pGia, Vec_Int_t * vInsOuts, int nIns, char * pFileName, int fVerbose )
-{
-    Vec_Int_t * vRes = Gia_ManGenCombs( pGia, vInsOuts, nIns, fVerbose ); 
-    if ( vRes == NULL ) {
-        printf( "Enumerating solutions did not succeed.\n" );
-        return;
-    }
-    Gia_ManGenWriteRel( vRes, nIns, Vec_IntSize(vInsOuts)-nIns, pFileName );
-    Vec_IntFree( vRes );
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Derive the SAT solver.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-Vec_Int_t * Gia_ManCollectNodeTfos( Gia_Man_t * p, int * pNodes, int nNodes )
-{
-    Vec_Int_t * vTfo = Vec_IntAlloc( 100 );
-    Gia_Obj_t * pObj; int i;
-    Gia_ManIncrementTravId( p );
-    for ( i = 0; i < nNodes; i++ )
-        Gia_ObjSetTravIdCurrentId( p, pNodes[i] );
-    Gia_ManForEachAnd( p, pObj, i ) {
-        if ( Gia_ObjIsTravIdCurrentId(p, i) )
-            continue;
-        if ( Gia_ObjIsTravIdCurrentId(p, Gia_ObjFaninId0(pObj, i)) || Gia_ObjIsTravIdCurrentId(p, Gia_ObjFaninId1(pObj, i)) )
-            Gia_ObjSetTravIdCurrentId( p, i ), Vec_IntPush( vTfo, i );
-    }
-    Gia_ManForEachCo( p, pObj, i )
-        if ( Gia_ObjIsTravIdCurrentId(p, Gia_ObjFaninId0p(p, pObj)) )
-            Vec_IntPush( vTfo, Gia_ObjId(p, pObj) );
-    return vTfo;
-}
-Vec_Int_t * Gia_ManCollectNodeTfis( Gia_Man_t * p, Vec_Int_t * vNodes )
-{
-    Vec_Int_t * vTfi = Vec_IntAlloc( 100 );
-    Gia_Obj_t * pObj; int i, Id;
-    Gia_ManIncrementTravId( p );
-    Gia_ManForEachObjVec( vNodes, p, pObj, i )
-        if ( Gia_ObjIsCo(pObj) )
-            Gia_ObjSetTravIdCurrentId( p, Gia_ObjFaninId0p(p, pObj) );
-    Gia_ManForEachAndReverse( p, pObj, i ) {
-        if ( !Gia_ObjIsTravIdCurrentId(p, i) )
-            continue;        
-        Gia_ObjSetTravIdCurrentId(p, Gia_ObjFaninId0(pObj, i));
-        Gia_ObjSetTravIdCurrentId(p, Gia_ObjFaninId1(pObj, i));
-    }
-    Gia_ManForEachCiId( p, Id, i )
-        if ( Gia_ObjIsTravIdCurrentId(p, Id) )
-            Vec_IntPush( vTfi, Id );
-    Gia_ManForEachAnd( p, pObj, i )
-        if ( Gia_ObjIsTravIdCurrentId(p, i) )
-            Vec_IntPush( vTfi, i );
-    return vTfi;
-}
-Gia_Man_t * Gia_ManGenRelMiter( Gia_Man_t * pGia, Vec_Int_t * vInsOuts, int nIns )
-{
-    Vec_Int_t * vTfo = Gia_ManCollectNodeTfos( pGia, Vec_IntEntryP(vInsOuts, nIns), Vec_IntSize(vInsOuts)-nIns );
-    Vec_Int_t * vTfi = Gia_ManCollectNodeTfis( pGia, vTfo );
-    Vec_Int_t * vInLits  = Vec_IntAlloc( nIns );
-    Vec_Int_t * vOutLits = Vec_IntAlloc( Vec_IntSize(vInsOuts) - nIns );
-    Gia_Man_t * pNew, * pTemp; Gia_Obj_t * pObj; int i, iLit = 0;
-    Gia_ManFillValue( pGia );
-    pNew = Gia_ManStart( 1000 );
-    pNew->pName = Abc_UtilStrsav( pGia->pName );
-    Gia_ManHashAlloc( pNew );
-     Gia_ManForEachObjVec( vTfi, pGia, pObj, i )
-        if ( Gia_ObjIsCi(pObj) )
-            pObj->Value = Gia_ManAppendCi(pNew);
-    for ( i = 0; i < Vec_IntSize(vInsOuts)-nIns; i++ )
-        Vec_IntPush( vInLits, Gia_ManAppendCi(pNew) );
-    Gia_ManForEachObjVec( vTfi, pGia, pObj, i )
-        if ( Gia_ObjIsAnd(pObj) )
-            pObj->Value = Gia_ManHashAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
-    Gia_ManForEachObjVec( vTfo, pGia, pObj, i )
-        if ( Gia_ObjIsCo(pObj) )
-            pObj->Value = Gia_ObjFanin0Copy(pObj);
-    Gia_ManForEachObjVec( vInsOuts, pGia, pObj, i )
-        if ( i < nIns )
-            Vec_IntPush( vOutLits, pObj->Value );
-        else
-            pObj->Value = Vec_IntEntry( vInLits, i-nIns );        
-    Gia_ManForEachObjVec( vTfo, pGia, pObj, i )
-        if ( Gia_ObjIsAnd(pObj) )
-            pObj->Value = Gia_ManHashAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
-    Gia_ManForEachObjVec( vTfo, pGia, pObj, i )
-        if ( Gia_ObjIsCo(pObj) )
-            iLit = Gia_ManHashOr( pNew, iLit, Gia_ManHashXor(pNew, Gia_ObjFanin0Copy(pObj), pObj->Value) );
-    Gia_ManAppendCo( pNew, iLit );
-    Vec_IntForEachEntry( vOutLits, iLit, i )
-        Gia_ManAppendCo( pNew, iLit );
-    Vec_IntFree( vTfo );
-    Vec_IntFree( vTfi );
-    Vec_IntFree( vInLits );
-    Vec_IntFree( vOutLits );
-    pNew = Gia_ManCleanup( pTemp = pNew );
-    Gia_ManStop( pTemp );
-    Gia_ManSetRegNum( pNew, Gia_ManRegNum(pGia) );
-    return pNew;
-}
-void Gia_ManPrintRelMinterm( int Mint, int nIns, int nVars )
-{
-    for ( int i = 0; i < nVars; i++ )
-        printf( "%s%d", i == nIns ? " ":"", (Mint >> (nVars-1-i)) & 1 );
-    printf( "\n" );    
-}
-Vec_Int_t * Gia_ManGenIoCombs( Gia_Man_t * pGia, Vec_Int_t * vInsOuts, int nIns, int fVerbose )
-{
-    abctime clkStart  = Abc_Clock();
-    int nTimeOut = 600, nConfLimit = 1000000;
-    int i, iNode, iSatVar, Iter, Mask, nSolutions = 0, RetValue = 0;
-    Gia_Man_t * pMiter = Gia_ManGenRelMiter( pGia, vInsOuts, nIns );
-    Cnf_Dat_t * pCnf   = (Cnf_Dat_t*)Mf_ManGenerateCnf( pMiter, 8, 0, 0, 0, 0 );
-    sat_solver * pSat  = (sat_solver*)Cnf_DataWriteIntoSolver( pCnf, 1, 0 );
-    int iLit = Abc_Var2Lit( 1, 0 ); // enumerating the care set (the miter output is 1)
-    int status = sat_solver_addclause( pSat, &iLit, &iLit + 1 );  assert( status );
-    Vec_Int_t * vSatVars = Vec_IntAlloc( Vec_IntSize(vInsOuts) );
-    Vec_IntForEachEntry( vInsOuts, iNode, i )
-        Vec_IntPush( vSatVars, i < nIns ? 2+i : pCnf->nVars-Vec_IntSize(vInsOuts)+i );
-    Vec_Int_t * vLits = Vec_IntAlloc( 100 );
-    Vec_Int_t * vRes  = Vec_IntAlloc( 1000 );
-    for ( Iter = 0; Iter < 1000000; Iter++ )
-    {        
-        int status = sat_solver_solve( pSat, NULL, NULL, (ABC_INT64_T)nConfLimit, 0, 0, 0 );
-        if ( status == l_False ) { RetValue =  1; break; }
-        if ( status == l_Undef ) { RetValue =  0; break; }
-        nSolutions++;
-        // extract SAT assignment
-        Mask = 0;
-        Vec_IntClear( vLits );
-        Vec_IntForEachEntry( vSatVars, iSatVar, i ) {
-            Vec_IntPush( vLits, Abc_Var2Lit(iSatVar, sat_solver_var_value(pSat, iSatVar)) );
-            if ( sat_solver_var_value(pSat, iSatVar) )
-                Mask |= 1 << (Vec_IntSize(vInsOuts)-1-i); 
-        }
-        Vec_IntPush( vRes, Mask );
-        if ( 0 ) {
-            printf( "%5d : ", Iter );
-            Gia_ManPrintRelMinterm( Mask, nIns, Vec_IntSize(vSatVars) );
-        }
-        // add clause
-        if ( !sat_solver_addclause( pSat, Vec_IntArray(vLits), Vec_IntArray(vLits) + Vec_IntSize(vLits) ) )
-            { RetValue =  1; break; }
-        if ( nTimeOut && (Abc_Clock() - clkStart)/CLOCKS_PER_SEC >= nTimeOut ) { RetValue = 0; break; }
-    }
-    // complement the set of input/output minterms
-    Vec_Int_t * vBits = Vec_IntStart( 1 << Vec_IntSize(vInsOuts) );
-    Vec_IntForEachEntry( vRes, Mask, i )
-        Vec_IntWriteEntry( vBits, Mask, 1 );
-    Vec_IntClear( vRes );
-    Vec_IntForEachEntry( vBits, Mask, i )
-        if ( !Mask )
-            Vec_IntPush( vRes, i );
-    Vec_IntFree( vBits );
-    // cleanup
-    Vec_IntFree( vLits );
-    sat_solver_delete( pSat );
-    Gia_ManStop( pMiter ); 
-    Cnf_DataFree( pCnf );
-    if ( RetValue == 0 )
-        Vec_IntFreeP( &vRes );        
-    return vRes;   
-}
-void Gia_ManGenRel( Gia_Man_t * pGia, Vec_Int_t * vInsOuts, int nIns, char * pFileName, int fVerbose )
-{
-    abctime clkStart  = Abc_Clock();
-    Vec_Int_t * vRes = Gia_ManGenIoCombs( pGia, vInsOuts, nIns, fVerbose ); 
-    if ( vRes == NULL ) {
-        printf( "Enumerating solutions did not succeed.\n" );
-        return;
-    }
-    Gia_ManGenWriteRel( vRes, nIns, Vec_IntSize(vInsOuts)-nIns, pFileName );
-    if ( fVerbose ) {
-        printf( "The resulting relation with %d input/output minterms is written into file \"%s\".  ", Vec_IntSize(vRes), pFileName );
-        Abc_PrintTime( 1, "Time", Abc_Clock() - clkStart );
-        if ( 0 ) {
-            int i, Mint;
-            Vec_IntForEachEntry( vRes, Mint, i )
-                Gia_ManPrintRelMinterm( Mint, nIns, Vec_IntSize(vInsOuts) );
-        }
-    }
-    Vec_IntFree( vRes );
 }
 
 ////////////////////////////////////////////////////////////////////////

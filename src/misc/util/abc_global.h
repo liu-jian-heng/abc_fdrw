@@ -31,9 +31,7 @@
 
 #ifdef _WIN32
 #ifndef __MINGW32__
-#ifndef _MSC_VER
 #define inline __inline // compatible with MS VS 6.0
-#endif
 #pragma warning(disable : 4152) // warning C4152: nonstandard extension, function/data pointer conversion in expression
 #pragma warning(disable : 4200) // warning C4200: nonstandard extension used : zero-sized array in struct/union
 #pragma warning(disable : 4244) // warning C4244: '+=' : conversion from 'int ' to 'unsigned short ', possible loss of data
@@ -250,7 +248,6 @@ typedef ABC_INT64_T iword;
 ////////////////////////////////////////////////////////////////////////
 
 #define ABC_INFINITY    (1000000000)
-#define ABC_INT_MAX     (2147483647)
 
 #define ABC_SWAP(Type, a, b)  { Type t = a; a = b; b = t; }
 
@@ -266,7 +263,8 @@ typedef ABC_INT64_T iword;
 #define ABC_ALLOC(type, num)     ((type *) malloc(sizeof(type) * (size_t)(num)))
 #define ABC_CALLOC(type, num)    ((type *) calloc((size_t)(num), sizeof(type)))
 #define ABC_FALLOC(type, num)    ((type *) memset(malloc(sizeof(type) * (size_t)(num)), 0xff, sizeof(type) * (size_t)(num)))
-#define ABC_FREE(obj)            ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)
+/* free the memory, set the pointer to 0 */
+#define ABC_FREE(obj)            ((obj) ? ( free((char *) (obj)), (obj) = 0) : 0)
 #define ABC_REALLOC(type, obj, num) \
         ((obj) ? ((type *) realloc((char *)(obj), sizeof(type) * (size_t)(num))) : \
          ((type *) malloc(sizeof(type) * (size_t)(num))))
@@ -290,12 +288,9 @@ static inline double   Abc_Word2Dbl( word Num )               { union { word x; 
 static inline int      Abc_Base2Log( unsigned n )             { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n >>= 1, r++ ) {}; return r; }
 static inline int      Abc_Base10Log( unsigned n )            { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n /= 10, r++ ) {}; return r; }
 static inline int      Abc_Base16Log( unsigned n )            { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n /= 16, r++ ) {}; return r; }
-static inline int      Abc_Base2LogW( word n )                { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n >>= 1, r++ ) {}; return r; }
-static inline int      Abc_Base10LogW( word n )               { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n /= 10, r++ ) {}; return r; }
-static inline int      Abc_Base16LogW( word n )               { int r; if ( n < 2 ) return (int)n; for ( r = 0, n--; n; n /= 16, r++ ) {}; return r; }
 static inline char *   Abc_UtilStrsav( char * s )             { return s ? strcpy(ABC_ALLOC(char, strlen(s)+1), s) : NULL;  }
-static inline char *   Abc_UtilStrsavTwo( char * s, char * a ){ char * r; if (!a) return Abc_UtilStrsav(s); r = ABC_ALLOC(char, strlen(s)+strlen(a)+1); snprintf(r, strlen(s)+strlen(a)+1, "%s%s", s, a ); return r; }
-static inline char *   Abc_UtilStrsavNum( char * s, int n )   { char * r; if (!s) return NULL;              r = ABC_ALLOC(char, strlen(s)+12+1);        snprintf(r, strlen(s)+12+1, "%s%d", s, n ); return r; }
+static inline char *   Abc_UtilStrsavTwo( char * s, char * a ){ char * r; if (!a) return Abc_UtilStrsav(s); r = ABC_ALLOC(char, strlen(s)+strlen(a)+1); sprintf(r, "%s%s", s, a ); return r; }
+static inline char *   Abc_UtilStrsavNum( char * s, int n )   { char * r; if (!s) return NULL;              r = ABC_ALLOC(char, strlen(s)+12+1);        sprintf(r, "%s%d", s, n ); return r; }
 static inline int      Abc_BitByteNum( int nBits )            { return (nBits>>3) + ((nBits&7)  > 0);                       }
 static inline int      Abc_BitWordNum( int nBits )            { return (nBits>>5) + ((nBits&31) > 0);                       }
 static inline int      Abc_Bit6WordNum( int nBits )           { return (nBits>>6) + ((nBits&63) > 0);                       }
@@ -312,7 +307,7 @@ static inline int      Abc_Lit2Var( int Lit )                 { assert(Lit >= 0)
 static inline int      Abc_LitIsCompl( int Lit )              { assert(Lit >= 0); return Lit & 1;                           }
 static inline int      Abc_LitNot( int Lit )                  { assert(Lit >= 0); return Lit ^ 1;                           }
 static inline int      Abc_LitNotCond( int Lit, int c )       { assert(Lit >= 0); return Lit ^ (int)(c > 0);                }
-static inline int      Abc_LitRegular( int Lit )              { assert(Lit >= 0); return Lit & ~01;                         }
+static inline int      Abc_LitRegular( int Lit )              { assert(Lit >= 0); return Lit & ~01;                         } // the lit that is not complemented
 static inline int      Abc_Lit2LitV( int * pMap, int Lit )    { assert(Lit >= 0); return Abc_Var2Lit( pMap[Abc_Lit2Var(Lit)], Abc_LitIsCompl(Lit) );      }
 static inline int      Abc_Lit2LitL( int * pMap, int Lit )    { assert(Lit >= 0); return Abc_LitNotCond( pMap[Abc_Lit2Var(Lit)], Abc_LitIsCompl(Lit) );   }
 
@@ -340,7 +335,7 @@ static inline abctime Abc_Clock()
 #else
   #define APPLE_MACH 0
 #endif
-#if (defined(LIN) || defined(LIN64)) && !APPLE_MACH && !defined(__MINGW32__) && !defined(__wasm)
+#if (defined(LIN) || defined(LIN64)) && !APPLE_MACH && !defined(__MINGW32__)
     struct timespec ts;
     if ( clock_gettime(CLOCK_MONOTONIC, &ts) < 0 ) 
         return (abctime)-1;
@@ -359,7 +354,7 @@ static inline abctime Abc_ThreadClock()
 #else
   #define APPLE_MACH 0
 #endif
-#if (defined(LIN) || defined(LIN64)) && !APPLE_MACH && !defined(__MINGW32__) && !defined(__wasm)
+#if (defined(LIN) || defined(LIN64)) && !APPLE_MACH && !defined(__MINGW32__)
     struct timespec ts;
     if ( clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts) < 0 ) 
         return (abctime)-1;
@@ -554,9 +549,6 @@ extern int *  Abc_QuickSortCost( int * pCosts, int nSize, int fDecrease );
 
 extern unsigned Abc_Random( int fReset );
 extern word     Abc_RandomW( int fReset );
-
-// pthreads
-extern void Util_ProcessThreads( int (*pUserFunc)(void *), void * vData, int nProcs, int TimeOut, int fVerbose );
 
 ABC_NAMESPACE_HEADER_END
 

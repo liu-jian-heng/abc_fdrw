@@ -65,8 +65,6 @@ struct Vec_Int_t_
     for ( i = Start; (i >= 0) && (((pEntry) = Vec_IntEntry(vVec, i)), 1); i-- )
 #define Vec_IntForEachEntryTwo( vVec1, vVec2, Entry1, Entry2, i )                           \
     for ( i = 0; (i < Vec_IntSize(vVec1)) && (((Entry1) = Vec_IntEntry(vVec1, i)), 1) && (((Entry2) = Vec_IntEntry(vVec2, i)), 1); i++ )
-#define Vec_IntForEachEntryThree( vVec1, vVec2, vVec3, Entry1, Entry2, Entry3, i )          \
-    for ( i = 0; (i < Vec_IntSize(vVec1)) && (((Entry1) = Vec_IntEntry(vVec1, i)), 1) && (((Entry2) = Vec_IntEntry(vVec2, i)), 1) && (((Entry3) = Vec_IntEntry(vVec3, i)), 1); i++ )
 #define Vec_IntForEachEntryTwoStart( vVec1, vVec2, Entry1, Entry2, i, Start )               \
     for ( i = Start; (i < Vec_IntSize(vVec1)) && (((Entry1) = Vec_IntEntry(vVec1, i)), 1) && (((Entry2) = Vec_IntEntry(vVec2, i)), 1); i++ )
 #define Vec_IntForEachEntryDouble( vVec, Entry1, Entry2, i )                                \
@@ -552,7 +550,6 @@ static inline void Vec_IntGrow( Vec_Int_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
-    assert( p->nCap < ABC_INT_MAX );
     p->pArray = ABC_REALLOC( int, p->pArray, nCapMin ); 
     assert( p->pArray );
     p->nCap   = nCapMin;
@@ -634,7 +631,7 @@ static inline void Vec_IntFillExtra( Vec_Int_t * p, int nSize, int Fill )
     if ( nSize > 2 * p->nCap )
         Vec_IntGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+        Vec_IntGrow( p, 2 * p->nCap );
     for ( i = p->nSize; i < nSize; i++ )
         p->pArray[i] = Fill;
     p->nSize = nSize;
@@ -752,7 +749,7 @@ static inline void Vec_IntPush( Vec_Int_t * p, int Entry )
         if ( p->nCap < 16 )
             Vec_IntGrow( p, 16 );
         else
-            Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_IntGrow( p, 2 * p->nCap );
     }
     p->pArray[p->nSize++] = Entry;
 }
@@ -811,7 +808,7 @@ static inline void Vec_IntPushFirst( Vec_Int_t * p, int Entry )
         if ( p->nCap < 16 )
             Vec_IntGrow( p, 16 );
         else
-            Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_IntGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize - 1; i >= 1; i-- )
@@ -838,7 +835,7 @@ static inline void Vec_IntPushOrder( Vec_Int_t * p, int Entry )
         if ( p->nCap < 16 )
             Vec_IntGrow( p, 16 );
         else
-            Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_IntGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -856,7 +853,7 @@ static inline void Vec_IntPushOrderCost( Vec_Int_t * p, int Entry, Vec_Int_t * v
         if ( p->nCap < 16 )
             Vec_IntGrow( p, 16 );
         else
-            Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_IntGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -932,7 +929,7 @@ static inline void Vec_IntPushOrderReverse( Vec_Int_t * p, int Entry )
         if ( p->nCap < 16 )
             Vec_IntGrow( p, 16 );
         else
-            Vec_IntGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_IntGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -1277,16 +1274,6 @@ static inline Vec_Int_t * Vec_IntInvert( Vec_Int_t * p, int Fill )
         if ( Entry != Fill )
             Vec_IntWriteEntry( vRes, Entry, i );
     return vRes;
-}
-static inline Vec_Int_t * Vec_IntInvertSize( Vec_Int_t * p, int Size, int Fill ) 
-{
-    Vec_Int_t * vMap = Vec_IntAlloc( 0 );
-    Vec_IntFill( vMap, Size, Fill );
-    int i, k;
-    Vec_IntForEachEntry( p, i, k )
-        if ( i != Fill )
-            Vec_IntWriteEntry( vMap, i, k );
-    return vMap;
 }
 
 /**Function*************************************************************
@@ -1947,16 +1934,16 @@ static inline int Vec_IntTwoRemove( Vec_Int_t * vArr1, Vec_Int_t * vArr2 )
 
 /**Function*************************************************************
 
-  Synopsis    [Keeps only those entries in vArr1, which are in vArr2.]
+  Synopsis    [Returns the result of merging the two vectors.]
 
-  Description [Assumes that the vectors are sorted in the increasing order.]
+  Description [Keeps only those entries of vArr1, which are in vArr2.]
                
   SideEffects []
 
   SeeAlso     []
 
 ***********************************************************************/
-static inline void Vec_IntTwoFilter( Vec_Int_t * vArr1, Vec_Int_t * vArr2 )
+static inline void Vec_IntTwoMerge1( Vec_Int_t * vArr1, Vec_Int_t * vArr2 )
 {
     int * pBeg  = vArr1->pArray;
     int * pBeg1 = vArr1->pArray;
@@ -2013,7 +2000,7 @@ static inline void Vec_IntTwoRemove1( Vec_Int_t * vArr1, Vec_Int_t * vArr2 )
 
   Synopsis    [Returns the result of merging the two vectors.]
 
-  Description [Assumes that the vectors are sorted in the increasing order.]
+  Description [Assumes that the vectors are sorted in the increasing order. Do the Merge in MergeSort]
                
   SideEffects []
 
@@ -2207,7 +2194,8 @@ static inline void Vec_IntSelectSortCost2Reverse( int * pArray, int nSize, int *
 static inline void Vec_IntPrint( Vec_Int_t * vVec )
 {
     int i, Entry;
-    printf( "Vector has %d entries: {", Vec_IntSize(vVec) );
+    // printf( "Vector has %d entries: {", Vec_IntSize(vVec) );
+    printf( "{");
     Vec_IntForEachEntry( vVec, Entry, i )
         printf( " %d", Entry );
     printf( " }\n" );
@@ -2300,6 +2288,203 @@ static inline void Vec_IntRemapArray( Vec_Int_t * vOld2New, Vec_Int_t * vOld, Ve
             Vec_IntWriteEntry( vNew, iNew, Vec_IntEntry(vOld, iOld) );
 }
 
+/* self defined functions */
+// static inline Vec_Int_t*    Vec_IntMapInv( Vec_Int_t* vMap ) : Just use Vec_IntInvert
+static inline Vec_Int_t*    Vec_IntItoV( int val ) {
+    Vec_Int_t* vMap = Vec_IntStart( 1 );
+    Vec_IntWriteEntry( vMap, 0, val );
+    return vMap;
+}
+
+static inline Vec_Int_t*    Vec_IntArgToBin( Vec_Int_t* vec, int fRev ) {
+    Vec_Int_t* vOut = Vec_IntAlloc(100);
+    int Entry, i;
+    if ( fRev ) {
+        Vec_IntForEachEntry( vec, Entry, i ) {
+            if ( Entry != 0 ) Vec_IntPush( vOut, i );
+        }
+    } else {
+        Vec_IntForEachEntry( vec, Entry, i ) {
+            Vec_IntFillExtra( vOut, Entry + 1, 0 );
+            Vec_IntWriteEntry( vOut, Entry, 1 );
+        }
+    }
+    return vOut;
+}
+// the set should in binary form
+static inline int           Vec_IntCheckSubset( Vec_Int_t* setBig, Vec_Int_t* setSmall ) {
+    int e1, e2, i;
+    // printf( "%d, %d\n ", Vec_IntSize(set1), Vec_IntSize(set2) );
+    assert( Vec_IntSize(setBig) == Vec_IntSize(setSmall) );
+    Vec_IntForEachEntryTwo( setBig, setSmall, e1, e2, i ) {
+        assert(e1 == 0 || e1 == 1);
+        assert(e2 == 0 || e2 == 1);
+        if ( e1 == 0 && e2 == 1 ) return 0;
+    }
+    return 1;
+}
+static inline int           Vec_IntFindRev( Vec_Int_t* p, int Entry ) {
+    int i;
+    for ( i = p->nSize; i > 0; i-- )
+        if ( p->pArray[i - 1] == Entry )
+            return i - 1;
+    return -1;
+}
+static inline Vec_Int_t*    Vec_IntFindAll( Vec_Int_t* vec, int val, int fRange ) {
+    int Entry, i;
+    Vec_Int_t* vOut = Vec_IntAlloc(100);
+    Vec_IntForEachEntry( vec, Entry, i ) {
+        switch (fRange) {
+            case -1:
+                if ( Entry > val ) Vec_IntPush( vOut, i );
+                break;
+            case 0:
+                if ( Entry == val ) Vec_IntPush( vOut, i );
+                break;
+            case 1:
+                if ( Entry < val ) Vec_IntPush( vOut, i );
+                break;
+            default:
+                assert(0);
+        }
+    }
+    return vOut;
+}
+static inline void          Vec_IntRemoveAll( Vec_Int_t* vec, int val, int fRange ) {
+    int Entry, i, iWrite;
+    iWrite = 0;
+    Vec_IntForEachEntry( vec, Entry, i ) {
+        switch (fRange) {
+            case -1:
+                if ( Entry > val ) {
+                    Vec_IntWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            case 0:
+                if ( Entry != val ) {
+                    Vec_IntWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            case 1:
+                if ( Entry < val ) {
+                    Vec_IntWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            default:
+                assert(0);
+        }
+    }
+    Vec_IntShrink( vec, iWrite );
+}
+static inline void          Vec_IntInversePosVal( Vec_Int_t* vec ) {
+    int int_buff, i;
+    int maxval = Vec_IntFindMax( vec );
+    Vec_IntForEachEntry( vec, int_buff, i ) {
+        if (int_buff < 0) continue;
+        else Vec_IntWriteEntry( vec, i, maxval - int_buff );
+    }
+}
+
+static inline void          Vec_IntSetCeil( Vec_Int_t* vec, int val, int fRange ) {
+    int Entry, i;
+    // int rwVal = fRange < 0 ? Vec_IntFindMin( vec ) : Vec_IntFindMax( vec );
+    Vec_IntForEachEntry( vec, Entry, i ) {
+        switch (fRange) {
+            case -2:
+                if ( Entry < val ) 
+                    Vec_IntWriteEntry( vec, i, val - 1 );
+                break;
+            case -1:
+                if ( Entry < val ) 
+                    Vec_IntWriteEntry( vec, i, val );
+                break;
+            case 1:
+                if ( Entry > val ) 
+                    Vec_IntWriteEntry( vec, i, val );
+                break;
+            case 2:
+                if ( Entry > val ) 
+                    Vec_IntWriteEntry( vec, i, val + 1 );
+                break;
+            default:
+                assert(0);
+        }
+    }
+}
+static inline void          Vec_IntReplace( Vec_Int_t* vec, int val, int rwVal ) {
+    int Entry, i;
+    Vec_IntForEachEntry( vec, Entry, i ) {
+        if ( Entry == val )
+            Vec_IntWriteEntry( vec, i, rwVal );
+    }
+}
+// mapping Id
+static inline void          Vec_IntMap( Vec_Int_t* vMap, Vec_Int_t* vec ) {
+    int Entry, i;
+    Vec_IntForEachEntry( vec, Entry, i ) {
+        if (Entry > 0 && Entry < Vec_IntSize(vMap)) Vec_IntWriteEntry( vec, i, Vec_IntEntry(vMap, Entry) );
+        else Vec_IntWriteEntry( vec, i, -1 );
+    }
+}
+static inline void          Vec_IntPrintMap( Vec_Int_t* vec ) {
+    int i;
+    for ( i = 0; i < Vec_IntSize(vec); i++ ) {
+        printf( "*%d->_%d,", i, Vec_IntEntry(vec, i) );
+        if ( i % 10 == 9 ) printf( "\n" );
+    }
+    if (i % 10 != 0) printf( "\n" );
+}
+
+// op--- 0: sub; 1: add; 2: mul; 3: min; 4: max; 5: xor
+static inline Vec_Int_t*    Vec_IntOp( Vec_Int_t* vCount1, Vec_Int_t* vCount2, int fOp ) {
+  int num = Abc_MaxInt( Vec_IntSize(vCount1), Vec_IntSize(vCount2) );
+  int i, val1, val2, val3;
+  Vec_Int_t* vCount = Vec_IntStart( num );
+  for ( i = 0; i < num; i++ ) {
+      val1 = i < Vec_IntSize(vCount1) ? Vec_IntEntry(vCount1, i) : 0;
+      val2 = i < Vec_IntSize(vCount2) ? Vec_IntEntry(vCount2, i) : 0;
+      switch (fOp) {
+            case 0: // sub
+                val3 = val1 - val2;
+                break;
+            case 1: // add
+                val3 = val1 + val2;
+                break;
+            case 2: // mul
+                val3 = val1 * val2;
+                break;
+            case 3: // min
+                val3 = Abc_MinInt( val1, val2 );
+                break;
+            case 4: // max
+                val3 = Abc_MaxInt( val1, val2 );
+                break;
+            case 5: // xor
+                val3 = val1 ^ val2;
+                break;
+            default:
+                assert(0);
+      }
+      Vec_IntWriteEntry( vCount, i, val3 );
+  }
+  return vCount;
+
+  
+}
+static inline Vec_Int_t*    Vec_IntCumSum( Vec_Int_t* vec, int fSort ) {
+    Vec_Int_t* vSum = Vec_IntDup( vec );
+    if ( fSort ) Vec_IntSort( vSum, 0 );
+    int i, sum = 0;
+    for ( i = 0; i < Vec_IntSize( vSum ); i++ ) {
+        sum += Vec_IntEntry( vSum, i );
+        Vec_IntWriteEntry( vSum, i, sum );
+    }
+    return vSum;
+}
+
 /**Function*************************************************************
 
   Synopsis    [File interface.]
@@ -2358,6 +2543,80 @@ static inline Vec_Int_t * Vec_IntReadBin( char * pFileName, int fVerbose )
         printf( "Error reading data from file.\n" );
     if ( fVerbose )
         printf( "Read %d integers from file \"%s\".\n", (int)(nSize/sizeof(int)), pFileName );
+    return p;
+}
+static inline void Vec_IntDump( char * pFileName, Vec_Int_t * p, int fVerbose )
+{
+    int RetValue, entry, i;
+    FILE * pFile = fopen( pFileName, "w" );
+    char* pStr = ABC_ALLOC( char, 33 * Vec_IntSize(p) );
+    char* pEnd = pStr;
+    if ( pFile == NULL )
+    {
+        printf( "Cannot open file \"%s\" for writing.\n", pFileName );
+        return;
+    }
+    Vec_IntForEachEntry( p, entry, i ) {
+        if ( i == Vec_IntSize(p) - 1 ) sprintf( pEnd, "%d\n", entry );
+        else sprintf( pEnd, "%d,", entry );
+        pEnd += strlen( pEnd );
+    }
+    RetValue = fwrite( pStr, sizeof(char), pEnd - pStr, pFile );
+    fclose( pFile );
+    // if ( RetValue != (int)sizeof(int)*Vec_IntSize(p) )
+    //     printf( "Error reading data from file.\n" );
+    if ( fVerbose )
+        printf( "Written %d integers into file \"%s\".\n", Vec_IntSize(p), pFileName );
+}
+static inline Vec_Int_t * Vec_IntRead( char * pFileName )
+{
+    Vec_Int_t * p = NULL; int nSize, RetValue, i, nBuffer;
+    FILE * pFile;
+    char *content, *buffer;
+
+    pFile = fopen( pFileName, "r" );
+    if ( pFile == NULL )
+    {
+        printf( "Cannot open file \"%s\" for reading.\n", pFileName );
+        return NULL;
+    }
+    fseek( pFile, 0, SEEK_END );
+    nSize = ftell( pFile );
+    // fclose( pFile );
+    if ( nSize == 0 )
+    {
+        printf( "The input file is empty.\n" );
+        fclose( pFile );
+        return NULL;
+    }
+
+    rewind(pFile);
+    content = ABC_ALLOC( char, nSize );
+    buffer = ABC_ALLOC( char, 15 );
+    RetValue = fread( content, nSize, 1, pFile );
+    // if ( RetValue != nSize )
+    //     printf( "Error reading data from file.\n" );
+    nBuffer = 0;
+    p = Vec_IntAlloc( 1 );
+    for (i = 0; i < nSize; i++) {
+        if (content[i] == ',' || content[i] == '\n') {
+            buffer[nBuffer] = '\0';
+            Vec_IntPush( p, atoi(buffer) );
+            nBuffer = 0;
+            buffer[0] = '\0';
+        } else {
+            buffer[nBuffer] = content[i];
+            nBuffer++;
+        }
+    }
+
+    if ( buffer[0] != '\0' ) {
+        buffer[nBuffer] = '\0';
+        Vec_IntPush( p, atoi(buffer) );
+    }
+    ABC_FREE( content );
+    ABC_FREE( buffer );
+    fclose( pFile );
     return p;
 }
 

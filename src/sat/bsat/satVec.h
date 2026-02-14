@@ -130,9 +130,7 @@ static inline void   vecp_remove(vecp* v, void* e)
 typedef int    lit;
 typedef int    cla;
 
-// Explicitly make it signed so promotion-to-int behavior doesn't vary
-// across platforms that define signedness of char differently.
-typedef signed char lbool;
+typedef char               lbool;
 
 static const int   var_Undef = -1;
 static const lit   lit_Undef = -2;

@@ -44,7 +44,6 @@ static int IoCommandReadBblif   ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadBlif    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadBlifMv  ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadBench   ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadCex     ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadDsd     ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadEdif    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadEqn     ( Abc_Frame_t * pAbc, int argc, char **argv );
@@ -53,16 +52,11 @@ static int IoCommandReadInit    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadPla     ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadPlaMo   ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadTruth   ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadCnf     ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadVerilog ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadStatus  ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadGig     ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadJson    ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadJsonc   ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandReadSF      ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadRom     ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadMM      ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandReadMMGia   ( Abc_Frame_t * pAbc, int argc, char **argv );
 
 static int IoCommandWrite       ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteHie    ( Abc_Frame_t * pAbc, int argc, char **argv );
@@ -72,7 +66,6 @@ static int IoCommandWriteBaf    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteBblif  ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteBlif   ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteEdgelist( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandWriteNtk    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteBlifMv ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteBench  ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteBook   ( Abc_Frame_t * pAbc, int argc, char **argv );
@@ -83,7 +76,6 @@ static int IoCommandWriteCex    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteDot    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteEqn    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteGml    ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandWriteHMetis ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteList   ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWritePla    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteVerilog( Abc_Frame_t * pAbc, int argc, char **argv );
@@ -93,10 +85,7 @@ static int IoCommandWriteTruths ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteStatus ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteSmv    ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteJson   ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandWriteJsonC  ( Abc_Frame_t * pAbc, int argc, char **argv );
 static int IoCommandWriteResub  ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandWriteMM     ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int IoCommandWriteMMGia  ( Abc_Frame_t * pAbc, int argc, char **argv );
 
 extern void Abc_FrameCopyLTLDataBase( Abc_Frame_t *pAbc, Abc_Ntk_t * pNtk );
 
@@ -126,7 +115,7 @@ void Io_Init( Abc_Frame_t * pAbc )
     Cmd_CommandAdd( pAbc, "I/O", "read_blif",     IoCommandReadBlif,     1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_blif_mv",  IoCommandReadBlifMv,   1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_bench",    IoCommandReadBench,    1 );
-    Cmd_CommandAdd( pAbc, "I/O", "read_cex",      IoCommandReadCex,      1 );
+    Cmd_CommandAdd( pAbc, "I/O", "read_dsd",      IoCommandReadDsd,      1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_formula",  IoCommandReadDsd,      1 );
 //    Cmd_CommandAdd( pAbc, "I/O", "read_edif",     IoCommandReadEdif,     1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_eqn",      IoCommandReadEqn,      1 );
@@ -135,16 +124,11 @@ void Io_Init( Abc_Frame_t * pAbc )
     Cmd_CommandAdd( pAbc, "I/O", "read_pla",      IoCommandReadPla,      1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_plamo",    IoCommandReadPlaMo,    1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_truth",    IoCommandReadTruth,    1 );
-    Cmd_CommandAdd( pAbc, "I/O", "read_cnf",      IoCommandReadCnf,      1 );    
     Cmd_CommandAdd( pAbc, "I/O", "read_verilog",  IoCommandReadVerilog,  1 );
     Cmd_CommandAdd( pAbc, "I/O", "read_status",   IoCommandReadStatus,   0 );
     Cmd_CommandAdd( pAbc, "I/O", "&read_gig",     IoCommandReadGig,      0 );
     Cmd_CommandAdd( pAbc, "I/O", "read_json",     IoCommandReadJson,     0 );
-    Cmd_CommandAdd( pAbc, "I/O", "read_jsonc",    IoCommandReadJsonc,    0 );
     Cmd_CommandAdd( pAbc, "I/O", "read_sf",       IoCommandReadSF,       0 );
-    Cmd_CommandAdd( pAbc, "I/O", "read_rom",      IoCommandReadRom,      1 );
-    Cmd_CommandAdd( pAbc, "I/O", "read_mm",       IoCommandReadMM,       1 );
-    Cmd_CommandAdd( pAbc, "I/O", "&read_mm",      IoCommandReadMMGia,    1 );
 
     Cmd_CommandAdd( pAbc, "I/O", "write",         IoCommandWrite,        0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_hie",     IoCommandWriteHie,     0 );
@@ -163,24 +147,18 @@ void Io_Init( Abc_Frame_t * pAbc )
     Cmd_CommandAdd( pAbc, "I/O", "write_dot",     IoCommandWriteDot,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_eqn",     IoCommandWriteEqn,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_edgelist",IoCommandWriteEdgelist,    0 );
-    Cmd_CommandAdd( pAbc, "I/O", "write_ntk",     IoCommandWriteNtk,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_gml",     IoCommandWriteGml,     0 );
 //    Cmd_CommandAdd( pAbc, "I/O", "write_list",    IoCommandWriteList,    0 );
-    Cmd_CommandAdd( pAbc, "I/O", "write_hmetis",  IoCommandWriteHMetis,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_pla",     IoCommandWritePla,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_verilog", IoCommandWriteVerilog, 0 );
 //    Cmd_CommandAdd( pAbc, "I/O", "write_verlib",  IoCommandWriteVerLib,  0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_sorter_cnf", IoCommandWriteSortCnf,  0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_truth",   IoCommandWriteTruth,   0 );
-    Cmd_CommandAdd( pAbc, "I/O", "&write_truth",  IoCommandWriteTruths,  0 );
     Cmd_CommandAdd( pAbc, "I/O", "&write_truths", IoCommandWriteTruths,  0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_status",  IoCommandWriteStatus,  0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_smv",     IoCommandWriteSmv,     0 );
     Cmd_CommandAdd( pAbc, "I/O", "write_json",    IoCommandWriteJson,    0 );
-    Cmd_CommandAdd( pAbc, "I/O", "write_jsonc",   IoCommandWriteJsonC,   0 );
     Cmd_CommandAdd( pAbc, "I/O", "&write_resub",  IoCommandWriteResub,   0 );
-    Cmd_CommandAdd( pAbc, "I/O", "write_mm",      IoCommandWriteMM,      0 );
-    Cmd_CommandAdd( pAbc, "I/O", "&write_mm",     IoCommandWriteMMGia,   0 );
 }
 
 /**Function*************************************************************
@@ -298,18 +276,6 @@ int IoCommandRead( Abc_Frame_t * pAbc, int argc, char ** argv )
         return 0;
     }
     // read the file using the corresponding file reader
-    if ( strstr(pFileName, ".") && !strcmp(strstr(pFileName, "."), ".s") ) 
-    {
-        char Command[1000];
-        assert( strlen(pFileName) < 980 );
-        sprintf( Command, "source -x %s", pFileName );
-        if ( Cmd_CommandExecute( pAbc, Command ) )
-        {
-            fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
-            return 1;
-        }
-        return 0;
-    }
     pNtk = Io_Read( pFileName, Io_ReadFileType(pFileName), fCheck, fBarBufs );
     if ( pNtk == NULL )
         return 0;
@@ -717,331 +683,6 @@ usage:
   SeeAlso     []
 
 ***********************************************************************/
-int Abc_NtkReadCexFile( char * pFileName, Abc_Ntk_t * pNtk, Abc_Cex_t ** ppCex, Abc_Cex_t ** ppCexCare, int * pnFrames, int * fOldFormat, int xMode )
-{
-    FILE * pFile;
-    Abc_Cex_t * pCex;
-    Abc_Cex_t * pCexCare;
-    Vec_Int_t * vNums;
-    int c, nRegs = -1, nFrames = -1;
-    pFile = fopen( pFileName, "r" );
-    if ( pFile == NULL )
-    {
-        printf( "Cannot open log file for reading \"%s\".\n" , pFileName );
-        return -1;
-    }
-
-    vNums = Vec_IntAlloc( 100 );
-    int usedX = 0;
-    *fOldFormat = 0;
-    
-    int MaxLine = 1000000;
-    char *Buffer;
-    int BufferLen = 0;
-    int state = 0;
-    int iPo = 0;
-    nFrames = -1;
-    int status = 0;
-    int i;
-    int nRegsNtk = 0;
-    Abc_Obj_t * pObj;
-    Abc_NtkForEachLatch( pNtk, pObj, i ) nRegsNtk++;
-
-    Buffer = ABC_ALLOC( char, MaxLine );
-    while ( fgets( Buffer, MaxLine, pFile ) != NULL )
-    {
-        if ( Buffer[0] == '#' || Buffer[0] == 'c' || Buffer[0] == 'f' || Buffer[0] == 'u' )
-            continue;
-        BufferLen = strlen(Buffer) - 1;
-        Buffer[BufferLen] = '\0';
-        if (state==0 && BufferLen>1) {
-            // old format detected
-            *fOldFormat = 1;
-            state = 2;
-            iPo = 0;
-            status = 1;
-        }
-        if (state==1 && Buffer[0]!='b' && Buffer[0]!='j') {
-            // old format detected, first line was actually register
-            *fOldFormat = 1;
-            state = 3;
-            Vec_IntPush( vNums, status );
-            status = 1;
-        }
-        if (Buffer[0] == '.' )
-            break;
-        switch(state) {
-            case 0 :
-                {
-                    char c = Buffer[0];
-                    if ( c == '0' || c == '1' || c == '2' ) {
-                        status = c - '0' ;
-                        state = 1;
-                    } else if ( c == 'x' ) {
-                        // old format with one x state latch
-                        usedX = 1;
-                        // set to 2 so we can Abc_LatchSetInitNone
-                        // acts like 0 when setting bits
-                        Vec_IntPush( vNums, 2 );
-                        nRegs = Vec_IntSize(vNums);
-                        state = 3;
-                    } else {
-                        printf( "ERROR: Bad aiger status line.\n" );
-                        return -1;
-                    }
-                }
-                break;
-            case 1 :
-                iPo = atoi(Buffer+1);
-                state = 2;
-                break;
-            case 2 :
-                for (i=0; i<BufferLen;i++) {
-                    char c = Buffer[i];
-                    if ( c == '0' || c == '1' )
-                        Vec_IntPush( vNums, c - '0' );
-                    else if ( c == 'x') {
-                        usedX = 1;
-                        // set to 2 so we can Abc_LatchSetInitNone
-                        // acts like 0 when setting bits
-                        Vec_IntPush( vNums, 2 );
-                    }
-                }
-                nRegs = Vec_IntSize(vNums);
-                if ( nRegs < nRegsNtk )
-                {
-                    printf( "WARNING: Register number is smaller than in Ntk. Appending.\n" );
-                    for (i=0; i<nRegsNtk-nRegs;i++) {
-                        Vec_IntPush( vNums, 0 );
-                    }
-                    nRegs = Vec_IntSize(vNums);
-                }
-                else if ( nRegs > nRegsNtk )
-                {
-                    printf( "WARNING: Register number is larger than in Ntk. Truncating.\n" );
-                    Vec_IntShrink( vNums, nRegsNtk );
-                    nRegs = nRegsNtk;
-                }
-                state = 3;
-                break;
-            default:
-                for (i=0; i<BufferLen;i++) {
-                    char c = Buffer[i];
-                    if ( c == '0' || c == '1' )
-                        Vec_IntPush( vNums, c - '0' );
-                    else if ( c == 'x') {
-                        usedX = 1;
-                        Vec_IntPush( vNums, 2 );
-                    }
-                }
-                nFrames++;
-                break;
-        }
-    }
-    fclose( pFile );
-
-    if (usedX && !xMode)
-        printf( "Warning: Using 0 instead of x in latches or primary inputs\n" );
-    int iFrameCex = nFrames;
-    if ( nRegs < 0 )
-    {
-        if (status == 0 || *fOldFormat == 0)
-            printf( "Counter-example is not available.\n" );
-        else
-            printf( "ERROR: Cannot read register number.\n" );
-        Vec_IntFree( vNums );
-        return -1;
-    }
-    if ( nRegs != nRegsNtk )
-    {
-        printf( "ERROR: Register number not coresponding to Ntk.\n" );
-        Vec_IntFree( vNums );
-        return -1;
-    }
-    if ( Vec_IntSize(vNums)-nRegs == 0 )
-    {
-        printf( "ERROR: Cannot read counter example.\n" );
-        Vec_IntFree( vNums );
-        return -1;
-    }
-    if ( (Vec_IntSize(vNums)-nRegs) % (iFrameCex + 1) != 0 )
-    {
-        printf( "ERROR: Incorrect number of bits.\n" );
-        Vec_IntFree( vNums );
-        return -1;
-    }
-    int nPi = (Vec_IntSize(vNums)-nRegs)/(iFrameCex + 1);
-    if ( nPi != Abc_NtkPiNum(pNtk) )
-    {
-        printf( "ERROR: Number of primary inputs not coresponding to Ntk.\n" );
-        Vec_IntFree( vNums );
-        return -1;
-    }
-    if ( iPo >= Abc_NtkPoNum(pNtk) )
-    {
-        printf( "WARNING: PO that failed verification not coresponding to Ntk, using first PO instead.\n" );
-        iPo = 0;
-    }
-    Abc_NtkForEachLatch( pNtk, pObj, i ) {
-        if ( Vec_IntEntry(vNums, i) == 1 )
-            Abc_LatchSetInit1(pObj);
-        else if ( Vec_IntEntry(vNums, i) == 2 && xMode )
-            Abc_LatchSetInitNone(pObj);
-        else
-            Abc_LatchSetInit0(pObj);
-    }
-
-    pCex = Abc_CexAlloc( nRegs, nPi, iFrameCex + 1 );
-    pCexCare = Abc_CexAlloc( nRegs, nPi, iFrameCex + 1);
-    // the zero-based number of PO, for which verification failed
-    // fails in Bmc_CexVerify if not less than actual number of PO
-    pCex->iPo    = iPo;
-    pCexCare->iPo = iPo;
-    // the zero-based number of the time-frame, for which verificaiton failed
-    pCex->iFrame = iFrameCex;
-    pCexCare->iFrame = iFrameCex;
-    assert( Vec_IntSize(vNums) == pCex->nBits );
-    for ( c = 0; c < pCex->nBits; c++ ) {
-        if ( Vec_IntEntry(vNums, c) == 1)
-        {
-            Abc_InfoSetBit( pCex->pData, c );
-            Abc_InfoSetBit( pCexCare->pData, c );
-        }
-        else if ( Vec_IntEntry(vNums, c) == 2 && xMode )
-        {
-            // nothing to set
-        }
-        else
-            Abc_InfoSetBit( pCexCare->pData, c );
-    }
-
-    Vec_IntFree( vNums );
-    Abc_CexFreeP( ppCex );
-    if ( ppCex )
-        *ppCex = pCex;
-    else
-        Abc_CexFree( pCex );
-    Abc_CexFreeP( ppCexCare );
-    if ( ppCexCare )
-        *ppCexCare = pCexCare;
-    else
-        Abc_CexFree( pCexCare );
-
-    if ( pnFrames )
-        *pnFrames = nFrames;
-    return status;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-
-
-int IoCommandReadCex( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    Abc_Ntk_t * pNtk;
-    Abc_Cex_t * pCex = NULL;
-    Abc_Cex_t * pCexCare = NULL;
-    char * pFileName;
-    FILE * pFile;
-    int fCheck = 1;
-    int fXMode = 0;
-    int c;
-    int fOldFormat = 0;
-    int verified;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "cxh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'c':
-                fCheck ^= 1;
-                break;
-            case 'x':
-                fXMode ^= 1;
-                break;
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-
-    // get the input file name
-    pFileName = argv[globalUtilOptind];
-    if ( (pFile = fopen( pFileName, "r" )) == NULL )
-    {
-        fprintf( pAbc->Err, "Cannot open input file \"%s\". \n", pFileName );
-        return 1;
-    }
-    fclose( pFile );
-
-    pNtk = pAbc->pNtkCur;
-    if ( pNtk == NULL )
-    {
-        fprintf( pAbc->Out, "Empty network.\n" );
-        return 0;
-    }
-    Abc_FrameClearVerifStatus( pAbc );
-    pAbc->Status = Abc_NtkReadCexFile( pFileName, pNtk, &pCex, &pCexCare, &pAbc->nFrames, &fOldFormat, fXMode);
-    if ( fOldFormat && !fCheck )
-        printf( "WARNING: Old witness format detected and checking is disabled. Reading might have failed.\n" );
-
-    if ( fCheck && pAbc->Status==1) {
-        extern Aig_Man_t * Abc_NtkToDar( Abc_Ntk_t * pNtk, int fExors, int fRegisters );
-        Aig_Man_t * pAig = Abc_NtkToDar( pNtk, 0, 1 );
-
-        verified = Bmc_CexCareVerify( pAig, pCex, pCexCare, false );
-        if (!verified)
-        {
-            printf( "Checking CEX for any PO.\n" );
-            int verified = Bmc_CexCareVerifyAnyPo( pAig, pCex, pCexCare, false );
-            Aig_ManStop( pAig );
-            if (verified < 0)
-            {
-                Abc_CexFreeP(&pCex);
-                Abc_CexFreeP(&pCexCare);
-                return 1;
-            }
-            pAbc->pCex->iPo = verified;
-        }
-
-        Abc_CexFreeP(&pCexCare);
-        Abc_FrameReplaceCex( pAbc, &pCex );
-    }
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: read_cex [-ch] <file>\n" );
-    fprintf( pAbc->Err, "\t         reads the witness cex\n" );
-    fprintf( pAbc->Err, "\t-c     : toggle check after reading [default = %s]\n", fCheck? "yes":"no" );
-    fprintf( pAbc->Err, "\t-x     : read x bits for verification [default = %s]\n", fXMode? "yes":"no" );
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
-    return 1;
-}
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 int IoCommandReadDsd( Abc_Frame_t * pAbc, int argc, char ** argv )
 {
     Abc_Ntk_t * pNtk;
@@ -1079,10 +720,10 @@ int IoCommandReadDsd( Abc_Frame_t * pAbc, int argc, char ** argv )
     return 0;
 
 usage:
-    fprintf( pAbc->Err, "usage: read_formula [-h] <formula>\n" );
-    fprintf( pAbc->Err, "\t          reads a Boolean function represented by a formula\n" );
+    fprintf( pAbc->Err, "usage: read_dsd [-h] <formula>\n" );
+    fprintf( pAbc->Err, "\t          parses a formula representing DSD of a function\n" );
     fprintf( pAbc->Err, "\t-h      : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tformula : the formula representing the function\n" );
+    fprintf( pAbc->Err, "\tformula : the formula representing disjoint-support decomposition (DSD)\n" );
     fprintf( pAbc->Err, "\t          Example of a formula: !(a*(b+CA(!d,e*f,c))*79B3(g,h,i,k))\n" );
     fprintf( pAbc->Err, "\t          where \'!\' is an INV, \'*\' is an AND, \'+\' is an XOR, \n" );
     fprintf( pAbc->Err, "\t          CA and 79B3 are hexadecimal representations of truth tables\n" );
@@ -1405,15 +1046,7 @@ usage:
     fprintf( pAbc->Err, "\t-x     : toggle reading Exclusive SOP rather than SOP [default = %s]\n", fSkipPrepro? "yes":"no" );
     fprintf( pAbc->Err, "\t-c     : toggle network check after reading [default = %s]\n", fCheck? "yes":"no" );
     fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n\n" );
-    fprintf( pAbc->Err, "\t         Please note that the PLA parser is somewhat slow for large SOPs.\n" );
-    fprintf( pAbc->Err, "\t         On the other hand, BLIF parser reads a 3M SOP and converts it into a 7.5K AIG in 1 sec:\n" );
-    fprintf( pAbc->Err, "\t         abc 16> read test.blif; ps; bdd -s; ps; muxes; strash; ps\n" );
-    fprintf( pAbc->Err, "\t         test                      : i/o =   25/    1  lat =    0  nd =     1  edge =     25  cube = 2910537  lev = 1\n" );
-    fprintf( pAbc->Err, "\t         test                      : i/o =   25/    1  lat =    0  nd =     1  edge =     25  bdd  =    2937  lev = 1\n" );
-    fprintf( pAbc->Err, "\t         test                      : i/o =   25/    1  lat =    0  and =     7514  lev = 48\n" );
-    fprintf( pAbc->Err, "\t         abc 19> time\n" );
-    fprintf( pAbc->Err, "\t         elapse: 1.05 seconds, total: 1.05 seconds\n" );
+    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
     return 1;
 }
 
@@ -1560,80 +1193,6 @@ usage:
     fprintf( pAbc->Err, "\t-f     : toggles reading truth table(s) from file [default = %s]\n",      fFile? "yes": "no" );
     fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
     fprintf( pAbc->Err, "\ttruth  : truth table with most significant bit first (e.g. 1000 for AND(a,b))\n" );
-    fprintf( pAbc->Err, "\tfile   : file name with the truth table\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandReadCnf( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern Vec_Ptr_t * Io_FileReadCnf( char * pFileName, int fMulti );
-    FILE * pFile;
-    Abc_Ntk_t * pNtk;
-    Vec_Ptr_t * vSops;
-    int fMulti = 0;
-    int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "mh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'm':
-                fMulti ^= 1;
-                break;            
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-
-    pFile = fopen( argv[globalUtilOptind], "rb" );
-    if ( pFile == NULL )
-    {
-        printf( "The file \"%s\" cannot be found.\n", argv[globalUtilOptind] );
-        return 1;
-    }
-    else 
-        fclose( pFile );
-    vSops = Io_FileReadCnf( argv[globalUtilOptind], fMulti );
-    if ( Vec_PtrSize(vSops) == 0 )
-    {
-        Vec_PtrFreeFree( vSops );
-        fprintf( pAbc->Err, "Reading CNF file has failed.\n" );
-        return 1;
-    }
-    pNtk = Abc_NtkCreateWithNodes( vSops );
-    Vec_PtrFreeFree( vSops );
-    if ( pNtk == NULL )
-    {
-        fprintf( pAbc->Err, "Deriving the network has failed.\n" );
-        return 1;
-    }
-    // replace the current network
-    Abc_FrameReplaceCurrentNetwork( pAbc, pNtk );
-    Abc_FrameClearVerifStatus( pAbc );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: read_cnf [-mh] <file>\n" );
-    fprintf( pAbc->Err, "\t         creates network with one node\n" );
-    fprintf( pAbc->Err, "\t-m     : toggles generating multi-output network [default = %s]\n", fMulti?  "yes":"no" );    
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
     fprintf( pAbc->Err, "\tfile   : file name with the truth table\n" );
     return 1;
 }
@@ -1888,65 +1447,6 @@ usage:
   SeeAlso     []
 
 ***********************************************************************/
-int IoCommandReadJsonc( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern Abc_Ntk_t * Jsonc_ReadNetwork( char * pFileName );
-    Abc_Ntk_t * pNtk;
-    char * pFileName;
-    FILE * pFile;
-    int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-    {
-        goto usage;
-    }
-
-    // get the input file name
-    pFileName = argv[globalUtilOptind];
-    if ( (pFile = fopen( pFileName, "r" )) == NULL )
-    {
-        fprintf( pAbc->Err, "Cannot open input file \"%s\". \n", pFileName );
-        return 1;
-    }
-    fclose( pFile );
-
-    pNtk = Jsonc_ReadNetwork( pFileName );
-    if ( pNtk == NULL )
-        return 1;
-    Abc_FrameReplaceCurrentNetwork( pAbc, pNtk );
-    Abc_FrameClearVerifStatus( pAbc );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: read_jsonc [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         reads file in JSON format\n" );
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 int IoCommandReadSF( Abc_Frame_t * pAbc, int argc, char ** argv )
 {
     extern void Io_TransformSF2PLA( char * pNameIn, char * pNameOut );
@@ -2015,166 +1515,6 @@ usage:
   SeeAlso     []
 
 ***********************************************************************/
-int IoCommandReadRom( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern void Io_TransformROM2PLA( char * pNameIn, char * pNameOut );
-
-    Abc_Ntk_t * pNtk;
-    FILE * pFile;
-    char * pFileName, * pFileTemp = "_temp_rom_.pla";
-    int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-    {
-        goto usage;
-    }
-
-    // get the input file name
-    pFileName = argv[globalUtilOptind];
-    if ( (pFile = fopen( pFileName, "r" )) == NULL )
-    {
-        fprintf( pAbc->Err, "Cannot open input file \"%s\". \n", pFileName );
-        return 1;
-    }
-    fclose( pFile );
-    Io_TransformROM2PLA( pFileName, pFileTemp );
-    pNtk = Io_Read( pFileTemp, IO_FILE_PLA, 1, 0 );
-    //unlink( pFileTemp );
-    if ( pNtk == NULL )
-        return 1;
-    ABC_FREE( pNtk->pName );
-    pNtk->pName = Extra_FileNameGeneric( pFileName );
-    ABC_FREE( pNtk->pSpec );
-    pNtk->pSpec = Abc_UtilStrsav( pFileName );
-    // replace the current network
-    Abc_FrameReplaceCurrentNetwork( pAbc, pNtk );
-    Abc_FrameClearVerifStatus( pAbc );
-
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: read_rom [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         reads ROM file\n" );
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandReadMM( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern Abc_Ntk_t * Abc_NtkReadFromFile( char * pFileName );
-    Abc_Ntk_t * pNtk; char * pFileName; int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    pFileName = argv[globalUtilOptind];
-    pNtk = Abc_NtkReadFromFile( pFileName );
-    if ( pNtk == NULL )
-        return 0;
-    Abc_FrameReplaceCurrentNetwork( pAbc, pNtk );
-    Abc_FrameClearVerifStatus( pAbc );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: read_mm [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         reads mapped network from file\n" );
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandReadMMGia( Abc_Frame_t * pAbc, int argc, char ** argv )
-{
-    extern Abc_Ntk_t * Abc_NtkReadFromFile( char * pFileName );
-    Abc_Ntk_t * pNtk; char * pFileName; int c;
-    Gia_Man_t * pGia = NULL;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    pFileName = argv[globalUtilOptind];
-    pNtk = Abc_NtkReadFromFile( pFileName );
-    if ( pNtk == NULL )
-        return 0;
-    Abc_NtkToAig( pNtk );
-    pGia = Abc_NtkAigToGia( pNtk, 0 );
-    Abc_NtkDelete( pNtk );
-    Abc_FrameUpdateGia( pAbc, pGia );
-    Abc_FrameClearVerifStatus( pAbc );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: &read_mm [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         reads mapped network from file\n" );
-    fprintf( pAbc->Err, "\t-h     : prints the command summary\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of a file to read\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 int IoCommandWrite( Abc_Frame_t * pAbc, int argc, char **argv )
 {
     char Command[1000];
@@ -2202,7 +1542,7 @@ int IoCommandWrite( Abc_Frame_t * pAbc, int argc, char **argv )
     if ( !strcmp( Extra_FileNameExtension(pFileName), "genlib" )  )
         sprintf( Command, "write_genlib %s", pFileName );
     else if ( !strcmp( Extra_FileNameExtension(pFileName), "lib" ) )
-        sprintf( Command, "write_lib %s", pFileName );
+        sprintf( Command, "write_liberty %s", pFileName );
     else if ( !strcmp( Extra_FileNameExtension(pFileName), "dsd" ) )
         sprintf( Command, "dsd_save %s", pFileName );
     if ( Command[0] )
@@ -3113,15 +2453,10 @@ void Abc_NtkDumpOneCexSpecial( FILE * pFile, Abc_Ntk_t * pNtk, Abc_Cex_t * pCex 
 }
 
 
-extern Abc_Cex_t * Bmc_CexInnerStates( Gia_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t ** ppCexImpl, int fVerbose );
-extern Abc_Cex_t * Bmc_CexEssentialBits( Gia_Man_t * p, Abc_Cex_t * pCexState, Abc_Cex_t * pCexCare, int fVerbose );
-extern Abc_Cex_t * Bmc_CexCareBits( Gia_Man_t * p, Abc_Cex_t * pCexState, Abc_Cex_t * pCexImpl, Abc_Cex_t * pCexEss, int fFindAll, int fVerbose );
-
 void Abc_NtkDumpOneCex( FILE * pFile, Abc_Ntk_t * pNtk, Abc_Cex_t * pCex, 
-    int fPrintFull, int fNames, int fUseFfNames, int fMinimize, int fUseOldMin, int fCexInfo,
-    int fCheckCex, int fUseSatBased, int fHighEffort, int fAiger, int fVerbose, int fExtended )
+    int fPrintFull, int fNames, int fUseFfNames, int fMinimize, int fUseOldMin, 
+    int fCheckCex, int fUseSatBased, int fHighEffort, int fAiger, int fVerbose )
 {
-    Abc_Cex_t * pCare = NULL;
     Abc_Obj_t * pObj;
     int i, f;
     if ( fPrintFull )
@@ -3137,17 +2472,15 @@ void Abc_NtkDumpOneCex( FILE * pFile, Abc_Ntk_t * pNtk, Abc_Cex_t * pCex,
                 fprintf( pFile, "%s@%d=%c ", Abc_ObjName(pObj), f, '0'+Abc_InfoHasBit(pCexFull->pData, Abc_NtkCiNum(pNtk)*f + i) );
         Abc_CexFreeP( &pCexFull );
     }
-    else
+    else if ( fNames )
     {
-        if ( fNames )
-        {
-            fprintf( pFile, "# FALSIFYING OUTPUTS:");
-            fprintf( pFile, " %s", Abc_ObjName(Abc_NtkCo(pNtk, pCex->iPo)) );
-        }
+        Abc_Cex_t * pCare = NULL;
         if ( fMinimize )
         {
             extern Aig_Man_t * Abc_NtkToDar( Abc_Ntk_t * pNtk, int fExors, int fRegisters );
             Aig_Man_t * pAig = Abc_NtkToDar( pNtk, 0, 1 );
+            fprintf( pFile, "# FALSIFYING OUTPUTS:");                                       
+            fprintf( pFile, " %s", Abc_ObjName(Abc_NtkCo(pNtk, pCex->iPo)) ); 
             if ( fUseOldMin )
             {
                 pCare = Saig_ManCbaFindCexCareBits( pAig, pCex, 0, fVerbose );
@@ -3155,47 +2488,21 @@ void Abc_NtkDumpOneCex( FILE * pFile, Abc_Ntk_t * pNtk, Abc_Cex_t * pCex,
                     Bmc_CexCareVerify( pAig, pCex, pCare, fVerbose );
             }
             else if ( fUseSatBased )
-            {
-                if ( Abc_NtkPoNum( pNtk ) == 1 )
-                    pCare = Bmc_CexCareSatBasedMinimize( pAig, Saig_ManPiNum(pAig), pCex, fHighEffort, fCheckCex, fVerbose );
-                else
-                    printf( "SAT-based CEX minimization requires having a single PO.\n" );
-            }
-            else if ( fCexInfo )
-            {
-                Gia_Man_t * p = Gia_ManFromAigSimple( pAig );
-                Abc_Cex_t * pCexImpl   = NULL;
-                Abc_Cex_t * pCexStates = Bmc_CexInnerStates( p, pCex, &pCexImpl, fVerbose );
-                Abc_Cex_t * pCexCare   = Bmc_CexCareBits( p, pCexStates, pCexImpl, NULL, 1, fVerbose );
-                Abc_Cex_t * pCexEss;
-
-                if ( fCheckCex && !Bmc_CexVerify( p, pCex, pCexCare ) )
-                    printf( "Counter-example care-set verification has failed.\n" );
-
-                pCexEss = Bmc_CexEssentialBits( p, pCexStates, pCexCare, fVerbose );
-
-                // pCare is pCexMin from Bmc_CexTest
-                pCare = Bmc_CexCareBits( p, pCexStates, pCexImpl, pCexEss, 0, fVerbose );
-
-                if ( fCheckCex && !Bmc_CexVerify( p, pCex, pCare ) )
-                    printf( "Counter-example min-set verification has failed.\n" );
-                Abc_CexFreeP( &pCexStates );
-                Abc_CexFreeP( &pCexImpl );
-                Abc_CexFreeP( &pCexCare );
-                Abc_CexFreeP( &pCexEss );
-            }
+                pCare = Bmc_CexCareSatBasedMinimize( pAig, Saig_ManPiNum(pAig), pCex, fHighEffort, fCheckCex, fVerbose );
             else
                 pCare = Bmc_CexCareMinimize( pAig, Saig_ManPiNum(pAig), pCex, 4, fCheckCex, fVerbose );
             Aig_ManStop( pAig );
-            if(pCare == NULL)
+            if(pCare == NULL)                                           
                 printf( "Counter-example minimization has failed.\n" ); 
         }
-        if (fNames)
+        else
         {
-                fprintf( pFile, "\n");
-                fprintf( pFile, "# COUNTEREXAMPLE LENGTH: %u\n", pCex->iFrame+1);
+            fprintf( pFile, "# FALSIFYING OUTPUTS:");                        
+            fprintf( pFile, " %s", Abc_ObjName(Abc_NtkCo(pNtk, pCex->iPo)) );
         }
-        if ( fNames && fUseFfNames && Abc_NtkCheckSpecialPi(pNtk) )
+        fprintf( pFile, "\n");                                           
+        fprintf( pFile, "# COUNTEREXAMPLE LENGTH: %u\n", pCex->iFrame+1);
+        if ( fUseFfNames && Abc_NtkCheckSpecialPi(pNtk) )
         {
             int * pValues;
             int nXValues = 0, iFlop = 0, iPivotPi = -1;
@@ -3235,35 +2542,28 @@ void Abc_NtkDumpOneCex( FILE * pFile, Abc_Ntk_t * pNtk, Abc_Cex_t * pCex,
         }
         else
         {
-            if (fExtended && fAiger && !fNames) {
-                fprintf( pFile, "1\n");
-                fprintf( pFile, "b%d\n", pCex->iPo);
-            }
             // output flop values (unaffected by the minimization)
             Abc_NtkForEachLatch( pNtk, pObj, i )
-                if ( fNames )
-                    fprintf( pFile, "%s@0=%c\n", Abc_ObjName(Abc_ObjFanout0(pObj)), '0'+!Abc_LatchIsInit0(pObj) );
-                else
-                    fprintf( pFile, "%c", '0'+!Abc_LatchIsInit0(pObj) );
-            if ( !fNames && fAiger)
-                fprintf( pFile, "\n");
+                fprintf( pFile, "%s@0=%c\n", Abc_ObjName(Abc_ObjFanout0(pObj)), '0'+!Abc_LatchIsInit0(pObj) );
             // output PI values (while skipping the minimized ones)
-            for ( f = 0; f <= pCex->iFrame; f++ ) {
+            for ( f = 0; f <= pCex->iFrame; f++ )
                 Abc_NtkForEachPi( pNtk, pObj, i )
                     if ( !pCare || Abc_InfoHasBit(pCare->pData, pCare->nRegs+pCare->nPis*f + i) )
-                        if ( fNames )
-                            fprintf( pFile, "%s@%d=%c\n", Abc_ObjName(pObj), f, '0'+Abc_InfoHasBit(pCex->pData, pCex->nRegs+pCex->nPis*f + i) );
-                        else
-                            fprintf( pFile, "%c", '0'+Abc_InfoHasBit(pCex->pData, pCex->nRegs+pCex->nPis*f + i) );
-                    else if ( !fNames )
-                        fprintf( pFile, "x");
-                if ( !fNames && fAiger)
-                    fprintf( pFile, "\n");
-            }
-            if (fExtended && fAiger && !fNames)
-                fprintf( pFile, ".\n");
+                        fprintf( pFile, "%s@%d=%c\n", Abc_ObjName(pObj), f, '0'+Abc_InfoHasBit(pCex->pData, pCex->nRegs+pCex->nPis*f + i) );
         }
         Abc_CexFreeP( &pCare );
+    }
+    else
+    {
+        Abc_NtkForEachLatch( pNtk, pObj, i )
+            fprintf( pFile, "%c", '0'+!Abc_LatchIsInit0(pObj) );
+
+        for ( i = pCex->nRegs; i < pCex->nBits; i++ )
+        {
+            if ( fAiger && (i-pCex->nRegs)%pCex->nPis == 0)
+                fprintf( pFile, "\n");
+            fprintf( pFile, "%c", '0'+Abc_InfoHasBit(pCex->pData, i) );
+        }
     }
 }
 
@@ -3293,11 +2593,9 @@ int IoCommandWriteCex( Abc_Frame_t * pAbc, int argc, char **argv )
     int fPrintFull = 0;
     int fUseFfNames = 0;
     int fVerbose   = 0;
-    int fCexInfo   = 0;
-    int fExtended  = 0;
 
     Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "snmueocafzvhxt" ) ) != EOF )
+    while ( ( c = Extra_UtilGetopt( argc, argv, "snmueocafzvh" ) ) != EOF )
     {
         switch ( c )
         {
@@ -3333,12 +2631,6 @@ int IoCommandWriteCex( Abc_Frame_t * pAbc, int argc, char **argv )
                 break;
             case 'v':
                 fVerbose ^= 1;
-                break;
-            case 'x':
-                fCexInfo ^= 1;
-                break;
-            case 't':
-                fExtended ^= 1;
                 break;
             case 'h':
                 goto usage;
@@ -3388,8 +2680,8 @@ int IoCommandWriteCex( Abc_Frame_t * pAbc, int argc, char **argv )
         if ( pAbc->pCex )
         {
             Abc_NtkDumpOneCex( pFile, pNtk, pCex, 
-                fPrintFull, fNames, fUseFfNames, fMinimize, fUseOldMin, fCexInfo,
-                fCheckCex, fUseSatBased, fHighEffort, fAiger, fVerbose, fExtended );
+                fPrintFull, fNames, fUseFfNames, fMinimize, fUseOldMin, 
+                fCheckCex, fUseSatBased, fHighEffort, fAiger, fVerbose );
         }
         else if ( pAbc->vCexVec )
         {
@@ -3397,10 +2689,10 @@ int IoCommandWriteCex( Abc_Frame_t * pAbc, int argc, char **argv )
             {
                 if ( pCex == NULL )
                     continue;
-                fprintf( pFile, "#\n#\n# CEX for output %d\n#\n", i );
+                fprintf( pFile, "#\n#\n# CEX for output %d\n#\n", i ); 
                 Abc_NtkDumpOneCex( pFile, pNtk, pCex, 
-                    fPrintFull, fNames, fUseFfNames, fMinimize, fUseOldMin, fCexInfo,
-                    fCheckCex, fUseSatBased, fHighEffort, fAiger, fVerbose, fExtended );
+                    fPrintFull, fNames, fUseFfNames, fMinimize, fUseOldMin, 
+                    fCheckCex, fUseSatBased, fHighEffort, fAiger, fVerbose );
             }
         }
         fprintf( pFile, "# DONE\n" ); 
@@ -3444,10 +2736,8 @@ usage:
     fprintf( pAbc->Err, "\t-u     : use fast SAT-based CEX minimization [default = %s]\n", fUseSatBased? "yes": "no" );
     fprintf( pAbc->Err, "\t-e     : use high-effort SAT-based CEX minimization [default = %s]\n", fHighEffort? "yes": "no" );
     fprintf( pAbc->Err, "\t-o     : use old CEX minimization algorithm [default = %s]\n", fUseOldMin? "yes": "no" );
-    fprintf( pAbc->Err, "\t-x     : minimize using algorithm from cexinfo command [default = %s]\n", fCexInfo? "yes": "no" );
     fprintf( pAbc->Err, "\t-c     : check generated CEX using ternary simulation [default = %s]\n", fCheckCex? "yes": "no" );
     fprintf( pAbc->Err, "\t-a     : print cex in AIGER 1.9 format [default = %s]\n", fAiger? "yes": "no" );
-    fprintf( pAbc->Err, "\t-t     : extended header info when cex in AIGER 1.9 format [default = %s]\n", fAiger? "yes": "no" );
     fprintf( pAbc->Err, "\t-f     : enable printing flop values in each timeframe [default = %s]\n", fPrintFull? "yes": "no" );  
     fprintf( pAbc->Err, "\t-z     : toggle using saved flop names [default = %s]\n", fUseFfNames? "yes": "no" );  
     fprintf( pAbc->Err, "\t-v     : enable verbose output [default = %s]\n", fVerbose? "yes": "no" );  
@@ -3562,149 +2852,6 @@ usage:
     fprintf( pAbc->Err, "\t-N     : toggle keeping original naming of the netlist in edgelist (default=False)\n");  
     fprintf( pAbc->Err, "\t-h     : print the help massage\n" );
     fprintf( pAbc->Err, "\tfile   : the name of the file to write (extension .el)\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandWriteNtk( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    char * pFileName;
-    int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "Nh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( pAbc->pNtkCur == NULL )
-    {
-        fprintf( pAbc->Out, "Empty network.\n" );
-        return 0;
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    else 
-    {
-        Abc_Obj_t * pObj, * pFanin; int i, k, nIds = 1;
-        int * pId = ABC_CALLOC( int, Abc_NtkObjNumMax(pAbc->pNtkCur) );
-        Abc_NtkForEachCi( pAbc->pNtkCur, pObj, i )
-            pId[pObj->Id] = nIds++;
-        Abc_NtkForEachNode( pAbc->pNtkCur, pObj, i )
-            pId[pObj->Id] = nIds++;
-        Abc_NtkForEachCo( pAbc->pNtkCur, pObj, i )
-            pId[pObj->Id] = nIds++;
-        // get the output file name
-        pFileName = argv[globalUtilOptind];
-        FILE * pFile = fopen( pFileName, "wb" );
-        fprintf( pFile, "%d\n", 0 );
-        Abc_NtkForEachCi( pAbc->pNtkCur, pObj, i )
-            fprintf( pFile, "%d\n", pId[pObj->Id] );
-        Abc_NtkForEachNode( pAbc->pNtkCur, pObj, i ) {
-            fprintf( pFile, "%d", pId[pObj->Id] );
-            Abc_ObjForEachFanin( pObj, pFanin, k )
-                fprintf( pFile, " %d", pId[pFanin->Id] );
-            fprintf( pFile, "\n" );
-        }
-        Abc_NtkForEachCo( pAbc->pNtkCur, pObj, i )
-            fprintf( pFile, "%d %d\n", pId[pObj->Id], pId[Abc_ObjFanin0(pObj)->Id] );
-        fclose( pFile );
-        ABC_FREE( pId );
-    }
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: write_ntk <file>\n" );
-    fprintf( pAbc->Err, "\t         writes the network into a text file\n" );
-    fprintf( pAbc->Err, "\t-h     : print the help massage\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of the file to write\n" );
-    return 1;
-}
-
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandWriteHMetis( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    char * pFileName;
-    int fVerbose;
-    int fSkipPo;
-    int fWeightEdges;
-    int c;
-
-    fSkipPo       = 1;
-    fWeightEdges  = 0;
-    fVerbose      = 0;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "swvh" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 's':
-                fSkipPo ^= 1;
-                break;
-            case 'w':
-                fWeightEdges ^= 1;
-                break;
-            case 'v':
-                fVerbose ^= 1;
-                break;
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( pAbc->pNtkCur == NULL )
-    {
-        fprintf( pAbc->Out, "Empty network.\n" );
-        return 0;
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    // get the output file name
-    pFileName = argv[globalUtilOptind];
-    // call the corresponding file writer
-    if ( !Abc_NtkIsStrash(pAbc->pNtkCur) )
-    {
-        fprintf( stdout, "Writing this format is only possible for structurally hashed AIGs.\n" );
-        return 1;
-    }
-    Io_WriteHMetis( pAbc->pNtkCur, pFileName, fSkipPo, fWeightEdges, fVerbose );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: write_hmetis <file>\n" );
-    fprintf( pAbc->Err, "\t         writes the network in the hMetis format (https://karypis.github.io/glaros/files/sw/hmetis/manual.pdf)\n" );
-    fprintf( pAbc->Err, "\t-s     : skip PO as sink explictly [default = %s]\n", fSkipPo? "yes" : "no" );
-    fprintf( pAbc->Err, "\t-w     : simulate weight on hyperedges [default = %s]\n", fWeightEdges? "yes" : "no" );
-    fprintf( pAbc->Err, "\t-v     : toggle printing verbose information [default = %s]\n", fVerbose? "yes" : "no" );
-    fprintf( pAbc->Err, "\t-h     : print the help massage\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of the file to write\n" );
     return 1;
 }
 
@@ -3910,13 +3057,13 @@ usage:
 ***********************************************************************/
 int IoCommandWriteVerilog( Abc_Frame_t * pAbc, int argc, char **argv )
 {
-    extern void Io_WriteVerilogLut( Abc_Ntk_t * pNtk, char * pFileName, int nLutSize, int fFixed, int fNoModules, int fNewInterface );
+    extern void Io_WriteVerilogLut( Abc_Ntk_t * pNtk, char * pFileName, int nLutSize, int fFixed, int fNoModules );
     char * pFileName;
-    int c, fFixed = 0, fOnlyAnds = 0, fNoModules = 0, fNewInterface = 0;
+    int c, fFixed = 0, fOnlyAnds = 0, fNoModules = 0;
     int nLutSize = -1;
 
     Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "Kfamnh" ) ) != EOF )
+    while ( ( c = Extra_UtilGetopt( argc, argv, "Kfamh" ) ) != EOF )
     {
         switch ( c )
         {
@@ -3940,9 +3087,6 @@ int IoCommandWriteVerilog( Abc_Frame_t * pAbc, int argc, char **argv )
             case 'm':
                 fNoModules ^= 1;
                 break;
-            case 'n':
-                fNewInterface ^= 1;
-                break;                
             case 'h':
                 goto usage;
             default:
@@ -3961,26 +3105,27 @@ int IoCommandWriteVerilog( Abc_Frame_t * pAbc, int argc, char **argv )
     // get the output file name
     pFileName = argv[globalUtilOptind];
     // call the corresponding file writer
-    if ( nLutSize >= 2 && nLutSize <= 6 )
-        Io_WriteVerilogLut( pAbc->pNtkCur, pFileName, nLutSize, fFixed, fNoModules, fNewInterface );
-    else
+    if ( fOnlyAnds )
     {
         Abc_Ntk_t * pNtkTemp = Abc_NtkToNetlist( pAbc->pNtkCur );
         if ( !Abc_NtkHasAig(pNtkTemp) && !Abc_NtkHasMapping(pNtkTemp) )
             Abc_NtkToAig( pNtkTemp );
-        Io_WriteVerilog( pNtkTemp, pFileName, fOnlyAnds, fNewInterface );
+        Io_WriteVerilog( pNtkTemp, pFileName, 1 );
         Abc_NtkDelete( pNtkTemp );
     }
+    else if ( nLutSize >= 2 && nLutSize <= 6 )
+        Io_WriteVerilogLut( pAbc->pNtkCur, pFileName, nLutSize, fFixed, fNoModules );
+    else
+        Io_Write( pAbc->pNtkCur, pFileName, IO_FILE_VERILOG );
     return 0;
 
 usage:
-    fprintf( pAbc->Err, "usage: write_verilog [-K num] [-famnh] <file>\n" );
+    fprintf( pAbc->Err, "usage: write_verilog [-K num] [-famh] <file>\n" );
     fprintf( pAbc->Err, "\t         writes the current network in Verilog format\n" );
     fprintf( pAbc->Err, "\t-K num : write the network using instances of K-LUTs (2 <= K <= 6) [default = not used]\n" );
     fprintf( pAbc->Err, "\t-f     : toggle using fixed format [default = %s]\n", fFixed? "yes":"no" );
     fprintf( pAbc->Err, "\t-a     : toggle writing expressions with only ANDs (without XORs and MUXes) [default = %s]\n", fOnlyAnds? "yes":"no" );
     fprintf( pAbc->Err, "\t-m     : toggle writing additional modules [default = %s]\n", !fNoModules? "yes":"no" );
-    fprintf( pAbc->Err, "\t-n     : toggle writing generic PO names and assign-statements [default = %s]\n", fNewInterface? "yes":"no" );
     fprintf( pAbc->Err, "\t-h     : print the help massage\n" );
     fprintf( pAbc->Err, "\tfile   : the name of the file to write\n" );
     return 1;
@@ -4207,7 +3352,7 @@ int IoCommandWriteTruths( Abc_Frame_t * pAbc, int argc, char **argv )
     if ( pAbc->pGia == NULL )
     {
         Abc_Print( -1, "IoCommandWriteTruths(): There is no AIG.\n" );
-        return 0;
+        return 1;
     } 
     if ( Gia_ManPiNum(pAbc->pGia) > 16 )
     {
@@ -4245,7 +3390,7 @@ int IoCommandWriteTruths( Abc_Frame_t * pAbc, int argc, char **argv )
     return 0;
 
 usage:
-    fprintf( pAbc->Err, "usage: &write_truth [-rxbh] <file>\n" );
+    fprintf( pAbc->Err, "usage: &write_truths [-rxbh] <file>\n" );
     fprintf( pAbc->Err, "\t         writes truth tables of each PO of GIA manager into a file\n" );
     fprintf( pAbc->Err, "\t-r     : toggle reversing bits in the truth table [default = %s]\n", fReverse? "yes":"no" );
     fprintf( pAbc->Err, "\t-x     : toggle writing in the hex notation [default = %s]\n", fHex? "yes":"no" );
@@ -4413,54 +3558,6 @@ usage:
   SeeAlso     []
 
 ***********************************************************************/
-int IoCommandWriteJsonC( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    extern void Jsonc_WriteTest( Abc_Ntk_t * p, char * pFileName );
-    Abc_Ntk_t * pNtk = Abc_FrameReadNtk(pAbc);
-    char * pFileName;
-    int c;
-
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( pNtk == NULL || !Abc_NtkHasMapping(pNtk) )
-    {
-        fprintf( pAbc->Out, "No curent network or network is not mapped.\n" );
-        return 0;
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    pFileName = argv[globalUtilOptind];
-    Jsonc_WriteTest( pNtk, pFileName );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: write_jsonc [-ch] <file>\n" );
-    fprintf( pAbc->Err, "\t         write the network in JSONC format\n" );
-    fprintf( pAbc->Err, "\t-h     : print the help message\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of the file to write (extension .jsonc)\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 int IoCommandWriteResub( Abc_Frame_t * pAbc, int argc, char **argv )
 {
     extern void Gia_ManWriteResub( Gia_Man_t * p, char * pFileName );
@@ -4501,114 +3598,10 @@ usage:
     return 1;
 }
 
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandWriteMM( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    extern int Abc_NtkWriteToFile( char * pFileName, Abc_Ntk_t * pNtk );
-    Abc_Ntk_t * pNtk = Abc_FrameReadNtk(pAbc);
-    char * pFileName = NULL; int c;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    pFileName = argv[globalUtilOptind];
-    if ( pNtk == NULL )
-    {
-        Abc_Print( -1, "IoCommandWriteMM(): There is no current network.\n" );
-        return 1;
-    }
-    if ( !Abc_NtkIsMappedLogic(pNtk) )
-    {
-        Abc_Print( -1, "IoCommandWriteMM(): The current network is not mapped.\n" );
-        return 1;
-    }
-    Abc_NtkWriteToFile( pFileName, pNtk );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: write_mm [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         write mapped network into a file\n" );
-    fprintf( pAbc->Err, "\t-h     : print the help message\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of the file to write\n" );
-    return 1;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int IoCommandWriteMMGia( Abc_Frame_t * pAbc, int argc, char **argv )
-{
-    extern Abc_Ntk_t * Abc_NtkFromCellMappedGia( Gia_Man_t * p, int fUseBuffs );
-    extern int Abc_NtkWriteToFile( char * pFileName, Abc_Ntk_t * pNtk );
-    Abc_Ntk_t * pNtk = NULL;
-    char * pFileName = NULL; int c;
-    Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
-    {
-        switch ( c )
-        {
-            case 'h':
-                goto usage;
-            default:
-                goto usage;
-        }
-    }
-    if ( argc != globalUtilOptind + 1 )
-        goto usage;
-    pFileName = argv[globalUtilOptind];
-    if ( pAbc->pGia == NULL )
-    {
-        Abc_Print( -1, "IoCommandWriteMMGia(): There is no current AIG.\n" );
-        return 1;
-    }
-    if ( !Gia_ManHasCellMapping(pAbc->pGia) )
-    {
-        Abc_Print( -1, "IoCommandWriteMMGia(): Current AIG is not mapped.\n" );
-        return 1;
-    }
-    pNtk = Abc_NtkFromCellMappedGia( pAbc->pGia, 0 );
-    Abc_NtkWriteToFile( pFileName, pNtk );
-    Abc_NtkDelete( pNtk );
-    return 0;
-
-usage:
-    fprintf( pAbc->Err, "usage: &write_mm [-h] <file>\n" );
-    fprintf( pAbc->Err, "\t         write cell mapped current AIG into a file\n" );
-    fprintf( pAbc->Err, "\t-h     : print the help message\n" );
-    fprintf( pAbc->Err, "\tfile   : the name of the file to write\n" );
-    return 1;
-}
-
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
 
 ABC_NAMESPACE_IMPL_END
+

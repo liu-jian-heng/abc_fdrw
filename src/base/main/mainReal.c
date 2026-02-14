@@ -49,9 +49,7 @@ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <sys/times.h>   
 #include <sys/resource.h>
 #include <unistd.h>      
-#if !defined(__wasm)
 #include <signal.h>      
-#endif
 #include <stdlib.h>
 #endif
 
@@ -293,7 +291,7 @@ int Abc_RealMain( int argc, char * argv[] )
         pAbc->pGia = Gia_ManFromBridge( stdin, NULL );
     }
     else if ( fBatch!=INTERACTIVE && fBatch!=BATCH_QUIET && fBatch!=BATCH_QUIET_THEN_INTERACTIVE && Vec_StrSize(sCommandUsr)>0 )
-        Abc_Print( 1, "======== ABC command line \"%s\"\n", Vec_StrArray(sCommandUsr) );
+        Abc_Print( 1, "ABC command line: \"%s\".\n\n", Vec_StrArray(sCommandUsr) );
 
     if ( fBatch!=INTERACTIVE )
     {

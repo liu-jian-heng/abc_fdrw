@@ -191,7 +191,14 @@ static inline void proof_chain_resolve( sat_solver2* s, clause* cls, int Var )
     if ( s->pInt2 )
     {
         clause* c = cls ? cls : var_unit_clause( s, Var );
-        s->tempInter = Int2_ManChainResolve( s->pInt2, c, s->tempInter, var_is_partA(s,Var) );
+        if (c->lrn == 1 && c->partA == 1) {
+            printf("lrn clause reuse\n");
+        }
+        s->tempInter = Int2_ManChainResolve( s->pInt2, c, s->tempInter, var_is_partA(s,Var) ); // here
+        if (s->tempInter == -1) {
+            // printf("some error in Int2_ManChainResolve\n");
+            s->pInt2 = NULL;
+        }
     }
     if ( s->pPrf2 )
     {
@@ -418,7 +425,18 @@ static int clause2_create_new(sat_solver2* s, lit* begin, lit* end, int learnt, 
     assert( !(h & 1) );
     c = clause2_read( s, h );
     if (learnt)
-    {
+    {   
+        // if (s->verbosity) {
+        //     printf("learnt clause:");
+        //     for ( int i = 0; i <= c->size; i++ ) {
+        //         // if (c->lits[i] < 0) printf("?");
+        //         printf(" ");
+        //         if (Abc_LitIsCompl(c->lits[i])) printf("-");
+        //         // if (Abc_Lit2Var(c->lits[i]) >= p->pSat->size) printf("*");
+        //         printf("%d", Abc_Lit2Var(c->lits[i]));
+        //     }
+        //     printf("\n");
+        // }
         if ( s->pPrf1 )
             assert( proof_id );
         c->lbd = sat_clause_compute_lbd( s, c );
@@ -1025,6 +1043,7 @@ static lbool solver2_search(sat_solver2* s, ABC_INT64_T nof_conflicts)
 #endif
             s->stats.conflicts++; conflictC++;
             if (solver2_dlevel(s) <= s->root_level){
+                // not in
                 proof_id = solver2_analyze_final(s, confl, 0);
                 if ( s->pPrf1 )
                     assert( proof_id > 0 );
@@ -1094,7 +1113,7 @@ static lbool solver2_search(sat_solver2* s, ABC_INT64_T nof_conflicts)
             }
 
             if ( var_polar(s, next) ) // positive polarity
-                solver2_assume(s,toLit(next));
+                solver2_assume(s,toLit(next)); 
             else
                 solver2_assume(s,lit_neg(toLit(next)));
         }
@@ -1309,6 +1328,12 @@ int sat_solver2_addclause(sat_solver2* s, lit* begin, lit* end, int Id)
             *j = *(j-1);
         *j = l;
     }
+
+    // for (i = begin; i < end; i++)
+    // {
+    //     printf("%d ", *i);
+    // }
+    // printf("\n");
     sat_solver2_setnvars(s,maxvar+1);
 
 
@@ -1843,6 +1868,7 @@ int sat_solver2_solve(sat_solver2* s, lit* begin, lit* end, ABC_INT64_T nConfLim
     s->hLearntLast = -1;
     s->hProofLast = -1;
 
+
     // set the external limits
 //    s->nCalls++;
 //    s->nRestarts  = 0;
@@ -1923,7 +1949,7 @@ int sat_solver2_solve(sat_solver2* s, lit* begin, lit* end, ABC_INT64_T nConfLim
             solver2_canceluntil(s, 0);
             return l_False;
         }
-        else
+        else // here
         {
             clause* confl = solver2_propagate(s);
             if (confl != NULL){
@@ -1972,8 +1998,11 @@ int sat_solver2_solve(sat_solver2* s, lit* begin, lit* end, ABC_INT64_T nConfLim
         if ( s->nInsLimit  && s->stats.propagations > s->nInsLimit )
             break;
     }
-    if (s->verbosity >= 1)
+    if (s->verbosity >= 1) {
         Abc_Print(1,"==============================================================================\n");
+        printf("the solver finished with status = %d, number of conflicts = %d\n", status, s->stats.conflicts);
+    }
+
 
     solver2_canceluntil(s,0);
 //    assert( s->qhead == s->qtail );

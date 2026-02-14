@@ -31,9 +31,7 @@
 
 
 #ifdef _WIN32
-#ifndef _MSC_VER
 #define inline __inline // compatible with MS VS 6.0
-#endif
 #endif
 
 /*---------------------------------------------------------------------------*/

@@ -23,10 +23,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include <stdio.h>
 
-#include "sat/bsat2/ParseUtils.h"
-#include "sat/bsat2/SolverTypes.h"
-
-ABC_NAMESPACE_CXX_HEADER_START
+#include "ParseUtils.h"
+#include "SolverTypes.h"
 
 namespace Minisat {
 
@@ -87,7 +85,5 @@ static void parse_DIMACS(gzFile input_stream, Solver& S) {
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

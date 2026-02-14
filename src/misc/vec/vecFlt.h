@@ -454,7 +454,6 @@ static inline void Vec_FltGrow( Vec_Flt_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
-    assert( p->nCap < ABC_INT_MAX );
     p->pArray = ABC_REALLOC( float, p->pArray, nCapMin ); 
     p->nCap   = nCapMin;
 }
@@ -498,7 +497,7 @@ static inline void Vec_FltFillExtra( Vec_Flt_t * p, int nSize, float Fill )
     if ( nSize > 2 * p->nCap )
         Vec_FltGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_FltGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+        Vec_FltGrow( p, 2 * p->nCap );
     for ( i = p->nSize; i < nSize; i++ )
         p->pArray[i] = Fill;
     p->nSize = nSize;
@@ -555,7 +554,7 @@ static inline void Vec_FltPush( Vec_Flt_t * p, float Entry )
         if ( p->nCap < 16 )
             Vec_FltGrow( p, 16 );
         else
-            Vec_FltGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_FltGrow( p, 2 * p->nCap );
     }
     p->pArray[p->nSize++] = Entry;
 }
@@ -579,7 +578,7 @@ static inline void Vec_FltPushOrder( Vec_Flt_t * p, float Entry )
         if ( p->nCap < 16 )
             Vec_FltGrow( p, 16 );
         else
-            Vec_FltGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_FltGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -813,6 +812,38 @@ static inline void Vec_FltSort( Vec_Flt_t * p, int fReverse )
     else
         qsort( (void *)p->pArray, (size_t)p->nSize, sizeof(float), 
                 (int (*)(const void *, const void *)) Vec_FltSortCompare1 );
+}
+
+// new defined
+static inline void          Vec_FltRemoveAll( Vec_Flt_t* vec, float val, int fRange ) {
+    int i, iWrite;
+    float Entry;
+    iWrite = 0;
+    Vec_FltForEachEntry( vec, Entry, i ) {
+        switch (fRange) {
+            case -1:
+                if ( Entry > val ) {
+                    Vec_FltWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            case 0:
+                if ( Entry != val ) {
+                    Vec_FltWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            case 1:
+                if ( Entry < val ) {
+                    Vec_FltWriteEntry( vec, iWrite, Entry );
+                    iWrite++;
+                }
+                break;
+            default:
+                assert(0);
+        }
+    }
+    Vec_FltShrink( vec, iWrite );
 }
 
 ////////////////////////////////////////////////////////////////////////

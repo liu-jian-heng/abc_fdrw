@@ -37,7 +37,7 @@
 
 #ifdef ABC_USE_PTHREADS
 
-#if defined(_WIN32) && !defined(__MINGW32__)
+#ifdef _WIN32
 #include "../lib/pthread.h"
 #else
 #include <pthread.h>
@@ -423,10 +423,6 @@ Gia_Man_t * Gia_ManTranStoch( Gia_Man_t * pGia, int nRestarts, int nHops, int nS
   if ( nVerbose )
     printf( "best: %d\n", Gia_ManAndNum( pBest ) );
   Vec_PtrFree( vpStarts );
-  ABC_FREE( pBest->pName );
-  ABC_FREE( pBest->pSpec );
-  pBest->pName = Abc_UtilStrsav( pGia->pName );
-  pBest->pSpec = Abc_UtilStrsav( pGia->pSpec );
   return pBest;
 }
 

@@ -125,12 +125,6 @@ char * Abc_ObjNameDummy( char * pPrefix, int Num, int nDigits )
     sprintf( Buffer, "%s%0*d", pPrefix, nDigits, Num );
     return Buffer;
 }
-char * Abc_ObjNameChar( int Num, int fCap )
-{
-    static char Buffer[2000];
-    sprintf( Buffer, "%c", (fCap ? 'A':'a') + Num );
-    return Buffer;
-}
 
 /**Function*************************************************************
 
@@ -500,12 +494,6 @@ void Abc_NtkAddDummyPiNames( Abc_Ntk_t * pNtk )
     Abc_NtkForEachPi( pNtk, pObj, i )
         Abc_ObjAssignName( pObj, Abc_ObjNameDummy("pi", i, nDigits), NULL );
 }
-void Abc_NtkAddCharPiNames( Abc_Ntk_t * pNtk )
-{
-    Abc_Obj_t * pObj; int i;
-    Abc_NtkForEachPi( pNtk, pObj, i )
-        Abc_ObjAssignName( pObj, Abc_ObjNameChar(i, 0), NULL );
-}
 
 /**Function*************************************************************
 
@@ -525,12 +513,6 @@ void Abc_NtkAddDummyPoNames( Abc_Ntk_t * pNtk )
     nDigits = Abc_Base10Log( Abc_NtkPoNum(pNtk) );
     Abc_NtkForEachPo( pNtk, pObj, i )
         Abc_ObjAssignName( pObj, Abc_ObjNameDummy("po", i, nDigits), NULL );
-}
-void Abc_NtkAddCharPoNames( Abc_Ntk_t * pNtk )
-{
-    Abc_Obj_t * pObj; int i;
-    Abc_NtkForEachPo( pNtk, pObj, i )
-        Abc_ObjAssignName( pObj, Abc_ObjNameChar(i, 1), NULL );
 }
 
 /**Function*************************************************************
@@ -622,14 +604,6 @@ void Abc_NtkShortNames( Abc_Ntk_t * pNtk )
     pNtk->pManName = Nm_ManCreate( Abc_NtkCiNum(pNtk) + Abc_NtkCoNum(pNtk) + Abc_NtkBoxNum(pNtk) );
     Abc_NtkAddDummyPiNames( pNtk );
     Abc_NtkAddDummyPoNames( pNtk );
-    Abc_NtkAddDummyBoxNames( pNtk );
-}
-void Abc_NtkCharNames( Abc_Ntk_t * pNtk )
-{
-    Nm_ManFree( pNtk->pManName );
-    pNtk->pManName = Nm_ManCreate( Abc_NtkCiNum(pNtk) + Abc_NtkCoNum(pNtk) + Abc_NtkBoxNum(pNtk) );
-    Abc_NtkAddCharPiNames( pNtk );
-    Abc_NtkAddCharPoNames( pNtk );
     Abc_NtkAddDummyBoxNames( pNtk );
 }
 void Abc_NtkCleanNames( Abc_Ntk_t * pNtk )

@@ -24,10 +24,6 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include <errno.h>
 #include <stdlib.h>
 
-#include <misc/util/abc_namespaces.h>
-
-ABC_NAMESPACE_CXX_HEADER_START
-
 namespace Minisat {
 
 //=================================================================================================
@@ -38,18 +34,12 @@ static inline void* xrealloc(void *ptr, size_t size)
 {
     void* mem = realloc(ptr, size);
     if (mem == NULL && errno == ENOMEM){
-#ifdef __wasm
-        abort();
-#else
         throw OutOfMemoryException();
-#endif
     }else
         return mem;
 }
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

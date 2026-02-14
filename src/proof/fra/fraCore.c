@@ -232,10 +232,13 @@ void Fra_FraigVerifyCounterEx( Fra_Man_t * p, Vec_Int_t * vCex )
 
 ***********************************************************************/
 static inline void Fra_FraigNode( Fra_Man_t * p, Aig_Obj_t * pObj )
-{ 
+{   
+    int fVerbose = 0;
     Aig_Obj_t * pObjRepr, * pObjFraig, * pObjFraig2, * pObjReprFraig;
     int RetValue;
     assert( !Aig_IsComplement(pObj) );
+    if ( p->vTimeouts == NULL )
+            p->vTimeouts = Vec_PtrAlloc( 100 );
     // get representative of this class
     pObjRepr = Fra_ClassObjRepr( pObj );
     if ( pObjRepr == NULL || // this is a unique node
@@ -254,6 +257,8 @@ static inline void Fra_FraigNode( Fra_Man_t * p, Aig_Obj_t * pObj )
     assert( p->pPars->nFramesK || Aig_Regular(pObjFraig) != Aig_ManConst1(p->pManFraig) );
     // if they are proved different, the c-ex will be in p->pPatWords
     RetValue = Fra_NodesAreEquiv( p, Aig_Regular(pObjReprFraig), Aig_Regular(pObjFraig) );
+    if (fVerbose)
+        printf( "Prove equiv %d/%d (d: %d/%d) in Fraig .... %d\n", Aig_ObjId(Aig_Regular(pObjReprFraig)), Aig_ObjId(Aig_Regular(pObjFraig)), Aig_ObjLevel(Aig_Regular(pObjReprFraig)), Aig_ObjLevel(Aig_Regular(pObjFraig)), RetValue );
     if ( RetValue == 1 )  // proved equivalent
     {
 //        if ( p->pPars->fChoicing )
@@ -310,15 +315,31 @@ static inline void Fra_FraigNode( Fra_Man_t * p, Aig_Obj_t * pObj )
 void Fra_FraigSweep( Fra_Man_t * p )
 {
 //    Bar_Progress_t * pProgress = NULL;
-    Aig_Obj_t * pObj, * pObjNew;
+    Aig_Obj_t * pObj, * pObjNew, * pObjRepr;
+    printf( "start Fra_FraigSweep...\n" );
+    int cnt_d = 0;
+    int cnt_a = 0;
+    int cnt_f = 0;
+    int cnt_uni = 0;
     int i, Pos = 0;
     int nBTracksOld;
     // fraig latch outputs
     Aig_ManForEachLoSeq( p->pManAig, pObj, i )
     {
+        pObjRepr = Fra_ClassObjRepr( pObj );
+        // printf("%d\n",pObjRepr);
+        if ( pObjRepr ) cnt_a++;
         Fra_FraigNode( p, pObj );
+        // printf("%d\n",Fra_ClassObjRepr( pObj ));
+        if ( pObjRepr != NULL && Fra_ClassObjRepr( pObj ) == NULL ) {
+            cnt_d++;
+            cnt_uni++;
+        } else if (Fra_ClassObjRepr( pObj ) == NULL) {
+            cnt_uni++;
+        }
         if ( p->pPars->fUseImps )
             Pos = Fra_ImpCheckForNode( p, p->pCla->vImps, pObj, Pos );
+        
     }
     if ( p->pPars->fLatchCorr )
         return;
@@ -342,13 +363,29 @@ void Fra_FraigSweep( Fra_Man_t * p )
         // perform fraiging
         if ( p->pPars->nLevelMax && (int)pObj->Level > p->pPars->nLevelMax )
             p->pPars->nBTLimitNode = 5;
+        pObjRepr = Fra_ClassObjRepr( pObj );
+        // if ( pObjRepr ) printf("%d\n",pObjRepr);
+        if ( pObjRepr ) { cnt_a++; }
         Fra_FraigNode( p, pObj );
+        // if ( pObjRepr ) printf("%d\n",Fra_ClassObjRepr( pObj ));
+        if ( pObjRepr != Fra_ClassObjRepr( pObj ) ) {
+            cnt_d++;
+        } 
+        if (Fra_ClassObjRepr( pObj ) == NULL) {
+            cnt_uni++;
+        }
+        
         if ( p->pPars->nLevelMax && (int)pObj->Level > p->pPars->nLevelMax )
             p->pPars->nBTLimitNode = nBTracksOld;
         // check implications
         if ( p->pPars->fUseImps )
             Pos = Fra_ImpCheckForNode( p, p->pCla->vImps, pObj, Pos );
     }
+    // cnt_f = Vec_PtrSize(p->vTimeouts);
+    // cnt_a -= p->nSatCallsSkipped;
+    // // printf("%d\n", p->nSatCallsSkipped);
+    // printf( "cnt_a = %d, cnt_p = %d, cnt_d = %d, cnt_f = %d\n", cnt_a, cnt_a - cnt_f, cnt_d, cnt_f - cnt_d );
+    // printf( "cnt_uni = %d\n", cnt_uni );
 //    if ( pProgress )
 //        Bar_ProgressStop( pProgress );
     // try to prove the outputs of the miter

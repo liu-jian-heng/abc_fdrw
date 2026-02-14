@@ -854,8 +854,8 @@ void Exa_ManExactSynthesis2( Bmc_EsPar_t * pPars )
     int i, status, iMint = 1;
     abctime clkTotal = Abc_Clock();
     Exa_Man_t * p; int fCompl = 0;
-    word pTruth[64]; Abc_TtReadHex( pTruth, pPars->pTtStr );
-    assert( pPars->nVars <= 12 );
+    word pTruth[16]; Abc_TtReadHex( pTruth, pPars->pTtStr );
+    assert( pPars->nVars <= 10 );
     p = Exa_ManAlloc( pPars, pTruth );
     if ( pTruth[0] & 1 ) { fCompl = 1; Abc_TtNot( pTruth, p->nWords ); }
     status = Exa_ManAddCnfStart( p, pPars->fOnlyAnd );
@@ -944,23 +944,6 @@ static int Exa3_ManMarkup( Exa3_Man_t * p )
     // assign connectivity variables
     for ( i = p->nVars; i < p->nObjs; i++ )
     {
-        if ( p->pPars->fLutCascade )
-        {
-            if ( i > p->nVars ) 
-            {
-                Vec_WecPush( p->vOutLits, i-1, Abc_Var2Lit(p->iVar, 0) );
-                p->VarMarks[i][0][i-1] = p->iVar++;
-            }
-            for ( k = (int)(i > p->nVars); k < p->nLutSize; k++ )
-            {
-                for ( j = 0; j < p->nVars - k + (int)(i > p->nVars); j++ )
-                {
-                    Vec_WecPush( p->vOutLits, j, Abc_Var2Lit(p->iVar, 0) );
-                    p->VarMarks[i][k][j] = p->iVar++;
-                }
-            }
-            continue;
-        }        
         for ( k = 0; k < p->nLutSize; k++ )
         {
             if ( p->pPars->fFewerVars && i == p->nObjs - 1 && k == 0 )
@@ -1176,67 +1159,6 @@ static void Exa3_ManPrintSolution( Exa3_Man_t * p, int fCompl )
     }
 }
 
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-static void Exa3_ManDumpBlif( Exa3_Man_t * p, int fCompl )
-{
-    int i, k, b, iVar;
-    char pFileName[1000];
-    char * pStr = Abc_UtilStrsav(p->pPars->pTtStr);
-    if ( strlen(pStr) > 16 ) {
-        pStr[16] = '_';
-        pStr[17] = '\0';
-    }
-    sprintf( pFileName, "%s.blif", pStr );
-    FILE * pFile = fopen( pFileName, "wb" );
-    if ( pFile == NULL ) return;
-    fprintf( pFile, "# Realization of given %d-input function using %d %d-input LUTs synthesized by ABC on %s\n", p->nVars, p->nNodes, p->nLutSize, Extra_TimeStamp() );
-    fprintf( pFile, ".model %s\n", pStr );
-    fprintf( pFile, ".inputs" );
-    for ( k = 0; k < p->nVars; k++ )
-        fprintf( pFile, " %c", 'a'+k );
-    fprintf( pFile, "\n.outputs F\n" );    
-    for ( i = p->nObjs - 1; i >= p->nVars; i-- )
-    {
-        fprintf( pFile, ".names" );
-        for ( k = 0; k < p->nLutSize; k++ )
-        {
-            iVar = Exa3_ManFindFanin( p, i, k );
-            if ( iVar >= 0 && iVar < p->nVars )
-                fprintf( pFile, " %c", 'a'+iVar );
-            else
-                fprintf( pFile, " %02d", iVar );
-        }
-        if ( i == p->nObjs - 1 )
-            fprintf( pFile, " F\n" );
-        else 
-            fprintf( pFile, " %02d\n", i );
-        int iVarStart = 1 + p->LutMask*(i - p->nVars);
-        for ( k = 0; k < p->LutMask; k++ )
-        {
-            int Val = sat_solver_var_value(p->pSat, iVarStart+k); 
-            if ( Val == 0 )
-                continue;
-            for ( b = 0; b < p->nLutSize; b++ )
-                fprintf( pFile, "%d", ((k+1) >> b) & 1 );
-            fprintf( pFile, " %d\n", i != p->nObjs - 1 || !fCompl );
-        }
-    }
-    fprintf( pFile, ".end\n\n" );
-    fclose( pFile );
-    printf( "Finished dumping the resulting LUT network into file \"%s\".\n", pFileName );
-    ABC_FREE( pStr );
-}
-
 
 /**Function*************************************************************
 
@@ -1393,26 +1315,14 @@ void Exa3_ManExactSynthesis2( Bmc_EsPar_t * pPars )
     int i, status, iMint = 1;
     abctime clkTotal = Abc_Clock();
     Exa3_Man_t * p; int fCompl = 0;
-    word pTruth[64];
-    if ( pPars->pSymStr ) {
-        word * pFun = Abc_TtSymFunGenerate( pPars->pSymStr, pPars->nVars );
-        pPars->pTtStr = ABC_CALLOC( char, pPars->nVars > 2 ? (1 << (pPars->nVars-2)) + 1 : 2 );
-        Extra_PrintHexadecimalString( pPars->pTtStr, (unsigned *)pFun, pPars->nVars );
-        printf( "Generated symmetric function: %s\n", pPars->pTtStr );
-        ABC_FREE( pFun );
-    }    
-    if ( pPars->pTtStr )
-        Abc_TtReadHex( pTruth, pPars->pTtStr );
-    else assert( 0 );    
-    assert( pPars->nVars <= 12 );
+    word pTruth[16]; Abc_TtReadHex( pTruth, pPars->pTtStr );
+    assert( pPars->nVars <= 10 );
     assert( pPars->nLutSize <= 6 );
     p = Exa3_ManAlloc( pPars, pTruth );
     if ( pTruth[0] & 1 ) { fCompl = 1; Abc_TtNot( pTruth, p->nWords ); }
     status = Exa3_ManAddCnfStart( p, pPars->fOnlyAnd );
     assert( status );
     printf( "Running exact synthesis for %d-input function with %d %d-input LUTs...\n", p->nVars, p->nNodes, p->nLutSize );
-    abctime nTimeToStop = pPars->RuntimeLim ? pPars->RuntimeLim * CLOCKS_PER_SEC + Abc_Clock(): 0;
-    sat_solver_set_runtime_limit( p->pSat, nTimeToStop );
     for ( i = 0; iMint != -1; i++ )
     {
         abctime clk = Abc_Clock();
@@ -1428,12 +1338,6 @@ void Exa3_ManExactSynthesis2( Bmc_EsPar_t * pPars )
             printf( "Conf =%9d  ", sat_solver_nconflicts(p->pSat) );
             Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
         }
-        if ( nTimeToStop && Abc_Clock() > nTimeToStop ) 
-        {
-            printf( "Runtime limit (%d sec) is reached.  ", pPars->RuntimeLim );
-            status = l_Undef;
-            break;
-        }
         if ( status == l_False )
         {
             printf( "The problem has no solution.\n" );
@@ -1443,12 +1347,8 @@ void Exa3_ManExactSynthesis2( Bmc_EsPar_t * pPars )
     }
     if ( iMint == -1 )
         Exa3_ManPrintSolution( p, fCompl );
-    Abc_PrintTime( 1, "Total runtime", Abc_Clock() - clkTotal );
-    if ( iMint == -1 )
-        Exa3_ManDumpBlif( p, fCompl );
-    if ( pPars->pSymStr ) 
-        ABC_FREE( pPars->pTtStr );
     Exa3_ManFree( p );
+    Abc_PrintTime( 1, "Total runtime", Abc_Clock() - clkTotal );
 }
 
 

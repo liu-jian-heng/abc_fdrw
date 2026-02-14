@@ -211,12 +211,6 @@ void If_CutPropagateRequired( If_Man_t * p, If_Obj_t * pObj, If_Cut_t * pCut, fl
                 pLeaf->Required = IF_MIN( pLeaf->Required, Required - pLutDelays[0] );
         }
     }
-    else if ( p->pPars->fUserLutDec || p->pPars->fUserLut2D )
-    {
-        Required = ObjRequired;
-        If_CutForEachLeaf( p, pCut, pLeaf, i )
-            pLeaf->Required = IF_MIN( pLeaf->Required, Required - If_LutDecPinRequired( p, pCut, i, ObjRequired ) );
-    }
     else
     {
         if ( pCut->fUser )
@@ -225,17 +219,17 @@ void If_CutPropagateRequired( If_Man_t * p, If_Obj_t * pObj, If_Cut_t * pCut, fl
             if ( p->pPars->fDelayOpt )
             {
                 int Delay = If_CutSopBalancePinDelays( p, pCut, pPerm );
-                assert( -Delay > IF_INFINITY/2 || Delay > IF_INFINITY/2 || Delay == (int)pCut->Delay );
+                assert( Delay == (int)pCut->Delay );
             }
             else if ( p->pPars->fDelayOptLut )
             {
                 int Delay = If_CutLutBalancePinDelays( p, pCut, pPerm );
-                assert( -Delay > IF_INFINITY/2 || Delay > IF_INFINITY/2 || Delay == (int)pCut->Delay );
+                assert( Delay == (int)pCut->Delay );
             }
             else if ( p->pPars->fDsdBalance )
             {
                 int Delay = If_CutDsdBalancePinDelays( p, pCut, pPerm );
-                assert( -Delay > IF_INFINITY/2 || Delay > IF_INFINITY/2 || Delay == (int)pCut->Delay );
+                assert( Delay == (int)pCut->Delay );
             }
             else
                 pPerm = If_CutPerm(pCut);

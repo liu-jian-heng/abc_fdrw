@@ -19,12 +19,14 @@
 ***********************************************************************/
 
 #include "giaAig.h"
-#include "aig/gia/gia.h"
 #include "proof/fra/fra.h"
 #include "proof/dch/dch.h"
 #include "opt/dar/dar.h"
 #include "opt/dau/dau.h"
-#include <assert.h>
+// self added
+#include "base/abc/abc.h"
+#include "map/if/if.h"
+#include "opt/mfs/mfs.h"
 
 ABC_NAMESPACE_IMPL_START
 
@@ -39,6 +41,8 @@ static inline int Gia_ObjChild1Copy( Aig_Obj_t * pObj )  { return Abc_LitNotCond
 static inline Aig_Obj_t * Gia_ObjChild0Copy2( Aig_Obj_t ** ppNodes, Gia_Obj_t * pObj, int Id )  { return Aig_NotCond( ppNodes[Gia_ObjFaninId0(pObj, Id)], Gia_ObjFaninC0(pObj) ); }
 static inline Aig_Obj_t * Gia_ObjChild1Copy2( Aig_Obj_t ** ppNodes, Gia_Obj_t * pObj, int Id )  { return Aig_NotCond( ppNodes[Gia_ObjFaninId1(pObj, Id)], Gia_ObjFaninC1(pObj) ); }
 
+extern Abc_Ntk_t * Abc_NtkFromAigPhase( Aig_Man_t * pMan );
+extern Aig_Man_t * Abc_NtkToDar( Abc_Ntk_t * pNtk, int fExors, int fRegisters );
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
 ////////////////////////////////////////////////////////////////////////
@@ -193,8 +197,6 @@ Gia_Man_t * Gia_ManFromAigChoices( Aig_Man_t * p )
     Gia_ManSetRegNum( pNew, Aig_ManRegNum(p) );
     //assert( Gia_ManObjNum(pNew) == Aig_ManObjNum(p) );
     //Gia_ManCheckChoices( pNew );
-    if ( pNew->pSibls )
-        Gia_ManDeriveReprsFromSibls( pNew );
     return pNew;
 }
 
@@ -419,7 +421,7 @@ Aig_Man_t * Gia_ManToAigSimple( Gia_Man_t * p )
     pNew->nConstrs = p->nConstrs;
     // create the PIs
     Gia_ManForEachObj( p, pObj, i )
-    {
+    {   // printf("now id: %d (%d),", Gia_ObjId(p, pObj), i);
         if ( Gia_ObjIsAnd(pObj) )
             ppNodes[i] = Aig_And( pNew, Gia_ObjChild0Copy2(ppNodes, pObj, Gia_ObjId(p, pObj)), Gia_ObjChild1Copy2(ppNodes, pObj, Gia_ObjId(p, pObj)) );
         else if ( Gia_ObjIsCi(pObj) )
@@ -430,7 +432,9 @@ Aig_Man_t * Gia_ManToAigSimple( Gia_Man_t * p )
             ppNodes[i] = Aig_ManConst0(pNew);
         else
             assert( 0 );
+        // printf("Aig_ObjId: %d,", Aig_ObjId(ppNodes[i]));
         pObj->Value = Abc_Var2Lit( Aig_ObjId(Aig_Regular(ppNodes[i])), Aig_IsComplement(ppNodes[i]) );
+        // printf("Value: %d\n", pObj->Value);
         assert( i == 0 || Aig_ObjId(ppNodes[i]) == i );
     }
     Aig_ManSetRegNum( pNew, Gia_ManRegNum(p) );
@@ -602,6 +606,44 @@ Gia_Man_t * Gia_ManCompress2( Gia_Man_t * p, int fUpdateLevel, int fVerbose )
     Aig_ManStop( pNew );
     Gia_ManTransferTiming( pGia, p );
     return pGia;
+}
+
+Gia_Man_t * Gia_ManSelfSyn( Gia_Man_t * p, int fUpdateLevel, int fCec, int fResub, int fVerbose )
+{   extern int Abc_NtkResubstitute( Abc_Ntk_t * pNtk, int nCutMax, int nStepsMax, int nMinSaved, int nLevelsOdc, int fUpdateLevel, int fVerbose, int fVeryVerbose );
+    extern Abc_Ntk_t * Abc_NtkIf( Abc_Ntk_t * pNtk, If_Par_t * pPars );
+    extern int Abc_NtkMfs( Abc_Ntk_t * pNtk, Mfs_Par_t * pPars );
+    Gia_Man_t * pGia;
+    Abc_Ntk_t * pNtk, *pNtkTemp;
+    Aig_Man_t * pAig, * pTemp;
+    // If_Par_t ParsIf, * pParsIf = &ParsIf;
+    // If_ManSetDefaultPars( pParsIf );
+    // Mfs_Par_t ParsMfs, * pParsMfs = &ParsMfs;
+    // pParsIf->pLutLib = (If_LibLut_t *)Abc_FrameReadLibLut();
+    // pParsIf->nLutSize = pParsIf->pLutLib->LutMax;
+    // Abc_NtkMfsParsDefault( pParsMfs );
+
+    if ( p->pManTime && p->vLevels == NULL )
+        Gia_ManLevelWithBoxes( p );
+
+    pAig = Gia_ManToAig( p, 0 );
+    pAig = Dar_ManCompress2( pTemp = pAig, 1, fUpdateLevel, 1, 0, fVerbose );
+    Aig_ManStop( pTemp );
+    if (fResub) {
+        pNtk = Abc_NtkFromAigPhase( pAig );
+        Abc_NtkResubstitute( pNtk, 15, 3, 0, 4, fUpdateLevel, fVerbose, 0 );
+        // pNtk = Abc_NtkStrash( pNtkTemp = pNtk, 0, 0, 0 );
+        // Abc_NtkDelete( pNtkTemp );
+        // pNtk = Abc_NtkIf( pNtkTemp = pNtk, pParsIf ); // problemetic
+        // Abc_NtkDelete( pNtkTemp );
+        // Abc_NtkMfs( pNtk, pParsMfs );
+        // printf("1\n");
+        pAig = Abc_NtkToDar( pNtk, 0, 0 );
+    }
+    pGia = Gia_ManFromAig( pAig );
+    Aig_ManStop( pAig );
+    Gia_ManTransferTiming( pGia, p );
+    return pGia;
+
 }
 
 /**Function*************************************************************

@@ -287,6 +287,7 @@ static inline int          Fra_ImpCreate( int Left, int Right )                 
 /*=== fraCec.c ========================================================*/
 extern int                 Fra_FraigSat( Aig_Man_t * pMan, ABC_INT64_T nConfLimit, ABC_INT64_T nInsLimit, int nLearnedStart, int nLearnedDelta, int nLearnedPerce, int fFlipBits, int fAndOuts, int fNewSolver, int fVerbose );
 extern int                 Fra_FraigCec( Aig_Man_t ** ppAig, int nConfLimit, int fVerbose );
+extern Aig_Man_t *         Fra_FraigCecSyn( Aig_Man_t ** ppAig, int fFirst, int fVerbose );
 extern int                 Fra_FraigCecPartitioned( Aig_Man_t * pMan1, Aig_Man_t * pMan2, int nConfLimit, int nPartSize, int fSmart, int fVerbose );
 /*=== fraClass.c ========================================================*/
 extern int                 Fra_BmcNodeIsConst( Aig_Obj_t * pObj );

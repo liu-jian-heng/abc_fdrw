@@ -201,8 +201,12 @@ void Aig_WriteDotAig( Aig_Man_t * pMan, char * pFileName, int fHaig, Vec_Ptr_t *
                     Aig_Regular(pNode->pEquiv)->Id, Aig_IsComplement(pNode->pEquiv)? "\'":"" );
 */
             fprintf( pFile, "  Node%d [label = \"%d\"", pNode->Id, pNode->Id ); 
-
-            fprintf( pFile, ", shape = ellipse" );
+            if ( Aig_ObjIsBuf(pNode) )
+                fprintf( pFile, ", shape = %s", "box" );
+            else if ( Aig_ObjIsAnd(pNode) )
+                fprintf( pFile, ", shape = %s", "ellipse" );
+            else if ( Aig_ObjIsExor(pNode) )
+                fprintf( pFile, ", shape = %s", "doublecircle" );
             if ( vBold && pNode->fMarkB )
                 fprintf( pFile, ", style = filled" );
             fprintf( pFile, "];\n" );
@@ -344,7 +348,7 @@ void Aig_ManShow( Aig_Man_t * pMan, int fHaig, Vec_Ptr_t * vBold )
     char FileNameDot[200];
     FILE * pFile;
     // create the file name
-    sprintf( FileNameDot, "%s", Extra_FileNameGenericAppend(pMan->pName ? pMan->pName : (char *)"unknown", ".dot") );
+    sprintf( FileNameDot, "%s", Extra_FileNameGenericAppend(pMan->pName, ".dot") );
     // check that the file can be opened
     if ( (pFile = fopen( FileNameDot, "w" )) == NULL )
     {

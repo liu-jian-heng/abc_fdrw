@@ -40,7 +40,6 @@
 #include "opt/dau/dau.h"
 #include "misc/vec/vecHash.h"
 #include "misc/vec/vecWec.h"
-#include "map/if/acd/ac_wrapper.h"
 
 ABC_NAMESPACE_HEADER_START
 
@@ -80,7 +79,6 @@ typedef struct If_Obj_t_     If_Obj_t;
 typedef struct If_Cut_t_     If_Cut_t;
 typedef struct If_Set_t_     If_Set_t;
 typedef struct If_LibLut_t_  If_LibLut_t;
-typedef struct If_LibCell_t_ If_LibCell_t;
 typedef struct If_LibBox_t_  If_LibBox_t;
 typedef struct If_DsdMan_t_  If_DsdMan_t;
 typedef struct Ifn_Ntk_t_    Ifn_Ntk_t;
@@ -114,7 +112,6 @@ struct If_Par_t_
     int                nStructType;   // type of the structure
     int                nAndDelay;     // delay of AND-gate in LUT library units
     int                nAndArea;      // area of AND-gate in LUT library units
-    int                nLutDecSize;   // the LUT size for decomposition
     int                fPreprocess;   // preprossing
     int                fArea;         // area-oriented mapping
     int                fFancy;        // a fancy feature
@@ -148,13 +145,9 @@ struct If_Par_t_
     int                fDeriveLuts;   // enables deriving LUT structures
     int                fDoAverage;    // optimize average rather than maximum level
     int                fHashMapping;  // perform AIG hashing after mapping
-    int                fUserLutDec;   // perform Boolean decomposition during mapping
-    int                fUserLut2D;    // perform Boolean decomposition during mapping
-    int                fDumpFile;     // dumping truth tables into a file
     int                fVerbose;      // the verbosity flag
     int                fVerboseTrace; // the verbosity flag
     char *             pLutStruct;    // LUT structure
-    int                fEnableStructN;// LUT structure using a new method
     float              WireDelay;     // wire delay
     // internal parameters
     int                fSkipCutFilter;// skip cut filter
@@ -193,17 +186,6 @@ struct If_LibLut_t_
     int                fVarPinDelays; // set to 1 if variable pin delays are specified
     float              pLutAreas[IF_MAX_LUTSIZE+1]; // the areas of LUTs
     float              pLutDelays[IF_MAX_LUTSIZE+1][IF_MAX_LUTSIZE+1];// the delays of LUTs
-};
-
-// the cell library
-struct If_LibCell_t_
-{
-    char *             pName;         // the name of the LUT library
-    int                nCellNum;      // the number of cells in the library
-    int                nCellInputs[IF_MAX_LUTSIZE];
-    char *             pCellNames[IF_MAX_LUTSIZE];
-    float              pCellAreas[IF_MAX_LUTSIZE];
-    int                pCellPinDelays[IF_MAX_LUTSIZE][IF_MAX_LUTSIZE];
 };
 
 // manager
@@ -297,8 +279,6 @@ struct If_Man_t_
     int                pDumpIns[16];
     Vec_Str_t *        vMarks;
     Vec_Int_t *        vVisited2;
-    Vec_Int_t *        vCuts;
-    Vec_Int_t *        vCutCosts;
 
     // timing manager
     Tim_Man_t *        pManTim;
@@ -329,7 +309,6 @@ struct If_Cut_t_
     unsigned           fAndCut :  1;  // matched with AND gate
     unsigned           nLimit  :  8;  // the maximum number of leaves
     unsigned           nLeaves :  8;  // the number of leaves
-    unsigned           decDelay: 16;  // pin-to-pin decomposition delay
     int                pLeaves[0];
 };
 
@@ -564,24 +543,18 @@ extern float           If_CutPowerDerefed( If_Man_t * p, If_Cut_t * pCut, If_Obj
 extern float           If_CutPowerRefed( If_Man_t * p, If_Cut_t * pCut, If_Obj_t * pRoot );
 /*=== ifDec.c =============================================================*/
 extern word            If_CutPerformDerive07( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
-extern word            If_CutPerformDeriveJ( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr, int fDerive );
 extern int             If_CutPerformCheck07( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck08( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck10( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck16( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
-extern int             If_CutPerformCheckXX( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck45( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck54( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_CutPerformCheck75( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
-extern int             If_CutPerformCheckJ( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern float           If_CutDelayLutStruct( If_Man_t * p, If_Cut_t * pCut, char * pStr, float WireDelay );
-// extern int             If_CutPerformAcd( If_Man_t * p, unsigned nVars, int lutSize, unsigned * pdelay, int use_late_arrival, unsigned * cost );
 extern int             If_CluCheckExt( void * p, word * pTruth, int nVars, int nLutLeaf, int nLutRoot, 
                            char * pLut0, char * pLut1, word * pFunc0, word * pFunc1 );
 extern int             If_CluCheckExt3( void * p, word * pTruth, int nVars, int nLutLeaf, int nLutLeaf2, int nLutRoot, 
                            char * pLut0, char * pLut1, char * pLut2, word * pFunc0, word * pFunc1, word * pFunc2 );
-extern int             If_CluCheckXXExt( void * p, word * pTruth, int nVars, int nLutLeaf, int nLutRoot, 
-                           char * pLut0, char * pLut1, word * pFunc0, word * pFunc1 );
 extern int             If_MatchCheck1( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 extern int             If_MatchCheck2( If_Man_t * p, unsigned * pTruth, int nVars, int nLeaves, char * pStr );
 /*=== ifDelay.c =============================================================*/
@@ -592,10 +565,6 @@ extern int             If_CutSopBalancePinDelaysInt( Vec_Int_t * vCover, int * p
 extern int             If_CutSopBalancePinDelays( If_Man_t * p, If_Cut_t * pCut, char * pPerm );
 extern int             If_CutLutBalanceEval( If_Man_t * p, If_Cut_t * pCut );
 extern int             If_CutLutBalancePinDelays( If_Man_t * p, If_Cut_t * pCut, char * pPerm );
-extern int             If_LutDecEval( If_Man_t * p, If_Cut_t * pCut, If_Obj_t * pObj, int optDelay, int fFirst );
-extern int             If_Lut2DecEval( If_Man_t * p, If_Cut_t * pCut, If_Obj_t * pObj, int optDelay, int fFirst );
-extern int             If_LutDecReEval( If_Man_t * p, If_Cut_t * pCut );
-extern float           If_LutDecPinRequired( If_Man_t * p, If_Cut_t * pCut, int i, float required );
 /*=== ifDsd.c =============================================================*/
 extern If_DsdMan_t *   If_DsdManAlloc( int nVars, int nLutSize );
 extern void            If_DsdManAllocIsops( If_DsdMan_t * p, int nLutSize );
@@ -638,11 +607,6 @@ extern int             If_LibLutDelaysAreDifferent( If_LibLut_t * pLutLib );
 extern If_LibLut_t *   If_LibLutSetSimple( int nLutSize );
 extern float           If_LibLutFastestPinDelay( If_LibLut_t * p );
 extern float           If_LibLutSlowestPinDelay( If_LibLut_t * p );
-extern If_LibCell_t *  If_LibCellRead( char * FileName );
-extern If_LibCell_t *  If_LibCellDup( If_LibCell_t * p );
-extern void            If_LibCellFree( If_LibCell_t * pCellLib );
-extern int             If_LibCellGetMaxInputs( If_LibCell_t * pCellLib );
-extern void            If_LibCellPrint( If_LibCell_t * pCellLib );
 /*=== ifLibBox.c =============================================================*/
 extern If_LibBox_t *   If_LibBoxStart();
 extern void            If_LibBoxFree( If_LibBox_t * p );
@@ -709,7 +673,6 @@ extern void *          If_ManSatBuildFromCell( char * pStr, Vec_Int_t ** pvPiVar
 extern int             If_ManSatFindCofigBits( void * pSat, Vec_Int_t * vPiVars, Vec_Int_t * vPoVars, word * pTruth, int nVars, word Perm, int nInps, Vec_Int_t * vValues );
 extern int             If_ManSatDeriveGiaFromBits( void * pNew, Ifn_Ntk_t * p, word * pTtData, Vec_Int_t * vLeaves, Vec_Int_t * vValues );
 extern void *          If_ManDeriveGiaFromCells( void * p );
-extern void *          If_ManDeriveGiaFromCells2( void * p );
 /*=== ifUtil.c ============================================================*/
 extern void            If_ManCleanNodeCopy( If_Man_t * p );
 extern void            If_ManCleanCutData( If_Man_t * p );
@@ -729,10 +692,6 @@ extern int             If_ManCountSpecialPos( If_Man_t * p );
 extern void            If_CutTraverse( If_Man_t * p, If_Obj_t * pRoot, If_Cut_t * pCut, Vec_Ptr_t * vNodes );
 extern void            If_ObjPrint( If_Obj_t * pObj );
 
-extern int             acd_evaluate( word * pTruth, unsigned nVars, int lutSize, unsigned *pdelay, unsigned *cost, int try_no_late_arrival );
-extern int             acd_decompose( word * pTruth, unsigned nVars, int lutSize, unsigned *pdelay, unsigned char *decomposition );
-extern int             acd2_evaluate( word * pTruth, unsigned nVars, int lutSize, unsigned *pdelay, unsigned *cost, int try_no_late_arrival );
-extern int             acd2_decompose( word * pTruth, unsigned nVars, int lutSize, unsigned *pdelay, unsigned char *decomposition );
 
 ABC_NAMESPACE_HEADER_END
 

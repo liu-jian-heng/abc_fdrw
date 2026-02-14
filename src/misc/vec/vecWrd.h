@@ -195,63 +195,6 @@ static inline Vec_Wrd_t * Vec_WrdStartTruthTables( int nVars )
     }
     return p;
 }
-static inline Vec_Wrd_t * Vec_WrdStartTruthTablesRev( int nVars )
-{
-    Vec_Wrd_t * p;
-    unsigned Masks[5] = { 0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000 };
-    int i, k, nWords;
-    nWords = nVars <= 6 ? 1 : (1 << (nVars - 6));
-    p = Vec_WrdStart( nWords * nVars );
-    for ( i = 0; i < nVars; i++ )
-    {
-        unsigned * pTruth = (unsigned *)(p->pArray + nWords * (nVars-1-i));
-        if ( i < 5 )
-        {
-            for ( k = 0; k < 2*nWords; k++ )
-                pTruth[k] = Masks[i];
-        }
-        else
-        {
-            for ( k = 0; k < 2*nWords; k++ )
-                if ( k & (1 << (i-5)) )
-                    pTruth[k] = ~(unsigned)0;
-                else
-                    pTruth[k] = 0;
-        }
-    }
-    return p;
-}
-static inline Vec_Wrd_t * Vec_WrdStartTruthTables6( int nVars )
-{
-    word Masks[6] = {     
-        ABC_CONST(0xAAAAAAAAAAAAAAAA),
-        ABC_CONST(0xCCCCCCCCCCCCCCCC),
-        ABC_CONST(0xF0F0F0F0F0F0F0F0),
-        ABC_CONST(0xFF00FF00FF00FF00),
-        ABC_CONST(0xFFFF0000FFFF0000),
-        ABC_CONST(0xFFFFFFFF00000000)
-    };
-    int i, k, nWords = nVars <= 6 ? 1 : (1 << (nVars - 6));
-    Vec_Wrd_t * p = Vec_WrdStart( nWords * nVars );
-    for ( i = 0; i < nVars; i++ )
-    {
-        word * pTruth = p->pArray + nWords * i;
-        if ( i < 6 )
-        {
-            for ( k = 0; k < nWords; k++ )
-                pTruth[k] = Masks[i];
-        }
-        else
-        {
-            for ( k = 0; k < nWords; k++ )
-                if ( k & (1 << (i-6)) )
-                    pTruth[k] = ~(word)0;
-                else
-                    pTruth[k] = 0;
-        }
-    }
-    return p;
-}
 static inline int Vec_WrdShiftOne( Vec_Wrd_t * p, int nWords )
 {
     int i, nObjs = p->nSize/nWords;
@@ -584,7 +527,6 @@ static inline void Vec_WrdGrow( Vec_Wrd_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
-    assert( p->nCap < ABC_INT_MAX );
     p->pArray = ABC_REALLOC( word, p->pArray, nCapMin ); 
     assert( p->pArray );
     p->nCap   = nCapMin;
@@ -629,7 +571,7 @@ static inline void Vec_WrdFillExtra( Vec_Wrd_t * p, int nSize, word Fill )
     if ( nSize > 2 * p->nCap )
         Vec_WrdGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+        Vec_WrdGrow( p, 2 * p->nCap );
     for ( i = p->nSize; i < nSize; i++ )
         p->pArray[i] = Fill;
     p->nSize = nSize;
@@ -737,7 +679,7 @@ static inline void Vec_WrdPush( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_WrdGrow( p, 2 * p->nCap );
     }
     p->pArray[p->nSize++] = Entry;
 }
@@ -785,7 +727,7 @@ static inline void Vec_WrdPushFirst( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_WrdGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize - 1; i >= 1; i-- )
@@ -812,7 +754,7 @@ static inline void Vec_WrdPushOrder( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
+            Vec_WrdGrow( p, 2 * p->nCap );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -1411,27 +1353,6 @@ static inline void Vec_WrdDumpBool( char * pFileName, Vec_Wrd_t * p, int nWords,
   SeeAlso     []
 
 ***********************************************************************/
-static inline void Vec_WrdPrintBin( Vec_Wrd_t * p, int nWords )
-{
-    int i, k, nNodes = Vec_WrdSize(p) / nWords;
-    assert( Vec_WrdSize(p) % nWords == 0 );
-    printf( "The array contains %d bit-strings of %d bits:\n", nNodes, 64*nWords );
-    for ( i = 0; i < nNodes; i++, printf("\n") )
-        for ( k = 0; k < 64*nWords; k++ )
-            printf( "%d", Abc_InfoHasBit((unsigned*)Vec_WrdEntryP(p, i*nWords), k) );
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 static inline void Vec_WrdDumpHexOne( FILE * pFile, word * pSim, int nWords )
 {
     int k, Digit, nDigits = nWords*16;
@@ -1449,7 +1370,6 @@ static inline void Vec_WrdPrintHex( Vec_Wrd_t * p, int nWords )
 {
     int i, nNodes = Vec_WrdSize(p) / nWords;
     assert( Vec_WrdSize(p) % nWords == 0 );
-    printf( "The array contains %d bit-strings of %d bits:\n", nNodes, 64*nWords );
     for ( i = 0; i < nNodes; i++ )
         Vec_WrdDumpHexOne( stdout, Vec_WrdEntryP(p, i*nWords), nWords );
 }

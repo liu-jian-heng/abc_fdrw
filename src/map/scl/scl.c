@@ -130,36 +130,7 @@ void Scl_End( Abc_Frame_t * pAbc )
     Scl_ConUpdateMan( pAbc, NULL );
 }
 
-/**Function*************************************************************
 
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-SC_Lib * Scl_ReadLibraryFile( Abc_Frame_t * pAbc, char * pFileName, int fVerbose, int fVeryVerbose, SC_DontUse dont_use, int fSkipMultiOuts )
-{
-    SC_Lib * pLib;
-    FILE * pFile;
-    if ( (pFile = fopen( pFileName, "rb" )) == NULL )
-    {
-        fprintf( pAbc->Err, "Cannot open input file \"%s\". \n", pFileName );
-        return NULL;
-    }
-    fclose( pFile );
-    // read new library
-    pLib = Abc_SclReadLiberty( pFileName, fVerbose, fVeryVerbose, dont_use, fSkipMultiOuts);
-    if ( pLib == NULL )
-    {
-        fprintf( pAbc->Err, "Reading SCL library from file \"%s\" has failed. \n", pFileName );
-        return NULL;
-    }
-    return pLib;
-}
 
 /**Function*************************************************************
 
@@ -174,6 +145,8 @@ SC_Lib * Scl_ReadLibraryFile( Abc_Frame_t * pAbc, char * pFileName, int fVerbose
 ***********************************************************************/
 int Scl_CommandReadLib( Abc_Frame_t * pAbc, int argc, char ** argv )
 {
+    char * pFileName;
+    FILE * pFile;
     SC_Lib * pLib;
     int c, fDump = 0;
     float Slew = 0;
@@ -183,17 +156,13 @@ int Scl_CommandReadLib( Abc_Frame_t * pAbc, int argc, char ** argv )
     int fUnit = 0;
     int fVerbose = 1;
     int fVeryVerbose = 0;
-    int fMerge = 0;
-    int fUsePrefix = 0;
-    int fUseAll = 0;
-    int fSkipMultiOuts = 0;
     
     SC_DontUse dont_use = {0};
     dont_use.dont_use_list = ABC_ALLOC(char *, argc);
     dont_use.size = 0;
 
     Extra_UtilGetoptReset();
-    while ( ( c = Extra_UtilGetopt( argc, argv, "SGMXdnuvwmpash" ) ) != EOF )
+    while ( ( c = Extra_UtilGetopt( argc, argv, "SGMXdnuvwh" ) ) != EOF )
     {
         switch ( c )
         {
@@ -255,55 +224,31 @@ int Scl_CommandReadLib( Abc_Frame_t * pAbc, int argc, char ** argv )
         case 'w':
             fVeryVerbose ^= 1;
             break;
-        case 'm':
-            fMerge ^= 1;
-            break;
-        case 'p':
-            fUsePrefix ^= 1;
-            break;            
-        case 'a':
-            fUseAll ^= 1;
-            break;            
-        case 's':
-            fSkipMultiOuts ^= 1;
-            break;            
         case 'h':
             goto usage;
         default:
             goto usage;
         }
     }
-    if ( argc == globalUtilOptind + 2 ) { // expecting two files
-        SC_Lib * pLib1 = Scl_ReadLibraryFile( pAbc, argv[globalUtilOptind],   fVerbose, fVeryVerbose, dont_use, fSkipMultiOuts );
-        SC_Lib * pLib2 = Scl_ReadLibraryFile( pAbc, argv[globalUtilOptind+1], fVerbose, fVeryVerbose, dont_use, fSkipMultiOuts );        
-        ABC_FREE(dont_use.dont_use_list);
-        if ( pLib1 == NULL || pLib2 == NULL ) {
-            if (pLib1) Abc_SclLibFree(pLib1);
-            if (pLib2) Abc_SclLibFree(pLib2);            
-            return 1;
-        }
-        pLib = Abc_SclMergeLibraries( pLib1, pLib2, fUsePrefix );
-        Abc_SclLibFree(pLib1);
-        Abc_SclLibFree(pLib2);
-    }
-    else if ( argc == globalUtilOptind + 1 ) { // expecting one file
-        SC_Lib * pLib1 = Scl_ReadLibraryFile( pAbc, argv[globalUtilOptind], fVerbose, fVeryVerbose, dont_use, fSkipMultiOuts );
-
-        SC_Lib * pLib_ext = (SC_Lib *)pAbc->pLibScl;
-        if ( fMerge && pLib_ext != NULL && pLib1 != NULL ) {
-            pLib = Abc_SclMergeLibraries( pLib_ext, pLib1, fUsePrefix );
-            if (pLib1) Abc_SclLibFree(pLib1);
-        } else {
-            pLib = pLib1;
-        }
-        ABC_FREE(dont_use.dont_use_list);        
-    }
-    else {
-        ABC_FREE(dont_use.dont_use_list);    
+    if ( argc != globalUtilOptind + 1 )
         goto usage;
-    }
-    if ( pLib == NULL )    
+    // get the input file name
+    pFileName = argv[globalUtilOptind];
+    if ( (pFile = fopen( pFileName, "rb" )) == NULL )
+    {
+        fprintf( pAbc->Err, "Cannot open input file \"%s\". \n", pFileName );
+        ABC_FREE(dont_use.dont_use_list);
         return 1;
+    }
+    fclose( pFile );
+    // read new library
+    pLib = Abc_SclReadLiberty( pFileName, fVerbose, fVeryVerbose, dont_use);
+    ABC_FREE(dont_use.dont_use_list);
+    if ( pLib == NULL )
+    {
+        fprintf( pAbc->Err, "Reading SCL library from file \"%s\" has failed. \n", pFileName );
+        return 1;
+    }
     if ( Abc_SclLibClassNum(pLib) < 3 )
     {
         fprintf( pAbc->Err, "Library with only %d cell classes cannot be used.\n", Abc_SclLibClassNum(pLib) );
@@ -316,7 +261,7 @@ int Scl_CommandReadLib( Abc_Frame_t * pAbc, int argc, char ** argv )
         Abc_SclShortNames( pLib );
     // dump the resulting library
     if ( fDump && pAbc->pLibScl )
-        Abc_SclWriteLiberty( Extra_FileNameGenericAppend(argv[globalUtilOptind], "_temp.lib"), (SC_Lib *)pAbc->pLibScl );
+        Abc_SclWriteLiberty( Extra_FileNameGenericAppend(pFileName, "_temp.lib"), (SC_Lib *)pAbc->pLibScl );
     if ( fUnit )
     {
         SC_Cell * pCell; int i;
@@ -326,13 +271,13 @@ int Scl_CommandReadLib( Abc_Frame_t * pAbc, int argc, char ** argv )
     // extract genlib library
     if ( pAbc->pLibScl )
     {
-        Abc_SclInstallGenlib( pAbc->pLibScl, Slew, Gain, fUseAll, nGatesMin );
+        Abc_SclInstallGenlib( pAbc->pLibScl, Slew, Gain, nGatesMin );
         Mio_LibraryTransferCellIds();
     }
     return 0;
 
 usage:
-    fprintf( pAbc->Err, "usage: read_lib [-SG float] [-M num] [-dnuvwmpash] [-X cell_name] <file> <file2>\n" );
+    fprintf( pAbc->Err, "usage: read_lib [-SG float] [-M num] [-dnuvwh] [-X cell_name] <file>\n" );
     fprintf( pAbc->Err, "\t           reads Liberty library from file\n" );
     fprintf( pAbc->Err, "\t-S float : the slew parameter used to generate the library [default = %.2f]\n", Slew );
     fprintf( pAbc->Err, "\t-G float : the gain parameter used to generate the library [default = %.2f]\n", Gain );
@@ -343,13 +288,8 @@ usage:
     fprintf( pAbc->Err, "\t-u       : toggle setting unit area for all cells [default = %s]\n", fUnit? "yes": "no" );
     fprintf( pAbc->Err, "\t-v       : toggle writing verbose information [default = %s]\n", fVerbose? "yes": "no" );
     fprintf( pAbc->Err, "\t-w       : toggle writing information about skipped gates [default = %s]\n", fVeryVerbose? "yes": "no" );
-    fprintf( pAbc->Err, "\t-m       : toggle merging library with exisiting library [default = %s]\n", fMerge? "yes": "no" );
-    fprintf( pAbc->Err, "\t-p       : toggle using prefix for the cell names [default = %s]\n", fUsePrefix? "yes": "no" );
-    fprintf( pAbc->Err, "\t-a       : toggle reading all cells when using gain-based modeling [default = %s]\n", fUseAll? "yes": "no" );
-    fprintf( pAbc->Err, "\t-s       : toggle skipping cells with two outputs [default = %s]\n", fSkipMultiOuts? "yes": "no" );
     fprintf( pAbc->Err, "\t-h       : prints the command summary\n" );
     fprintf( pAbc->Err, "\t<file>   : the name of a file to read\n" );
-    fprintf( pAbc->Err, "\t<file2>  : the name of a file to read (optional)\n" );    
     return 1;
 }
 
@@ -616,7 +556,7 @@ int Scl_CommandReadScl( Abc_Frame_t * pAbc, int argc, char ** argv )
     // extract genlib library
     if ( pAbc->pLibScl )
     {
-        Abc_SclInstallGenlib( pAbc->pLibScl, 0, 0, 0, 0 );
+        Abc_SclInstallGenlib( pAbc->pLibScl, 0, 0, 0 );
         Mio_LibraryTransferCellIds();
     }
     return 0;
@@ -1164,9 +1104,9 @@ int Scl_CommandBuffer( Abc_Frame_t * pAbc, int argc, char ** argv )
 
 usage:
     fprintf( pAbc->Err, "usage: buffer [-GSN num] [-sbpcvwh]\n" );
-    fprintf( pAbc->Err, "\t           performs buffering and sizing on mapped network\n" );
+    fprintf( pAbc->Err, "\t           performs buffering and sizing and mapped network\n" );
     fprintf( pAbc->Err, "\t-G <num> : target gain percentage [default = %d]\n", pPars->GainRatio );
-    fprintf( pAbc->Err, "\t-S <num> : target slew in picoseconds [default = %d]\n", pPars->Slew );
+    fprintf( pAbc->Err, "\t-S <num> : target slew in pisoseconds [default = %d]\n", pPars->Slew );
     fprintf( pAbc->Err, "\t-N <num> : the maximum fanout count [default = %d]\n", pPars->nDegree );
     fprintf( pAbc->Err, "\t-s       : toggle performing only sizing [default = %s]\n", pPars->fSizeOnly? "yes": "no" );
     fprintf( pAbc->Err, "\t-b       : toggle using buffers instead of inverters [default = %s]\n", pPars->fAddBufs? "yes": "no" );
@@ -1632,7 +1572,7 @@ int Scl_CommandUpsize( Abc_Frame_t * pAbc, int argc, char **argv )
         return 1;
     }
 
-    Abc_SclUpsizePerform( (SC_Lib *)pAbc->pLibScl, pNtk, pPars, NULL );
+    Abc_SclUpsizePerform( (SC_Lib *)pAbc->pLibScl, pNtk, pPars );
     return 0;
 
 usage:
@@ -1809,15 +1749,15 @@ int Scl_CommandDnsize( Abc_Frame_t * pAbc, int argc, char **argv )
         return 1;
     }
 
-    Abc_SclDnsizePerform( (SC_Lib *)pAbc->pLibScl, pNtk, pPars, NULL );
+    Abc_SclDnsizePerform( (SC_Lib *)pAbc->pLibScl, pNtk, pPars );
     return 0;
 
 usage:
     fprintf( pAbc->Err, "usage: dnsize [-IJNDGTX num] [-csdvwh]\n" );
     fprintf( pAbc->Err, "\t           selectively decreases gate sizes while maintaining delay\n" );
-    fprintf( pAbc->Err, "\t-I <num> : the number of downsizing iterations to perform [default = %d]\n", pPars->nIters );
+    fprintf( pAbc->Err, "\t-I <num> : the number of upsizing iterations to perform [default = %d]\n", pPars->nIters );
     fprintf( pAbc->Err, "\t-J <num> : the number of iterations without improvement to stop [default = %d]\n", pPars->nIterNoChange );
-    fprintf( pAbc->Err, "\t-N <num> : limit on discrete downsizing steps at a node [default = %d]\n", pPars->Notches );
+    fprintf( pAbc->Err, "\t-N <num> : limit on discrete upsizing steps at a node [default = %d]\n", pPars->Notches );
     fprintf( pAbc->Err, "\t-D <num> : delay target set by the user, in picoseconds [default = %d]\n", pPars->DelayUser );
     fprintf( pAbc->Err, "\t-G <num> : delay gap during updating, in picoseconds [default = %d]\n", pPars->DelayGap );
     fprintf( pAbc->Err, "\t-T <num> : approximate timeout in seconds [default = %d]\n", pPars->TimeOut );

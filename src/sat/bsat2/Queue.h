@@ -21,9 +21,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef Minisat_Queue_h
 #define Minisat_Queue_h
 
-#include "sat/bsat2/Vec.h"
-
-ABC_NAMESPACE_CXX_HEADER_START
+#include "Vec.h"
 
 namespace Minisat {
 
@@ -67,7 +65,5 @@ public:
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

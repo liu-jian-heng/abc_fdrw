@@ -686,7 +686,7 @@ int Cec_ManSimSimulateRound( Cec_ManSim_t * p, Vec_Ptr_t * vInfoCis, Vec_Ptr_t *
         for ( w = 1; w <= p->nWords; w++ )
             pRes[w] = 0;
     }
-    Gia_ManForEachObj1( p->pAig, pObj, i )
+    Gia_ManForEachObj1( p->pAig, pObj, i ) // Q: why from i = 1
     {
         if ( Gia_ObjIsCi(pObj) ) 
         {
@@ -778,6 +778,7 @@ references:
 
     if ( p->pPars->fConstCorr )
     {
+        printf("fConstCorr is True\n");
         Vec_IntForEachEntry( p->vRefinedC, i, k )
         {
             Gia_ObjSetRepr( p->pAig, i, GIA_VOID );
@@ -857,7 +858,10 @@ void Cec_ManSimCreateInfo( Cec_ManSim_t * p, Vec_Ptr_t * vInfoCis, Vec_Ptr_t * v
 
   Synopsis    [Returns 1 if the bug is found.]
 
-  Description []
+  Description [The function Cec_ManSimClassesPrepare initializes and prepares simulation classes 
+  for cec by setting up representations, creating references, and performing simulation rounds 
+  based on the provided parameters. 
+  It returns 1 if a bug is detected during the simulation process, otherwise 0.]
                
   SideEffects []
 
@@ -872,15 +876,16 @@ int Cec_ManSimClassesPrepare( Cec_ManSim_t * p, int LevelMax )
     // allocate representation
     p->pAig->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(p->pAig) );
     p->pAig->pNexts = ABC_CALLOC( int, Gia_ManObjNum(p->pAig) );
-    // create references
+    // Set #FO
     Gia_ManCreateValueRefs( p->pAig );
     // set starting representative of internal nodes to be constant 0
     if ( p->pPars->fLatchCorr )
         Gia_ManForEachObj( p->pAig, pObj, i )
             Gia_ObjSetRepr( p->pAig, i, GIA_VOID );
     else if ( LevelMax == -1 )
+        // Cec_ManSatSweeping go in here
         Gia_ManForEachObj( p->pAig, pObj, i )
-            Gia_ObjSetRepr( p->pAig, i, Gia_ObjIsAnd(pObj) ? 0 : GIA_VOID );
+            Gia_ObjSetRepr( p->pAig, i, Gia_ObjIsAnd(pObj) ? 0 : GIA_VOID ); // Repr = 0 for ANDs
     else
     {
         Gia_ManLevelNum( p->pAig );
@@ -895,7 +900,8 @@ int Cec_ManSimClassesPrepare( Cec_ManSim_t * p, int LevelMax )
                 Gia_ObjSetRepr( p->pAig, Gia_ObjId(p->pAig, pObj), 0 );
     // perform simulation
     if ( p->pAig->nSimWords )
-    {
+    {   
+        printf("nSimWords = %d\n", p->pAig->nSimWords);
         p->nWords = 2*p->pAig->nSimWords;
         assert( Vec_WrdSize(p->pAig->vSimsPi) == Gia_ManCiNum(p->pAig) * p->pAig->nSimWords ); 
         //Cec_ManSimCreateInfo( p, p->vCiSimInfo, p->vCoSimInfo );
@@ -908,6 +914,7 @@ int Cec_ManSimClassesPrepare( Cec_ManSim_t * p, int LevelMax )
     }
     else
     {
+        printf("nSimWords = 0\n");
         p->nWords = 1;
         do {
             if ( p->pPars->fVerbose )
@@ -929,7 +936,7 @@ int Cec_ManSimClassesPrepare( Cec_ManSim_t * p, int LevelMax )
 
   Synopsis    [Returns 1 if the bug is found.]
 
-  Description []
+  Description [refines equivalence classes during simulation rounds]
                
   SideEffects []
 

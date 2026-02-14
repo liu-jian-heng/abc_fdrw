@@ -697,10 +697,15 @@ Abc_Cex_t * Cex_ManGenCex( Cec_ManSat_t * p, int iOut )
     return pCex;
 }
 void Cec_ManSatSolve( Cec_ManPat_t * pPat, Gia_Man_t * pAig, Cec_ParSat_t * pPars, Vec_Int_t * vIdsOrig, Vec_Int_t * vMiterPairs, Vec_Int_t * vEquivPairs, int f0Proved )
-{
+{  
+    int veryVerbose = 0;
+    int verboseFd = 0;
+    Vec_Ptr_t* unSolved = Vec_PtrAlloc(8);
+    Vec_Ptr_t* satted = Vec_PtrAlloc(8);
+    Vec_Ptr_t* unsatted = Vec_PtrAlloc(8);
     Bar_Progress_t * pProgress = NULL;
     Cec_ManSat_t * p;
-    Gia_Obj_t * pObj;
+    Gia_Obj_t * pObj, *pTemp;
     int i, status;
     abctime clk = Abc_Clock(), clk2;
     Vec_PtrFreeP( &pAig->vSeqModelVec );
@@ -735,8 +740,28 @@ clk2 = Abc_Clock();
         status = Cec_ManSatCheckNode( p, Gia_ObjChild0(pObj) );
         pObj->fMark0 = (status == 0);
         pObj->fMark1 = (status == 1);
+
+        if (verboseFd) {
+            if ( status == 0 )
+                // Vec_PtrPush( satted, pObj );
+                printf("SAT");
+            else if ( status == 1 )
+                printf("UNSAT");
+            else
+                printf("UNSOLVED");
+        }
+        if (veryVerbose) {
+            if ( status == 0 )
+                // Vec_PtrPush( satted, pObj );
+                Vec_PtrPush( satted, Gia_ObjFanin0(pObj) );
+            else if ( status == 1 )
+                Vec_PtrPush( unsatted, Gia_ObjFanin0(pObj) );
+            else
+                Vec_PtrPush( unSolved, Gia_ObjFanin0(pObj) );
+        }
+
         if ( status == 1 && vIdsOrig )
-        {
+        {   // case that the CO are equiv
             int iObj1 = Vec_IntEntry(vMiterPairs, 2*i);
             int iObj2 = Vec_IntEntry(vMiterPairs, 2*i+1);
             int OrigId1 = Vec_IntEntry(vIdsOrig, iObj1);
@@ -750,15 +775,15 @@ clk2 = Abc_Clock();
         if ( f0Proved && status == 1 )
             Gia_ManPatchCoDriver( pAig, i, 0 );
 
-/*
-        if ( status == -1 )
-        {
-            Gia_Man_t * pTemp = Gia_ManDupDfsCone( pAig, pObj );
-            Gia_AigerWrite( pTemp, "gia_hard.aig", 0, 0, 0 );
-            Gia_ManStop( pTemp );
-            Abc_Print( 1, "Dumping hard cone into file \"%s\".\n", "gia_hard.aig" );
-        }
-*/
+
+        // if ( status == -1 && veryVerbose )
+        // {
+        //     Gia_Man_t * pT = Gia_ManDupDfsCone( pAig, pObj );
+        //     printf("there are still %d obj in UNSOLVED cone with depth %d\n", Gia_ManObjNum(pT), pT->nLevels);
+        //     Gia_AigerWrite( pT, "./cec_result/gia_hard/gia_hard.aig", 0, 0, 0 );
+        //     Gia_ManStop( pT );
+        // }
+
         if ( status != 0 )
             continue;
         // save the pattern
@@ -772,6 +797,61 @@ clk2 = Abc_Clock();
         if ( pPars->fCheckMiter )
             break;
     }
+
+    if ( veryVerbose ) {
+        printf("AigerSize: %d\n", Gia_ManObjNum(pAig));
+        // printf("Ci level:");
+        // Gia_ManForEachCi( pAig, pObj, i) {
+        //     printf("%d ", Gia_ObjLevel(pAig, pObj));
+        // }
+        // printf("\n");
+        printf("Not Equiv:");
+        Vec_PtrForEachEntry(Gia_Obj_t*, satted, pObj, i ) {
+            pTemp = pObj;
+            while ( Gia_ObjIsBuf(pTemp) || Gia_ObjIsCo(pTemp))
+                pTemp = Gia_ObjFanin0(pTemp);
+            // assert( Gia_ObjFanin0(pTemp) != Gia_ObjFanin1(pTemp) );
+            if (Gia_ObjIsAnd(pTemp))
+                printf("%d,%d(d:%d,%d)/", Gia_ObjId(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjId(pAig, Gia_ObjFanin1(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin1(pTemp)) );
+            else if (Gia_ObjIsCo(pObj))
+                printf("%d(d:%d)/", Gia_ObjId(pAig, pTemp), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)) );
+            else
+                printf("%d(0)/", Gia_ObjId(pAig, pTemp));
+
+        }
+        printf("\n");
+        printf("Equiv:");
+        Vec_PtrForEachEntry(Gia_Obj_t*, unsatted, pObj, i ) {
+            
+            pTemp = pObj;
+            while ( Gia_ObjIsBuf(pTemp) || Gia_ObjIsCo(pTemp) )
+                pTemp = Gia_ObjFanin0(pTemp);
+            // assert( Gia_ObjFanin0(pTemp) != Gia_ObjFanin1(pTemp) );
+            if (Gia_ObjIsAnd(pTemp))
+                printf("%d,%d(d:%d,%d)/", Gia_ObjId(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjId(pAig, Gia_ObjFanin1(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin1(pTemp)) );
+            else if (Gia_ObjIsCo(pObj))
+                printf("%d(d:%d)/", Gia_ObjId(pAig, pTemp), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)) );
+            else
+                printf("%d(0)/", Gia_ObjId(pAig, pTemp));
+        }
+        printf("\n");
+        printf("UNSOLVED:");
+        Vec_PtrForEachEntry(Gia_Obj_t*, unSolved, pObj, i ) {
+            pTemp = pObj;
+            while ( Gia_ObjIsBuf(pTemp) || Gia_ObjIsCo(pTemp) )
+                pTemp = Gia_ObjFanin0(pTemp);
+            // printf(" %d ", Gia_ObjRepr(pAig, Gia_ObjId(pAig, Gia_ObjFanin0(pTemp))));
+            // assert( Gia_ObjFanin0(pTemp) != Gia_ObjFanin1(pTemp) );
+            if (Gia_ObjIsAnd(pTemp))
+                printf("%d,%d(d:%d,%d)/", Gia_ObjId(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjId(pAig, Gia_ObjFanin1(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)), Gia_ObjLevel(pAig, Gia_ObjFanin1(pTemp)) );
+            else if (Gia_ObjIsCo(pObj))
+                printf("%d(d:%d)/", Gia_ObjId(pAig, pTemp), Gia_ObjLevel(pAig, Gia_ObjFanin0(pTemp)) );
+            else
+                printf("%d(0)/", Gia_ObjId(pAig, pTemp));
+        }
+        printf("\n");
+    }
+    
     p->timeTotal = Abc_Clock() - clk;
     Bar_ProgressStop( pProgress );
     if ( pPars->fVerbose )

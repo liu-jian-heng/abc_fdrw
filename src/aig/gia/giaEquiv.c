@@ -312,39 +312,6 @@ void Gia_ManDeriveReprs( Gia_Man_t * p )
 
 /**Function*************************************************************
 
-  Synopsis    [Given pSibls, derives original representitives and nexts.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-
-void Gia_ManDeriveReprsFromSibls( Gia_Man_t *p )
-{
-    
-    int i, iObj;
-    assert( !p->pReprs && p->pSibls );
-    p->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(p) );
-    for ( i = 0; i < Gia_ManObjNum(p); i++ )
-        Gia_ObjSetRepr( p, i, GIA_VOID );
-    for ( i = 0; i < Gia_ManObjNum(p); i++ )
-    {
-        if ( p->pSibls[i] == 0 )
-            continue;
-        if ( p->pReprs[i].iRepr != GIA_VOID )
-            continue;
-        for ( iObj = p->pSibls[i]; iObj; iObj = p->pSibls[iObj] )
-            p->pReprs[iObj].iRepr = i;
-    }
-    ABC_FREE( p->pNexts );
-    p->pNexts = Gia_ManDeriveNexts( p );
-}
-
-/**Function*************************************************************
-
   Synopsis    []
 
   Description []
@@ -498,9 +465,27 @@ void Gia_ManEquivPrintOne( Gia_Man_t * p, int i, int Counter )
     }
     Abc_Print( 1, " }\n" );
 }
+int Gia_ManEquivCntOutputCone( Gia_Man_t * p, Gia_Obj_t * pObj ) {
+    if ( Gia_ObjValue(pObj) == 0 ) return 0;
+    Gia_ObjSetValue( pObj, 0 );
+    if ( Gia_ObjIsClass(p, Gia_ObjId(p, pObj)) && Gia_ObjProved(p, Gia_ObjId(p, pObj)) )
+        return 1;
+    else if ( Gia_ObjIsConst0(pObj) || Gia_ObjIsConst(p, Gia_ObjId(p, pObj)) )
+        return 1;
+    else if ( Gia_ObjIsCi(pObj) )
+        return 1;
+    else if ( Gia_ObjIsAnd(pObj) )
+        return 1 + Gia_ManEquivCntOutputCone(p, Gia_ObjFanin0(pObj)) + Gia_ManEquivCntOutputCone(p, Gia_ObjFanin1(pObj));
+    else {
+        printf("assertion\n");
+        assert(0);
+    }
+        // return 0;
+}
 void Gia_ManEquivPrintClasses( Gia_Man_t * p, int fVerbose, float Mem )
 {
-    int i, Counter = 0, Counter0 = 0, CounterX = 0, Proved = 0, nLits;
+    int i, Counter = 0, Counter0 = 0, CounterX = 0, Proved = 0, nLits, CounterPOcone;
+    Gia_Obj_t *pObj;
     for ( i = 1; i < Gia_ManObjNum(p); i++ )
     {
         if ( Gia_ObjIsHead(p, i) )
@@ -514,6 +499,23 @@ void Gia_ManEquivPrintClasses( Gia_Man_t * p, int fVerbose, float Mem )
     }
     CounterX -= Gia_ManCoNum(p);
     nLits = Gia_ManCiNum(p) + Gia_ManAndNum(p) - Counter - CounterX;
+    
+    // printf("output cone:\n");
+    if (fVerbose) {
+        printf("output cone:\n");
+        Gia_ManFillValue(p);
+        Gia_ManForEachCo( p, pObj, i ) {
+            // Gia_ManFillValue(p);
+            CounterPOcone = Gia_ManEquivCntOutputCone( p, Gia_ObjFanin0(pObj) );
+            if (CounterPOcone > 1) {
+                printf("output %d: %d\n", Gia_ObjId(p, Gia_ObjFanin0(pObj)), CounterPOcone);
+                // printf("level: %d\n", Gia_ObjLevel(p, Gia_ObjFanin0(pObj)));
+            }
+                // printf("output %d: %d\n", i, CounterPOcone);
+            Gia_ManFillValue(p);
+        }
+    }
+    
 //    Abc_Print( 1, "cst =%8d  cls =%7d  lit =%8d  unused =%8d  proof =%6d  mem =%5.2f MB\n",
 //        Counter0, Counter, nLits, CounterX, Proved, (Mem == 0.0) ? 8.0*Gia_ManObjNum(p)/(1<<20) : Mem );
     Abc_Print( 1, "cst =%8d  cls =%7d  lit =%8d  unused =%8d  proof =%6d\n",
@@ -521,7 +523,6 @@ void Gia_ManEquivPrintClasses( Gia_Man_t * p, int fVerbose, float Mem )
     assert( Gia_ManEquivCheckLits( p, nLits ) );
     if ( fVerbose )
     {
-//        int Ent;
         Abc_Print( 1, "Const0 (%d) = ", Counter0 );
         Gia_ManForEachConst( p, i )
             Abc_Print( 1, "%d ", i );
@@ -529,8 +530,9 @@ void Gia_ManEquivPrintClasses( Gia_Man_t * p, int fVerbose, float Mem )
         Counter = 0;
         Gia_ManForEachClass( p, i )
             Gia_ManEquivPrintOne( p, i, ++Counter );
-/*
+
         Gia_ManLevelNum( p );
+/*      int Ent;  
         Gia_ManForEachClass( p, i )
             if ( i % 100 == 0 )
             {
@@ -543,6 +545,7 @@ void Gia_ManEquivPrintClasses( Gia_Man_t * p, int fVerbose, float Mem )
             }
 */
     }
+
 }
 
 
@@ -665,9 +668,12 @@ void Gia_ManEquivReduce_rec( Gia_Man_t * pNew, Gia_Man_t * p, Gia_Obj_t * pObj, 
 
 /**Function*************************************************************
 
-  Synopsis    [Reduces AIG using equivalence classes.]
+  Synopsis    [Reduces AIG using equivalence classes. i.e. replace TFI cone with equiv one]
 
-  Description []
+  Description [
+    Value is the lit of the node (with the compl is phase of pRepr and pObj)
+    If Dual Out, further use Gia_ManEquivSetColors to seperate AB cones
+  ]
                
   SideEffects []
 
@@ -716,7 +722,7 @@ Gia_Man_t * Gia_ManEquivReduce( Gia_Man_t * p, int fUseAll, int fDualOut, int fS
             break;
     if ( i == Gia_ManObjNum(p) )
     {
-//        Abc_Print( 1, "Gia_ManEquivReduce(): There are no equivalences to reduce.\n" );
+        Abc_Print( 1, "Gia_ManEquivReduce(): There are no equivalences to reduce.\n" );
 //        return NULL;
         return Gia_ManDup( p );
     }
@@ -759,30 +765,6 @@ Gia_Man_t * Gia_ManEquivReduce( Gia_Man_t * p, int fUseAll, int fDualOut, int fS
   SeeAlso     []
 
 ***********************************************************************/
-Gia_Obj_t * Gia_MakeRandomChoice( Gia_Man_t * p, int iRepr )
-{
-    int iTemp, Rand, Count = 0;
-    Gia_ClassForEachObj( p, iRepr, iTemp )
-        Count++;
-    Rand = rand() % Count;
-    Count = 0;
-    Gia_ClassForEachObj( p, iRepr, iTemp )
-        if ( Count++ == Rand )
-            break;
-    return Gia_ManObj(p, iTemp);
-}
-
-/**Function*************************************************************
-
-  Synopsis    [Duplicates the AIG in the DFS order.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
 void Gia_ManEquivReduce2_rec( Gia_Man_t * pNew, Gia_Man_t * p, Gia_Obj_t * pObj, Vec_Int_t * vMap, int fDiveIn )
 {
     Gia_Obj_t * pRepr;
@@ -792,7 +774,7 @@ void Gia_ManEquivReduce2_rec( Gia_Man_t * pNew, Gia_Man_t * p, Gia_Obj_t * pObj,
     if ( fDiveIn && (pRepr = Gia_ManEquivRepr(p, pObj, 1, 0)) )
     {
         int iTemp, iRepr = Gia_ObjId(p, pRepr);
-        Gia_Obj_t * pRepr2 = vMap ? Gia_ManObj( p, Vec_IntEntry(vMap, iRepr) ) : Gia_MakeRandomChoice(p, iRepr);
+        Gia_Obj_t * pRepr2 = Gia_ManObj( p, Vec_IntEntry(vMap, iRepr) );
         Gia_ManEquivReduce2_rec( pNew, p, pRepr2, vMap, 0 );
         Gia_ClassForEachObj( p, iRepr, iTemp )
         {
@@ -808,13 +790,12 @@ void Gia_ManEquivReduce2_rec( Gia_Man_t * pNew, Gia_Man_t * p, Gia_Obj_t * pObj,
     Gia_ManEquivReduce2_rec( pNew, p, Gia_ObjFanin1(pObj), vMap, 1 );
     pObj->Value = Gia_ManHashAnd( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
 }
-Gia_Man_t * Gia_ManEquivReduce2( Gia_Man_t * p, int fRandom )
+Gia_Man_t * Gia_ManEquivReduce2( Gia_Man_t * p )
 {
     Vec_Int_t * vMap;
     Gia_Man_t * pNew;
     Gia_Obj_t * pObj;
     int i;
-    if ( fRandom ) srand(time(NULL));
     if ( !p->pReprs && p->pSibls )
     {
         int * pMap = ABC_FALLOC( int, Gia_ManObjNum(p) );
@@ -847,7 +828,7 @@ Gia_Man_t * Gia_ManEquivReduce2( Gia_Man_t * p, int fRandom )
             break;
     if ( i == Gia_ManObjNum(p) )
         return Gia_ManDup( p );
-    vMap = fRandom ? NULL : Gia_ManChoiceMinLevel( p );
+    vMap = Gia_ManChoiceMinLevel( p );
     Gia_ManSetPhase( p );
     pNew = Gia_ManStart( Gia_ManObjNum(p) );
     pNew->pName = Abc_UtilStrsav( p->pName );
@@ -863,14 +844,15 @@ Gia_Man_t * Gia_ManEquivReduce2( Gia_Man_t * p, int fRandom )
         pObj->Value = Gia_ManAppendCo( pNew, Gia_ObjFanin0Copy(pObj) );
     Gia_ManHashStop( pNew );
     Gia_ManSetRegNum( pNew, Gia_ManRegNum(p) );
-    Vec_IntFreeP( &vMap );
+    Vec_IntFree( vMap );
     return pNew;
 }
 
 
 /**Function*************************************************************
 
-  Synopsis    [Reduces AIG using equivalence classes.]
+  Synopsis    [Reduces AIG using equivalence classes.
+  paired outputs with identical child nodes are marked for further processing]
 
   Description []
                
@@ -880,7 +862,7 @@ Gia_Man_t * Gia_ManEquivReduce2( Gia_Man_t * p, int fRandom )
 
 ***********************************************************************/
 void Gia_ManEquivFixOutputPairs( Gia_Man_t * p )
-{
+{   // why only iDiff0 and fCompl0? because it is PO!
     Gia_Obj_t * pObj0, * pObj1;
     int i;
     assert( (Gia_ManPoNum(p) & 1) == 0 );
@@ -889,6 +871,7 @@ void Gia_ManEquivFixOutputPairs( Gia_Man_t * p )
         pObj1 = Gia_ManPo( p, ++i );
         if ( Gia_ObjChild0(pObj0) != Gia_ObjChild0(pObj1) )
             continue;
+        // printf( "setting %d and %d\n", Gia_ObjId(p, pObj0), Gia_ObjId(p, pObj1) );
         pObj0->iDiff0  = Gia_ObjId(p, pObj0);
         pObj0->fCompl0 = 0;
         pObj1->iDiff0  = Gia_ObjId(p, pObj1);
@@ -912,12 +895,14 @@ void Gia_ManEquivUpdatePointers( Gia_Man_t * p, Gia_Man_t * pNew )
     Gia_Obj_t * pObj, * pObjNew;
     int i;
     Gia_ManForEachObj( p, pObj, i )
-    {
+    {   // pObj->Value : repr Id
         if ( !~pObj->Value )
             continue;
         pObjNew = Gia_ManObj( pNew, Abc_Lit2Var(pObj->Value) );
-        if ( pObjNew->fMark0 )
+        if ( pObjNew->fMark0 ) {
+            // printf( "Id: %d->Value: %d\n", Gia_ObjId(p, pObj), Abc_Lit2Var(pObj->Value) );
             pObj->Value = ~0;
+        }
     }
 }
 
@@ -1038,25 +1023,45 @@ Gia_Man_t * Gia_ManEquivRemapDfs( Gia_Man_t * p )
 
 ***********************************************************************/
 Gia_Man_t * Gia_ManEquivReduceAndRemap( Gia_Man_t * p, int fSeq, int fMiterPairs )
-{
+{   
+    extern void Gia_WriteDotAigSimple(Gia_Man_t * p, char * pFileName, Vec_Int_t * vBold);
+    int getdot = 0;
     Gia_Man_t * pNew, * pFinal;
-    pNew = Gia_ManEquivReduce( p, 0, 0, 0, 0 );
+    if ( getdot ) {
+        printf("Init: %d\n", p->nObjs);
+        Gia_WriteDotAigSimple( p, "init.dot", NULL );
+    }
+    // p->vIdsOrig = Vec_IntStartNatural( Gia_ManObjNum(p) );
+    // if ( p->vIdsOrig ) Vec_IntPrint( p->vIdsOrig );
+    // else printf("No orig ids\n");
+    pNew = Gia_ManEquivReduce( p, 0, 0, 0, 0 ); // this make reduce
+    if ( getdot && pNew ) {
+        printf("EquivReduct:%d\n", pNew->nObjs);
+        Gia_WriteDotAigSimple( pNew, "equivReduct.dot", NULL );
+    }
     if ( pNew == NULL )
         return NULL;
     Gia_ManOrigIdsRemap( p, pNew );
     if ( fMiterPairs )
-        Gia_ManEquivFixOutputPairs( pNew );
+        Gia_ManEquivFixOutputPairs( pNew ); 
     if ( fSeq )
         Gia_ManSeqMarkUsed( pNew );
     else
-        Gia_ManCombMarkUsed( pNew );
+        Gia_ManCombMarkUsed( pNew ); // mark those unreachable (not go in here if still dual output)
     Gia_ManEquivUpdatePointers( p, pNew );
     pFinal = Gia_ManDupMarked( pNew );
+    if ( getdot ) {
+        printf("DupUsed:%d\n", pFinal->nObjs); // this make reduce (reduce all marked)
+        Gia_WriteDotAigSimple( pFinal, "dupUsed.dot", NULL );
+    }
+
     Gia_ManOrigIdsRemap( pNew, pFinal );
     Gia_ManEquivDeriveReprs( p, pNew, pFinal );
     Gia_ManStop( pNew );
     pFinal = Gia_ManEquivRemapDfs( pNew = pFinal );
+    
     Gia_ManOrigIdsRemap( pNew, pFinal );
+    
     Gia_ManStop( pNew );
     return pFinal;
 }
@@ -1087,7 +1092,7 @@ int Gia_ManEquivSetColor_rec( Gia_Man_t * p, Gia_Obj_t * pObj, int fOdds )
 
   Synopsis    [Marks CIs/COs/ANDs unreachable from POs.]
 
-  Description []
+  Description [Color nodes in A, B to seperate which circuit it belongs to]
                
   SideEffects []
 
@@ -1099,10 +1104,13 @@ int Gia_ManEquivSetColors( Gia_Man_t * p, int fVerbose )
     Gia_Obj_t * pObj;
     int i, nNodes[2], nDiffs[2];
     assert( (Gia_ManPoNum(p) & 1) == 0 );
+    // const0 and PIs have color A, B
     Gia_ObjSetColors( p, 0 );
     Gia_ManForEachPi( p, pObj, i )
         Gia_ObjSetColors( p, Gia_ObjId(p,pObj) );
+    // nNodes[0] and nNodes[1] store the amount of nodes in A, B color
     nNodes[0] = nNodes[1] = Gia_ManPiNum(p);
+    // iteratively mark the nodes
     Gia_ManForEachPo( p, pObj, i )
         nNodes[i&1] += Gia_ManEquivSetColor_rec( p, Gia_ObjFanin0(pObj), i&1 );
 //    Gia_ManForEachObj( p, pObj, i )
@@ -2765,58 +2773,6 @@ void Gia_ManTransferTest( Gia_Man_t * p )
     Gia_ManStop( pNew );
 }
 
-/**Function*************************************************************
-
-  Synopsis    [Transfer from new to old.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-void Gia_ManTransferEquivs2( Gia_Man_t * p, Gia_Man_t * pOld )
-{
-    Gia_Obj_t * pObj;
-    Vec_Int_t * vClass;
-    int i, k, iNode, iRepr;
-    assert( p->pReprs != NULL );
-    assert( p->pNexts != NULL );
-    assert( pOld->pReprs == NULL );
-    assert( pOld->pNexts == NULL );
-    // create map
-    Gia_ManFillValue( p );
-    Gia_ManForEachObj( pOld, pObj, i )
-        if ( ~pObj->Value )
-            Gia_ManObj(p, Abc_Lit2Var(pObj->Value))->Value = Abc_Var2Lit(i, 0);
-    // start representatives
-    pOld->pReprs = ABC_CALLOC( Gia_Rpr_t, Gia_ManObjNum(pOld) );
-    for ( i = 0; i < Gia_ManObjNum(pOld); i++ )
-        Gia_ObjSetRepr( pOld, i, GIA_VOID );
-    // iterate over constant candidates
-    Gia_ManForEachConst( p, i )
-        if ( ~Gia_ManObj(p, i)->Value )
-            Gia_ObjSetRepr( pOld, Abc_Lit2Var(Gia_ManObj(p, i)->Value), 0 );
-    // iterate over class candidates
-    vClass = Vec_IntAlloc( 100 );
-    Gia_ManForEachClass( p, i )
-    {
-        Vec_IntClear( vClass );
-        Gia_ClassForEachObj( p, i, k )
-            if ( (int)Gia_ManObj(p, k)->Value >= 0 )
-                Vec_IntPushUnique( vClass, Abc_Lit2Var(Gia_ManObj(p, k)->Value) );
-        if ( Vec_IntSize( vClass ) <= 1 )
-            continue;
-        assert( Vec_IntSize( vClass ) > 1 );
-        Vec_IntSort( vClass, 0 );
-        iRepr = Vec_IntEntry( vClass, 0 );
-        Vec_IntForEachEntryStart( vClass, iNode, k, 1 )
-            Gia_ObjSetRepr( pOld, iNode, iRepr );
-    }
-    Vec_IntFree( vClass );
-    pOld->pNexts = Gia_ManDeriveNexts( pOld );
-}
 
 /**Function*************************************************************
 

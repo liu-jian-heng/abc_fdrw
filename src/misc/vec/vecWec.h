@@ -161,6 +161,7 @@ static inline Vec_Int_t * Vec_WecEntryLast( Vec_Wec_t * p )
     assert( p->nSize > 0 );
     return p->pArray + p->nSize - 1;
 }
+// Vec_Wec_t[i][j]
 static inline int Vec_WecEntryEntry( Vec_Wec_t * p, int i, int k )
 {
     return Vec_IntEntry( Vec_WecEntry(p, i), k );
@@ -312,6 +313,7 @@ static inline void Vec_WecPushTwo( Vec_Wec_t * p, int Level, int Entry1, int Ent
     }
     Vec_IntPushTwo( Vec_WecEntry(p, Level), Entry1, Entry2 );
 }
+/* push a vector */
 static inline Vec_Int_t * Vec_WecPushLevel( Vec_Wec_t * p )
 {
     if ( p->nSize == p->nCap )
@@ -424,7 +426,7 @@ static inline void Vec_WecPushUnique( Vec_Wec_t * p, int Level, int Entry )
 
 /**Function*************************************************************
 
-  Synopsis    [Frees the vector.]
+  Synopsis    [Duplicate the vector.]
 
   Description []
                
@@ -442,16 +444,6 @@ static inline Vec_Wec_t * Vec_WecDup( Vec_Wec_t * p )
     Vec_WecForEachLevel( p, vVec, i )
         Vec_IntForEachEntry( vVec, Entry, k )
             Vec_WecPush( vNew, i, Entry );
-    return vNew;
-}
-static inline Vec_Wec_t * Vec_WecDupSize( Vec_Wec_t * p )
-{
-    Vec_Wec_t * vNew;
-    Vec_Int_t * vVec;
-    int i;
-    vNew = Vec_WecStart( Vec_WecSize(p) );
-    Vec_WecForEachLevel( p, vVec, i )
-        Vec_IntFill( Vec_WecEntry(vNew, i), Vec_IntSize(vVec), 0 );
     return vNew;
 }
 
@@ -693,13 +685,6 @@ static inline int Vec_WecMaxLevelSize( Vec_Wec_t * p )
         Res = Abc_MaxInt( Res, Vec_IntSize(vTemp) );
     return Res;
 }
-static inline int Vec_WecMaxEntry( Vec_Wec_t * p )
-{
-    Vec_Int_t * vTemp; int i, Res = 0;
-    Vec_WecForEachLevel( p, vTemp, i )
-        Res = Abc_MaxInt( Res, Vec_IntFindMax(vTemp) );
-    return Res;
-}
 
 /**Function*************************************************************
 
@@ -805,6 +790,31 @@ static inline void Vec_WecRemoveEmpty( Vec_Wec_t * vCubes )
         Vec_IntZero( Vec_WecEntry(vCubes, i) );
     Vec_WecShrink( vCubes, k );
 //    Vec_WecSortByFirstInt( vCubes, 0 );
+}
+
+// self defined
+static inline Vec_Wec_t* Vec_WecCrossSet( Vec_Wec_t* p1, Vec_Wec_t* p2 ) {
+    Vec_Wec_t* p3 = Vec_WecAlloc( Vec_WecSize(p1) * Vec_WecSize(p2) );
+    Vec_Int_t* p1st, *p2st, *p3st;
+    int i, j, k, entry;
+    if ( Vec_WecSize(p1) == 0 ) p3 = Vec_WecDup( p2 );
+    else if ( Vec_WecSize(p2) == 0 ) p3 = Vec_WecDup( p1 );
+    else {
+        Vec_WecForEachLevel( p1, p1st, i ) {
+            Vec_WecForEachLevel( p2, p2st, j ) {
+                p3st = Vec_WecPushLevel( p3 );
+                Vec_IntForEachEntry( p1st, entry, k ) {
+                    Vec_IntPush( p3st, entry );
+                }
+                Vec_IntForEachEntry( p2st, entry, k ) {
+                    Vec_IntPushUnique( p3st, entry );
+                }
+            }
+        }
+    }
+    
+    return p3;
+            
 }
 
 

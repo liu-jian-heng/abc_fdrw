@@ -1339,26 +1339,12 @@ int Ver_ParseGateStandard( Ver_Man_t * pMan, Abc_Ntk_t * pNtk, Ver_GateType_t Ga
         return 0;
     Ver_StreamMove( p );
 
-    // assume there is a gate name if the current char is not '(', e.g. xor g1 (z, a, b);
+    // this is gate name - throw it away
     if ( Ver_StreamPopChar(p) != '(' )
     {
-            // this is gate name - throw it away
-        pWord = Ver_ParseGetName( pMan );
-        if (pWord == NULL)
-        {
-            sprintf( pMan->sError, "Cannot parse a standard gate (expected a name before an opening parenthesis)." );
-            Ver_ParsePrintErrorMessage( pMan );
-            return 0;
-        }
-        else
-        {
-            if ( Ver_StreamPopChar(p) != '(' )
-            {
-                sprintf( pMan->sError, "Cannot parse a standard gate (expected opening parenthesis)." );
-                Ver_ParsePrintErrorMessage( pMan );
-                return 0;
-            }
-        }
+        sprintf( pMan->sError, "Cannot parse a standard gate (expected opening parenthesis)." );
+        Ver_ParsePrintErrorMessage( pMan );
+        return 0;
     }
     Ver_ParseSkipComments( pMan );
 

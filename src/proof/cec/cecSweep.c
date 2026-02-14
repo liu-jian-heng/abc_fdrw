@@ -48,15 +48,21 @@ Gia_Man_t * Cec_ManFraSpecReduction( Cec_ManFra_t * p )
     Gia_Obj_t * pObj, * pRepr = NULL;
     int iRes0, iRes1, iRepr, iNode, iMiter;
     int i, fCompl, * piCopies, * pDepths;
+    int maxDepth = 0;
     Gia_ManSetPhase( p->pAig );
     Vec_IntClear( p->vXorNodes );
-    if ( p->pPars->nLevelMax )
+    if ( p->pPars->nLevelMax ) {
+        printf( "-------->LevelMax = %d\n", p->pPars->nLevelMax );
         Gia_ManLevelNum( p->pAig );
+    }
+        // Gia_ManLevelNum( p->pAig );
     pNew = Gia_ManStart( Gia_ManObjNum(p->pAig) );
     pNew->pName = Abc_UtilStrsav( p->pAig->pName );
     pNew->pSpec = Abc_UtilStrsav( p->pAig->pName );
     Gia_ManHashAlloc( pNew );
+    // Literal of the nodes in pNew
     piCopies = ABC_FALLOC( int, Gia_ManObjNum(p->pAig) );
+    // record depths of the nodes. If the node depth is too deep, we omit such node
     pDepths  = ABC_CALLOC( int, Gia_ManObjNum(p->pAig) );
     piCopies[0] = 0;
     Gia_ManForEachObj1( p->pAig, pObj, i )
@@ -78,6 +84,7 @@ Gia_Man_t * Cec_ManFraSpecReduction( Cec_ManFra_t * p )
         if ( Gia_ObjRepr(p->pAig, i) == GIA_VOID || Gia_ObjFailed(p->pAig, i) )
             continue;
         assert( Gia_ObjRepr(p->pAig, i) < i );
+        // the lit of the representation (repr is from old AIG)
         iRepr = piCopies[Gia_ObjRepr(p->pAig, i)];
         if ( iRepr == -1 )
             continue;
@@ -85,7 +92,7 @@ Gia_Man_t * Cec_ManFraSpecReduction( Cec_ManFra_t * p )
             continue;
         if ( p->pPars->nLevelMax && 
             (Gia_ObjLevelId(p->pAig, i)  > p->pPars->nLevelMax || 
-             Gia_ObjLevelId(p->pAig, Abc_Lit2Var(iRepr)) > p->pPars->nLevelMax) )
+             Gia_ObjLevelId(p->pAig, Abc_Lit2Var(iRepr)) > p->pPars->nLevelMax) ) // out of range
             continue;
         if ( p->pPars->fDualOut )
         {
@@ -114,6 +121,7 @@ Gia_Man_t * Cec_ManFraSpecReduction( Cec_ManFra_t * p )
         Vec_IntPush( p->vXorNodes, i );
         // add to the depth of this node
         pDepths[i] = 1 + Abc_MaxInt( pDepths[i], pDepths[Gia_ObjRepr(p->pAig, i)] );
+        maxDepth = Abc_MaxInt( maxDepth, pDepths[i] );
         if ( p->pPars->nDepthMax && pDepths[i] >= p->pPars->nDepthMax )
             piCopies[i] = -1;
     }
@@ -122,6 +130,8 @@ Gia_Man_t * Cec_ManFraSpecReduction( Cec_ManFra_t * p )
     Gia_ManHashStop( pNew );
     Gia_ManSetRegNum( pNew, 0 );
     pNew = Gia_ManCleanup( pTemp = pNew );
+    // printf( "Max depth = %d\n", maxDepth );
+    // printf( "nNodes = %d\n", Gia_ManObjNum(pNew) );
     Gia_ManStop( pTemp );
     return pNew;
 }
@@ -161,7 +171,7 @@ int Cec_ManFraClassesUpdate_rec( Gia_Obj_t * pObj )
 
 ***********************************************************************/
 void Cec_ManFraCreateInfo( Cec_ManSim_t * p, Vec_Ptr_t * vCiInfo, Vec_Ptr_t * vInfo, int nSeries )
-{
+{   // why no return?
     unsigned * pRes0, * pRes1;
     int i, w;
     for ( i = 0; i < Gia_ManCiNum(p->pAig); i++ )
@@ -178,7 +188,7 @@ void Cec_ManFraCreateInfo( Cec_ManSim_t * p, Vec_Ptr_t * vCiInfo, Vec_Ptr_t * vI
 
   Synopsis    [Updates equivalence classes using the patterns.]
 
-  Description []
+  Description [update proved, failed]
                
   SideEffects []
 

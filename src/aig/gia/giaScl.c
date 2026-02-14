@@ -49,6 +49,7 @@ int Gia_ManCombMarkUsed_rec( Gia_Man_t * p, Gia_Obj_t * pObj )
     if ( !pObj->fMark0 )
         return 0;
     pObj->fMark0 = 0;
+    // printf( "UnMark node %d\n", Gia_ObjId(p, pObj) );
     assert( Gia_ObjIsAnd(pObj) );
     assert( !Gia_ObjIsBuf(pObj) );
     return 1 + Gia_ManCombMarkUsed_rec( p, Gia_ObjFanin0(pObj) )
@@ -62,9 +63,10 @@ int Gia_ManCombMarkUsed( Gia_Man_t * p )
     Gia_Obj_t * pObj;
     int i, nNodes = 0;
     Gia_ManForEachObj( p, pObj, i )
-        pObj->fMark0 = Gia_ObjIsAnd(pObj) && !Gia_ObjIsBuf(pObj);
+        pObj->fMark0 = Gia_ObjIsAnd(pObj) && !Gia_ObjIsBuf(pObj); // mark all ANDs that are not BUF
     Gia_ManForEachBuf( p, pObj, i )
-        nNodes += Gia_ManCombMarkUsed_rec( p, Gia_ObjFanin0(pObj) );
+        nNodes += Gia_ManCombMarkUsed_rec( p, Gia_ObjFanin0(pObj) ); // unmark those reachable from BUF or CO
+        // notice that pNext, pSibl, pMux related nodes would also be unmarked
     Gia_ManForEachCo( p, pObj, i )
         nNodes += Gia_ManCombMarkUsed_rec( p, Gia_ObjFanin0(pObj) );
     return nNodes;

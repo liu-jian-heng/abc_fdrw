@@ -490,16 +490,13 @@ int Gia_ManSifCheckIter( Gia_Man_t * p, Vec_Int_t * vCuts, Vec_Int_t * vTimes, i
 }
 int Gia_ManSifCheckPeriod( Gia_Man_t * p, Vec_Int_t * vCuts, Vec_Int_t * vTimes, int nLutSize, int Period, int * pIters )
 {
-    Gia_Obj_t * pObj; int i, Id, Stop, nSize = nLutSize+1;
+    Gia_Obj_t * pObj; int i, Id, nSize = nLutSize+1;
     assert( Gia_ManRegNum(p) > 0 );
     Gia_ManForEachCiId( p, Id, i )
         Vec_IntWriteEntry( vCuts, Id*nSize, 1 );
     Gia_ManForEachCiId( p, Id, i )
         Vec_IntWriteEntry( vCuts, Id*nSize+1, Id << 8 );
     Vec_IntFill( vTimes, Gia_ManObjNum(p), -Period );
-    if ( p->vStopsF )
-        Vec_StrForEachEntry( p->vStopsF, Stop, i )
-            if ( Stop ) Vec_IntWriteEntry( vTimes, i, 0 );
     Vec_IntWriteEntry( vTimes, 0, 0 );
     Gia_ManForEachPi( p, pObj, i )
         Vec_IntWriteEntry( vTimes, Gia_ObjId(p, pObj), 0 );
@@ -513,10 +510,6 @@ int Gia_ManSifCheckPeriod( Gia_Man_t * p, Vec_Int_t * vCuts, Vec_Int_t * vTimes,
         Gia_ManForEachObj( p, pObj, i )
             if ( Vec_IntEntry(vTimes, Gia_ObjId(p, pObj)) > 2*Period )
                 return 0;
-        if ( p->vStopsB )
-            Vec_StrForEachEntry( p->vStopsB, Stop, i )
-                if ( Stop && Vec_IntEntry(vTimes, i) > Period )
-                    return 0;              
     }
     return 0;
 }
@@ -645,25 +638,6 @@ Gia_Man_t * Gia_ManSifPerform( Gia_Man_t * p, int nLutSize, int fEvalOnly, int f
         pNew = Gia_ManSifTransform( p, vCuts, vTimes, nLutSize, Upper, fVerbose );
     Vec_IntFree( vCuts );
     Vec_IntFree( vTimes );
-    //Gia_ManTransferTiming( pNew, p );
-    if ( p->vNamesIn ) {
-        char * pName; int i;
-        pNew->vNamesIn     = p->vNamesIn;     p->vNamesIn     = NULL;
-        Vec_PtrForEachEntryStart( char *, pNew->vNamesIn, pName, i, Gia_ManPiNum(pNew) )
-            ABC_FREE( pName );
-        Vec_PtrShrink( pNew->vNamesIn, Gia_ManPiNum(pNew) );
-        for ( i = 0; i < Gia_ManRegNum(pNew); i++ )
-            Vec_PtrPush( pNew->vNamesIn, Abc_UtilStrsavNum("_fo", i) );
-    }
-    if ( p->vNamesOut ) {
-        char * pName; int i;
-        pNew->vNamesOut    = p->vNamesOut;    p->vNamesOut    = NULL;
-        Vec_PtrForEachEntryStart( char *, pNew->vNamesOut, pName, i, Gia_ManPoNum(pNew) )
-            ABC_FREE( pName );
-        Vec_PtrShrink( pNew->vNamesOut, Gia_ManPoNum(pNew) );
-        for ( i = 0; i < Gia_ManRegNum(pNew); i++ )
-            Vec_PtrPush( pNew->vNamesOut, Abc_UtilStrsavNum("_fi", i) );
-    }
     return pNew;
 }
 

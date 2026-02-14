@@ -115,8 +115,6 @@ void Ssw_RarSetDefaultParams( Ssw_RarPars_t * p )
     p->fSetLastState =   0;
     p->fVerbose      =   0;
     p->fNotVerbose   =   0;
-    p->pFuncProgress =   NULL;
-    p->pProgress     =   NULL;
 }
 
 /**Function*************************************************************
@@ -1009,8 +1007,6 @@ int Ssw_RarSimulate( Aig_Man_t * pAig, Ssw_RarPars_t * pPars )
     timeLastSolved = Abc_Clock();
     for ( r = 0; !pPars->nRounds || (nNumRestart * pPars->nRestart + r < pPars->nRounds); r++ )
     {
-        if ( pPars->pFuncProgress && pPars->pFuncProgress( pPars->pProgress, 0, (unsigned)r ) )
-            goto finish;
         clk = Abc_Clock();
         if ( fTryBmc )
         {
@@ -1023,8 +1019,6 @@ int Ssw_RarSimulate( Aig_Man_t * pAig, Ssw_RarPars_t * pPars )
         // simulate
         for ( f = 0; f < pPars->nFrames; f++ )
         {
-            if ( pPars->pFuncProgress && pPars->pFuncProgress( pPars->pProgress, 0, (unsigned)(r * pPars->nFrames + f) ) )
-                goto finish;
             Ssw_RarManSimulate( p, f ? NULL : p->vInits, 0, 0 );
             if ( fMiter )
             {
@@ -1046,10 +1040,8 @@ int Ssw_RarSimulate( Aig_Man_t * pAig, Ssw_RarPars_t * pPars )
                             Abc_Print( 1, "Simulated %d frames for %d rounds with %d restarts.\n", pPars->nFrames, nNumRestart * pPars->nRestart + r, nNumRestart );
                         pAig->pSeqModel = Ssw_RarDeriveCex( p, r * p->pPars->nFrames + f, p->iFailPo, p->iFailPat, pPars->fVerbose );
                         // print final report
-                        if ( !pPars->fSilent ) {
-                            Abc_Print( 1, "Output %d of miter \"%s\" was asserted in frame %d.  ", pAig->pSeqModel->iPo, pAig->pName, pAig->pSeqModel->iFrame );
-                            Abc_PrintTime( 1, "Time", Abc_Clock() - clkTotal );
-                        }
+                        Abc_Print( 1, "Output %d of miter \"%s\" was asserted in frame %d.  ", pAig->pSeqModel->iPo, pAig->pName, pAig->pSeqModel->iFrame );
+                        Abc_PrintTime( 1, "Time", Abc_Clock() - clkTotal );
                         goto finish;
                     }
                     timeLastSolved = Abc_Clock();

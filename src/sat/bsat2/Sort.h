@@ -21,12 +21,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #ifndef Minisat_Sort_h
 #define Minisat_Sort_h
 
-#include "sat/bsat2/Vec.h"
+#include "Vec.h"
 
 //=================================================================================================
 // Some sorting algorithms for vec's
 
-ABC_NAMESPACE_CXX_HEADER_START
 
 namespace Minisat {
 
@@ -95,7 +94,5 @@ template <class T> void sort(vec<T>& v) {
 
 //=================================================================================================
 }
-
-ABC_NAMESPACE_CXX_HEADER_END
 
 #endif

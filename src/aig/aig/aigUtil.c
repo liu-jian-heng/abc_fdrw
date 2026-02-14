@@ -464,7 +464,7 @@ Aig_Obj_t * Aig_ObjRecognizeMux( Aig_Obj_t * pNode, Aig_Obj_t ** ppNodeT, Aig_Ob
 
 /**Function*************************************************************
 
-  Synopsis    []
+  Synopsis    [iteratively go to Child0 until the non-buffer is found]
 
   Description []
                
@@ -474,7 +474,7 @@ Aig_Obj_t * Aig_ObjRecognizeMux( Aig_Obj_t * pNode, Aig_Obj_t ** ppNodeT, Aig_Ob
 
 ***********************************************************************/
 Aig_Obj_t * Aig_ObjReal_rec( Aig_Obj_t * pObj )
-{
+{   
     Aig_Obj_t * pObjNew, * pObjR = Aig_Regular(pObj);
     if ( !Aig_ObjIsBuf(pObjR) )
         return pObj;
@@ -1169,13 +1169,8 @@ void Aig_ManRandomTest1()
 ***********************************************************************/
 unsigned Aig_ManRandom( int fReset )
 {
-#ifdef _MSC_VER
     static unsigned int m_z = NUMBER1;
     static unsigned int m_w = NUMBER2;
-#else
-    static __thread unsigned int m_z = NUMBER1;
-    static __thread unsigned int m_w = NUMBER2;
-#endif    
     if ( fReset )
     {
         m_z = NUMBER1;

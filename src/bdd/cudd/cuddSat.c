@@ -552,7 +552,7 @@ Cudd_EquivDC(
     /* From now on, D is non-constant. */
 
     /* Normalize call to increase cache efficiency. */
-    if (cuddF2L(F) > cuddF2L(G)) {
+    if (F > G) {
         tmp = F;
         F = G;
         G = tmp;
@@ -674,7 +674,7 @@ Cudd_bddLeqUnless(
             /* !g <= D unless !f  or  !D <= g unless !f */
             tmp = D;
             D = Cudd_Not(f);
-            if (cuddF2L(g) < cuddF2L(tmp)) {
+            if (g < tmp) {
                 f = Cudd_Not(g);
                 g = tmp;
             } else {
@@ -717,7 +717,7 @@ Cudd_bddLeqUnless(
                 }
             } else {
                 /* f <= g unless D  or  !g <= !f unless D */
-                if (cuddF2L(g) < cuddF2L(f)) {
+                if (g < f) {
                     tmp = g;
                     g = Cudd_Not(f);
                     f = Cudd_Not(tmp);
@@ -725,7 +725,7 @@ Cudd_bddLeqUnless(
             }
         } else {
             /* f <= g unless D  or  f <= D unless g */
-            if (cuddF2L(D) < cuddF2L(g)) {
+            if (D < g) {
                 tmp = D;
                 D = g;
                 g = tmp;

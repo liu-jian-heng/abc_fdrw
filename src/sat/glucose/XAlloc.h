@@ -34,18 +34,12 @@ namespace Gluco {
 //=================================================================================================
 // Simple layer on top of malloc/realloc to catch out-of-memory situtaions and provide some typing:
 
-static inline void fatal_out_of_memory()
-{
-    fputs("Out of memory\n", stderr);
-    abort();
-}
-
+class OutOfMemoryException{};
 static inline void* xrealloc(void *ptr, size_t size)
 {
     void* mem = realloc(ptr, size);
     if (mem == NULL && errno == ENOMEM){
-        fatal_out_of_memory();
-        return NULL;
+        throw OutOfMemoryException();
     }else {
         return mem;
     }

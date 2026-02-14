@@ -24,11 +24,6 @@
 #include "bool/lucky/lucky.h"
 #include <math.h>
 
-#ifdef _MSC_VER
-#  include <intrin.h>
-#  define __builtin_popcount __popcnt
-#endif
-
 ABC_NAMESPACE_IMPL_START
 
 ////////////////////////////////////////////////////////////////////////
@@ -385,7 +380,7 @@ static int Abc_TtScc6(word wTruth, int ck)
     if (!wTruth) return 0;
     for (i = 0; i < 64; i++)
         if (wTruth & (word)1 << i) {
-            int ci = __builtin_popcount( i & 0xff ) + ck;
+            int ci = Abc_TtBitCount8[i] + ck;
             sum += shiftFunc(ci);
         }
     return sum;
@@ -411,7 +406,7 @@ static inline void Abc_TtSccInCofs6(word wTruth, int nVars, int ck, int * pStore
             {
                 if (wTruth & (word)1 << j)
                 {
-                    int ci = __builtin_popcount( i & 0xff ) + ck;
+                    int ci = Abc_TtBitCount8[i] + ck;
                     sum += shiftFunc(ci);
                 }
                 i++;

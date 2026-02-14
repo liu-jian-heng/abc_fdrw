@@ -288,21 +288,6 @@ void Gia_ManSimPatWrite( char * pFileName, Vec_Wrd_t * vSimsIn, int nWords )
   SeeAlso     []
 
 ***********************************************************************/
-Vec_Wrd_t * Gia_ManDeriveNodeFuncs( Gia_Man_t * p )
-{
-    int nWords = Abc_Truth6WordNum( Gia_ManCiNum(p) );
-    Vec_Wrd_t * vSims = Vec_WrdStart( nWords * Gia_ManObjNum(p) );
-    Gia_Obj_t * pObj; int i;
-    Gia_ManForEachCi( p, pObj, i )
-        assert( Gia_ObjId(p, pObj) == i+1 );
-    Vec_Ptr_t * vTruths = Vec_PtrAllocTruthTables( Gia_ManCiNum(p) );
-    Gia_ManForEachCi( p, pObj, i )
-        Abc_TtCopy( Vec_WrdEntryP(vSims, nWords*(i+1)), (word *)Vec_PtrEntry(vTruths, i), nWords, 0 );
-    Vec_PtrFree( vTruths );
-    Gia_ManForEachAnd( p, pObj, i )
-        Gia_ManSimPatSimAnd( p, i, pObj, nWords, vSims );
-    return vSims;
-}
 word * Gia_ManDeriveFuncs( Gia_Man_t * p )
 {
     int nVars2 = (Gia_ManCiNum(p) + 6)/2;
@@ -3214,7 +3199,7 @@ Vec_Int_t * Gia_ManRelDeriveSimple( Gia_Man_t * p, Vec_Wrd_t * vSims, Vec_Int_t 
 
 void Gia_ManRelSolve( Gia_Man_t * p, Vec_Wrd_t * vSims, Vec_Int_t * vIns, Vec_Int_t * vOuts, Vec_Int_t * vRel, Vec_Int_t * vDivs )
 {
-    extern Mini_Aig_t * Exa4_ManGenTest( Vec_Wrd_t * vSimsIn, Vec_Wrd_t * vSimsOut, int nIns, int nDivs, int nOuts, int nNodes, int TimeOut, int fOnlyAnd, int fFancy, int fOrderNodes, int fUniqFans, int fVerbose, int fCard, char * pGuide );
+    extern Mini_Aig_t * Exa4_ManGenTest( Vec_Wrd_t * vSimsIn, Vec_Wrd_t * vSimsOut, int nIns, int nDivs, int nOuts, int nNodes, int TimeOut, int fOnlyAnd, int fFancy, int fOrderNodes, int fUniqFans, int fVerbose );
 
     int i, m, iObj, Entry, iMint = 0, nMints = Vec_IntSize(vRel) - Vec_IntCountEntry(vRel, -1);
     Vec_Wrd_t * vSimsIn  = Vec_WrdStart( nMints );
@@ -3247,7 +3232,7 @@ void Gia_ManRelSolve( Gia_Man_t * p, Vec_Wrd_t * vSims, Vec_Int_t * vIns, Vec_In
     }
     assert( iMint == nMints );
     printf( "Created %d minterms.\n", iMint );
-    Exa4_ManGenTest( vSimsIn, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), 10, 0, 0, 0, 0, 0, 1, 0, NULL );
+    Exa4_ManGenTest( vSimsIn, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), 10, 0, 0, 0, 0, 0, 1 );
     Vec_WrdFree( vSimsIn );
     Vec_WrdFree( vSimsOut );
 }
@@ -3640,7 +3625,7 @@ Gia_Man_t * Gia_ManChangeTest3( Gia_Man_t * p )
 {
     extern void Exa6_WriteFile2( char * pFileName, int nVars, int nDivs, int nOuts, Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut );
     extern void Exa_ManExactPrint( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nDivs, int nOuts );
-    extern Mini_Aig_t * Exa_ManExactSynthesis6Int( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nVars, int nDivs, int nOuts, int nNodes, int fOnlyAnd, int fVerbose, char * pFileName );
+    extern Mini_Aig_t * Exa_ManExactSynthesis6Int( Vec_Wrd_t * vSimsDiv, Vec_Wrd_t * vSimsOut, int nVars, int nDivs, int nOuts, int nNodes, int fOnlyAnd, int fVerbose );
     extern Gia_Man_t * Gia_ManDupMini( Gia_Man_t * p, Vec_Int_t * vIns, Vec_Int_t * vDivs, Vec_Int_t * vOuts, Mini_Aig_t * pMini );
 
     Gia_Man_t *  pNew  = NULL;
@@ -3654,7 +3639,7 @@ Gia_Man_t * Gia_ManChangeTest3( Gia_Man_t * p )
     Gia_ManRelCompute( p, vIns, vDivs, vOuts, &vSimsDiv, &vSimsOut );
     Exa_ManExactPrint( vSimsDiv, vSimsOut, 1 + Vec_IntSize(vIns) + Vec_IntSize(vDivs), Vec_IntSize(vOuts) );
     //Exa6_WriteFile2( "mul44_i%d_n%d_t%d_s%d.rel", Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes );
-    pMini = Exa_ManExactSynthesis6Int( vSimsDiv, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes, 1, 1, NULL );
+    pMini = Exa_ManExactSynthesis6Int( vSimsDiv, vSimsOut, Vec_IntSize(vIns), Vec_IntSize(vDivs), Vec_IntSize(vOuts), nNodes, 1, 1 );
     if ( pMini )
     {
         pNew = Gia_ManDupMini( p, vIns, vDivs, vOuts, pMini );

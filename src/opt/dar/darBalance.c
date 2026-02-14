@@ -105,6 +105,9 @@ void Dar_BalanceUniqify( Aig_Obj_t * pObj, Vec_Ptr_t * vNodes, int fExor )
 ***********************************************************************/
 void Dar_BalanceCone_rec( Aig_Obj_t * pRoot, Aig_Obj_t * pObj, Vec_Ptr_t * vSuper )
 {
+    // IsComplement: does pObj FO with cmpl edge
+    // Type of pObj should be AND or EXOR
+    // ObjRefs: reference count
     if ( pObj != pRoot && (Aig_IsComplement(pObj) || Aig_ObjType(pObj) != Aig_ObjType(pRoot) || Aig_ObjRefs(pObj) > 1 || Vec_PtrSize(vSuper) > 10000) )
         Vec_PtrPush( vSuper, pObj );
     else
@@ -116,6 +119,8 @@ void Dar_BalanceCone_rec( Aig_Obj_t * pRoot, Aig_Obj_t * pObj, Vec_Ptr_t * vSupe
         Dar_BalanceCone_rec( pRoot, Aig_ObjReal_rec( Aig_ObjChild1(pObj) ), vSuper );
     }
 }
+// should get a cut from pObj to different gate boundary
+// (e.g. ANDs that have XOR or CI nodes as cut)
 Vec_Ptr_t * Dar_BalanceCone( Aig_Obj_t * pObj, Vec_Vec_t * vStore, int Level )
 {
     Vec_Ptr_t * vNodes;
@@ -128,7 +133,10 @@ Vec_Ptr_t * Dar_BalanceCone( Aig_Obj_t * pObj, Vec_Vec_t * vStore, int Level )
     vNodes = Vec_VecEntry( vStore, Level );
     Vec_PtrClear( vNodes );
     // collect the nodes in the implication supergate
-    Dar_BalanceCone_rec( pObj, pObj, vNodes );
+    Dar_BalanceCone_rec( pObj, pObj, vNodes ); 
+    // should get a Cone from pObj to different gate boundary 
+    // (e.g. ANDs that have XOR or CI nodes as cut)
+    
     // remove duplicates
     Dar_BalanceUniqify( pObj, vNodes, Aig_ObjIsExor(pObj) );
     return vNodes;
@@ -508,24 +516,26 @@ Aig_Obj_t * Dar_Balance_rec( Aig_Man_t * pNew, Aig_Obj_t * pObjOld, Vec_Vec_t * 
     assert( !Aig_ObjIsBuf(pObjOld) );
     // return if the result is known
     if ( pObjOld->pData )
-        return (Aig_Obj_t *)pObjOld->pData;
+        return (Aig_Obj_t *)pObjOld->pData; // CIs and those have done
     assert( Aig_ObjIsNode(pObjOld) );
     // get the implication supergate
+    // printf( "current Obj:%d",Aig_ObjId(pObjOld) );
     vSuper = Dar_BalanceCone( pObjOld, vStore, Level );
     // check if supergate contains two nodes in the opposite polarity
     if ( vSuper->nSize == 0 )
-        return (Aig_Obj_t *)(pObjOld->pData = Aig_ManConst0(pNew));
+        return (Aig_Obj_t *)(pObjOld->pData = Aig_ManConst0(pNew)); // mapped to const0
     // for each old node, derive the new well-balanced node
     for ( i = 0; i < Vec_PtrSize(vSuper); i++ )
-    {
+    {   // printf( Aig_ObjId((Aig_Obj_t *) vSuper->pArray[i]) );
         pObjNew = Dar_Balance_rec( pNew, Aig_Regular((Aig_Obj_t *)vSuper->pArray[i]), vStore, Level + 1, fUpdateLevel );
         if ( pObjNew == NULL )
             return NULL;
         vSuper->pArray[i] = Aig_NotCond( pObjNew, Aig_IsComplement((Aig_Obj_t *)vSuper->pArray[i]) );
     }
+
     // check for exactly one node
     if ( vSuper->nSize == 1 )
-        return (Aig_Obj_t *)Vec_PtrEntry(vSuper, 0);
+        return (Aig_Obj_t *)Vec_PtrEntry(vSuper, 0); // vSuper[0]
     // build the supergate
 #ifdef USE_LUTSIZE_BALANCE
     pObjNew = Dar_BalanceBuildSuperTop( pNew, vSuper, Aig_ObjType(pObjOld), fUpdateLevel, 6 );
@@ -537,14 +547,14 @@ Aig_Obj_t * Dar_Balance_rec( Aig_Man_t * pNew, Aig_Obj_t * pObjOld, Vec_Vec_t * 
     // make sure the balanced node is not assigned
 //    assert( pObjOld->Level >= Aig_Regular(pObjNew)->Level );
     assert( pObjOld->pData == NULL );
-    return (Aig_Obj_t *)(pObjOld->pData = pObjNew);
+    return (Aig_Obj_t *)(pObjOld->pData = pObjNew); // pData is assigned
 }
 
 /**Function*************************************************************
 
   Synopsis    [Performs algebraic balancing of the AIG.]
 
-  Description []
+  Description [balancing on area and delay]
                
   SideEffects []
 
@@ -615,7 +625,7 @@ Aig_Man_t * Dar_ManBalance( Aig_Man_t * p, int fUpdateLevel )
         pNew->pManTime = Tim_ManDup( (Tim_Man_t *)p->pManTime, 0 );
     }
     else
-    {
+    {   // go to here
         Aig_ManForEachCi( p, pObj, i )
         {
             pObjNew = Aig_ObjCreateCi(pNew); 
@@ -623,7 +633,7 @@ Aig_Man_t * Dar_ManBalance( Aig_Man_t * p, int fUpdateLevel )
             pObj->pData = pObjNew;
         }
         if ( p->nBarBufs == 0 )
-        {
+        {   // here
             Aig_ManForEachCo( p, pObj, i )
             {
                 pDriver = Aig_ObjReal_rec( Aig_ObjChild0(pObj) );
@@ -685,15 +695,24 @@ Aig_Man_t * Dar_ManBalance( Aig_Man_t * p, int fUpdateLevel )
 
 ***********************************************************************/
 Aig_Man_t * Dar_ManBalanceXor( Aig_Man_t * pAig, int fExor, int fUpdateLevel, int fVerbose )
-{
+{   
+    extern void Aig_WriteDotAig( Aig_Man_t * pMan, char * pFileName, int fHaig, Vec_Ptr_t * vBold );
     Aig_Man_t * pAigXor, * pRes;
     if ( fExor )
-    {
-        pAigXor = Aig_ManDupExor( pAig );
+    {   // Aig_WriteDotAig( pAig, "aig.dot", 0, NULL );
+        pAigXor = Aig_ManDupExor( pAig ); // map ANDs to EXORs
+        // Aig_WriteDotAig( pAigXor, "aigXor.dot", 0, NULL );
+        // printf("#XOR before balancing: %d\n", Aig_ManExorNum(pAigXor));
         if ( fVerbose )
             Dar_BalancePrintStats( pAigXor );
+        printf("There are %d XORs\n", Aig_ManExorNum(pAig));
         pRes = Dar_ManBalance( pAigXor, fUpdateLevel );
+        // Aig_Man_t* pSeeXor = Aig_ManDupExor( pRes );
+        // printf("#XOR after balancing: %d\n", Aig_ManExorNum(pSeeXor));
+        // Aig_Man_t* pSeeXor = Aig_ManDupExor( pRes ); // map EXORs to ANDs
+        // Aig_WriteDotAig( pSeeXor, "afterBalance.dot", 0, NULL );
         Aig_ManStop( pAigXor );
+        // Aig_ManStop( pSeeXor );
     }
     else
     {
@@ -736,15 +755,15 @@ void Dar_BalancePrintStats( Aig_Man_t * p )
         if ( pObj->fMarkA && pObj->nRefs == 1 )
             continue;
         Vec_PtrClear( vSuper );
-        Dar_BalanceCone_rec( pObj, pObj, vSuper );
+        Dar_BalanceCone_rec( pObj, pObj, vSuper ); // cone of pObj
         Vec_PtrForEachEntry( Aig_Obj_t *, vSuper, pTemp, k )
             pTemp->fMarkB = 0;
         if ( Vec_PtrSize(vSuper) < 3 )
             continue;
-        printf( "  %d(", Vec_PtrSize(vSuper) );
+        printf( "XOR_IO<%d>[", Vec_PtrSize(vSuper) );
         Vec_PtrForEachEntry( Aig_Obj_t *, vSuper, pTemp, k )
-            printf( " %d", pTemp->Level );
-        printf( " )" );
+            printf( " %d(%d)", Aig_ObjId(pTemp), pTemp->Level );
+        printf( " ]" );
     }
     Vec_PtrFree( vSuper );
     Aig_ManForEachObj( p, pObj, i )

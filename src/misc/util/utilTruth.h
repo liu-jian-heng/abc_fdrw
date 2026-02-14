@@ -25,11 +25,6 @@
 ///                          INCLUDES                                ///
 ////////////////////////////////////////////////////////////////////////
 
-#ifdef _MSC_VER
-#  include <intrin.h>
-#  define __builtin_popcount __popcnt
-#endif
-
 ////////////////////////////////////////////////////////////////////////
 ///                         PARAMETERS                               ///
 ////////////////////////////////////////////////////////////////////////
@@ -72,25 +67,6 @@ static word s_Truths6Neg[6] = {
     ABC_CONST(0x00FF00FF00FF00FF),
     ABC_CONST(0x0000FFFF0000FFFF),
     ABC_CONST(0x00000000FFFFFFFF)
-};
-
-static word s_Truth26[2][6] = {
-    {
-        ABC_CONST(0xAAAAAAAAAAAAAAAA),
-        ABC_CONST(0xCCCCCCCCCCCCCCCC),
-        ABC_CONST(0xF0F0F0F0F0F0F0F0),
-        ABC_CONST(0xFF00FF00FF00FF00),
-        ABC_CONST(0xFFFF0000FFFF0000),
-        ABC_CONST(0xFFFFFFFF00000000)
-    },
-    {
-        ABC_CONST(0x5555555555555555),
-        ABC_CONST(0x3333333333333333),
-        ABC_CONST(0x0F0F0F0F0F0F0F0F),
-        ABC_CONST(0x00FF00FF00FF00FF),
-        ABC_CONST(0x0000FFFF0000FFFF),
-        ABC_CONST(0x00000000FFFFFFFF)
-    }
 };
 
 static word s_TruthXors[6] = {
@@ -153,7 +129,18 @@ static word s_PPMasks[5][6][3] = {
     }
 };
 
-static inline int Abc_TtBitCount16( int i ) { return __builtin_popcount( i & 0xffff ); }
+// the bit count for the first 256 integer numbers
+static int Abc_TtBitCount8[256] = {
+    0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+    3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8
+};
+static inline int Abc_TtBitCount16( int i ) { return Abc_TtBitCount8[i & 0xFF] + Abc_TtBitCount8[i >> 8]; }
 
 ////////////////////////////////////////////////////////////////////////
 ///                      MACRO DEFINITIONS                           ///
@@ -230,8 +217,7 @@ static inline int  Abc_TtHexDigitNum( int nVars ) { return nVars <= 2 ? 1 : 1 <<
   SeeAlso     []
 
 ***********************************************************************/
-static inline word Abc_Tt6MaskI( int iBit )       { assert( iBit >= 0  && iBit  <= 64 ); return ((word)1) << iBit;         }
-static inline word Abc_Tt6Mask( int nBits )       { assert( nBits >= 0 && nBits <= 64 ); return (~(word)0) >> (64-nBits);  }
+static inline word Abc_Tt6Mask( int nBits )       { assert( nBits >= 0 && nBits <= 64 ); return (~(word)0) >> (64-nBits);        }
 static inline void Abc_TtMask( word * pTruth, int nWords, int nBits )
 { 
     int w;
@@ -243,33 +229,6 @@ static inline void Abc_TtMask( word * pTruth, int nWords, int nBits )
             pTruth[w] = Abc_Tt6Mask( nBits - w * 64 );
         else
             pTruth[w] = 0;
-}
-
-/**Function*************************************************************
-
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-static inline word Abc_TtWordReverseBits( word w )
-{
-    int Rev[16] = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
-    word r = 0; int i;
-    for ( i = 0; i < 16; i++ )
-        r |= (word)Rev[(w >> (i<<2))&15] << ((15-i)<<2);
-    return r;
-}
-static inline word Abc_TtWordReverseHexDigits( word w ) 
-{
-    word r = 0; int i;
-    for ( i = 0; i < 16; i++ )
-        r |= ((w >> (i<<2))&15) << ((15-i)<<2);
-    return r;
 }
 
 /**Function*************************************************************
@@ -1582,45 +1541,6 @@ static inline int Abc_TtReadHexNumber( word * pTruth, char * pString )
 
 /**Function*************************************************************
 
-  Synopsis    [Reads the integer number as a binary string.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-static inline int Abc_TtReadBin( word * pWords, int nWords, char * pString )
-{
-    int i, Len = (int)strlen(pString), nWords2 = (Len+63)/64;
-    assert( nWords2 <= nWords );
-    (void)nWords2;
-    memset( pWords, 0, sizeof(word)*nWords );
-    for ( i = 0; i < Len; i++ )
-        if ( pString[i] == '1' )
-            Abc_TtSetBit(pWords, i);
-        else if ( pString[i] != '0' )
-            return 0;
-    return 1;
-}
-static inline word Abc_TtReadBin64( char * pString )
-{
-    word Word = 0;
-    int Len = (int)strlen(pString);
-    assert( Len <= 64 );
-    (void)Len;
-    int Res = Abc_TtReadBin( &Word, 1, pString );
-    if ( Res == 0 ) {
-        printf( "Reading binary string \"%s\" has failed.\n", pString );
-        Word = ~(word)0;
-    }
-    return Word;
-}
-
-
-/**Function*************************************************************
-
   Synopsis    []
 
   Description []
@@ -1642,7 +1562,7 @@ static inline void Abc_TtPrintBits2( word * pTruth, int nBits )
     int k;
     for ( k = nBits-1; k >= 0; k-- )
         printf( "%d", Abc_InfoHasBit( (unsigned *)pTruth, k ) );
-    //printf( "\n" );
+    printf( "\n" );
 }
 static inline void Abc_TtPrintBinary( word * pTruth, int nVars )
 {
@@ -1844,7 +1764,6 @@ static inline int Abc_TtCheckCondDep( word * pTruth, int nVars, int nSuppLim )
     word Cof0[128], Cof1[128]; // pow( 2, nVarsMax-6 )
     int v, d, nWords = Abc_TtWordNum(nVars);
     assert( nVars <= nVarsMax );
-    (void)nVarsMax;
     if ( nVars <= nSuppLim + 1 )
         return 0;
     for ( v = 0; v < nVars; v++ )
@@ -2028,20 +1947,6 @@ static inline void Abc_TtSwapVars( word * pTruth, int nVars, int iVar, int jVar 
         return;
     }    
 }
-// exchanges places of v1 and v2
-static inline void Abc_TtExchangeVars( word * pF, int nVars, int * V2P, int * P2V, int v1, int v2 )
-{
-    int iPlace0 = V2P[v1];
-    int iPlace1 = V2P[v2];
-    if ( iPlace0 == iPlace1 )
-        return;
-    Abc_TtSwapVars( pF, nVars, iPlace0, iPlace1 );
-    V2P[P2V[iPlace0]] = iPlace1;
-    V2P[P2V[iPlace1]] = iPlace0;
-    P2V[iPlace0] ^= P2V[iPlace1];
-    P2V[iPlace1] ^= P2V[iPlace0];
-    P2V[iPlace0] ^= P2V[iPlace1];
-}
 // moves one var (v) to the given position (p)
 static inline void Abc_TtMoveVar( word * pF, int nVars, int * V2P, int * P2V, int v, int p )
 {
@@ -2061,27 +1966,6 @@ static inline word Abc_Tt6RemoveVar( word t, int iVar )
     while ( iVar < 5 )
         t = Abc_Tt6SwapAdjacent( t, iVar++ );
     return t;
-}
-// permutes two variables while keeping track of their places
-static inline void Abc_TtPermuteTwo( word * p, int nTTVars, int * Var2Pla, int * Pla2Var, int Var0, int Var1 )
-{
-    int iPlace0 = Var2Pla[Var0];
-    int iPlace1 = Var2Pla[Var1];
-    if ( iPlace0 == iPlace1 )
-        return;
-    Abc_TtSwapVars( p, nTTVars, iPlace0, iPlace1 );
-    Var2Pla[Pla2Var[iPlace0]] = iPlace1;
-    Var2Pla[Pla2Var[iPlace1]] = iPlace0;
-    Pla2Var[iPlace0] ^= Pla2Var[iPlace1];
-    Pla2Var[iPlace1] ^= Pla2Var[iPlace0];
-    Pla2Var[iPlace0] ^= Pla2Var[iPlace1];
-}
-// restores natural variable order
-static inline void Abc_TtRestoreOrder( word * p, int nTTVars, int * Var2Pla, int * Pla2Var, int nPermVars )
-{
-    int i;
-    for ( i = 0; i < nPermVars; i++ )
-        Abc_TtPermuteTwo( p, nTTVars, Var2Pla, Pla2Var, i, Var2Pla[i] );
 }
 
 /**Function*************************************************************
@@ -3758,7 +3642,6 @@ static inline void Abc_TtProcessBiDecExperiment()
 //    Dau_DsdPrintFromTruth( &This, Abc_TtBitCount16(resThis) );
 //    Dau_DsdPrintFromTruth( &That, Abc_TtBitCount16(resThat) );
     nVars = nSuppLim;
-    This = s_Truth26[0][0];
 }
 
 /**Function*************************************************************
@@ -3950,23 +3833,6 @@ static inline word * Abc_TtSymFunGenerate( char * pOnes, int nVars )
     return pTruth;
 }
 
-/**Function*************************************************************
-
-  Synopsis    [Fix big-endian when dealilng with 5-var truth tables.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-static inline void Abc_TtFlipVar5( word * p, int nVars )
-{
-    int Test = 1;
-    if ( *((char *)&Test) == 0 && nVars > 5 )
-        Abc_TtFlip( p, Abc_TtWordNum(nVars), 5 );
-}
 
 ABC_NAMESPACE_HEADER_END
 

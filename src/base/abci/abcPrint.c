@@ -226,37 +226,6 @@ float Abc_NtkGetArea( Abc_Ntk_t * pNtk )
 
 /**Function*************************************************************
 
-  Synopsis    []
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-float Abc_NtkGetAreaSpecial( Abc_Ntk_t * pNtk )
-{
-    Abc_Obj_t * pObj; int i, Count = 0;    
-    Abc_NtkForEachNode( pNtk, pObj, i )
-        if ( !strncmp( Mio_GateReadName((Mio_Gate_t*)pObj->pData), "mm", 2 ) )
-           Count++;
-    return 1.0*Count/Abc_NtkNodeNum(pNtk);
-}
-float Abc_NtkGetAreaSpecial2( Abc_Ntk_t * pNtk )
-{
-    Abc_Obj_t * pObj; int i; 
-    float Count = 0, CountAll = 0;    
-    Abc_NtkForEachNode( pNtk, pObj, i ) {
-        if ( !strncmp( Mio_GateReadName((Mio_Gate_t*)pObj->pData), "mm", 2 ) )
-           Count += Mio_GateReadArea((Mio_Gate_t*)pObj->pData);
-        CountAll += Mio_GateReadArea((Mio_Gate_t*)pObj->pData);
-    }
-    return 1.0*Count/CountAll;
-}
-
-/**Function*************************************************************
-
   Synopsis    [Print the vital stats of the network.]
 
   Description []
@@ -391,7 +360,7 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
     if ( fPrintMem )
         Abc_Print( 1,"  mem =%5.2f MB", Abc_NtkMemory(pNtk)/(1<<20) );
     Abc_Print( 1,"\n" );
-/*
+
     // print the statistic into a file
     if ( fDumpResult )
     {
@@ -405,8 +374,6 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
         fprintf( pTable, "\n" );
         fclose( pTable );
     }
-*/
-
 /*
     {
         FILE * pTable;
@@ -417,6 +384,21 @@ void Abc_NtkPrintStats( Abc_Ntk_t * pNtk, int fFactored, int fSaveBest, int fDum
         fprintf( pTable, "%d ", Abc_NtkNodeNum(pNtk) );
         fprintf( pTable, "%d ", Abc_NtkLatchNum(pNtk) );
         fprintf( pTable, "%d ", Abc_NtkLevel(pNtk) );
+        fprintf( pTable, "\n" );
+        fclose( pTable );
+    }
+*/
+
+/*
+    // print the statistic into a file
+    {
+        FILE * pTable;
+        pTable = fopen( "ucsb/stats.txt", "a+" );
+//        fprintf( pTable, "%s ",  pNtk->pSpec );
+        fprintf( pTable, "%d ",  Abc_NtkNodeNum(pNtk) );
+//        fprintf( pTable, "%d ",  Abc_NtkLevel(pNtk) );
+//        fprintf( pTable, "%.0f ", Abc_NtkGetMappedArea(pNtk) );
+//        fprintf( pTable, "%.2f ", Abc_NtkDelayTrace(pNtk) );
         fprintf( pTable, "\n" );
         fclose( pTable );
     }
@@ -1083,7 +1065,7 @@ void Abc_NtkPrintMffc( FILE * pFile, Abc_Ntk_t * pNtk )
     int i;
     extern void Abc_NodeMffcConeSuppPrint( Abc_Obj_t * pNode );
     Abc_NtkForEachNode( pNtk, pNode, i )
-        if ( Abc_ObjFanoutNum(pNode) > 1 || (Abc_ObjFanoutNum(pNode) == 1 && Abc_ObjIsCo(Abc_ObjFanout0(pNode))))
+        if ( Abc_ObjFanoutNum(pNode) > 1 )
             Abc_NodeMffcConeSuppPrint( pNode );
 }
 
@@ -1228,19 +1210,11 @@ char * Abc_NodeGetPrintName( Abc_Obj_t * pObj )
     }
     return Abc_ObjName(nPos == 1 ? pFanout : pObj);
 }
-void Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListNodes, int fOutputs, int fVerbose )
+void Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListNodes, int fVerbose )
 {
     Abc_Obj_t * pNode;
     int i, k, Length;
-    if ( fOutputs )
-    {
-        Abc_NtkLevel(pNtk);
-        printf( "Outputs by level: " );
-        Abc_NtkForEachCo( pNtk, pNode, k )
-            printf( "%d=%d ", k, Abc_ObjFanin0(pNode)->Level );
-        printf( "\n" );
-        return;        
-    }
+
     if ( fListNodes )
     {
         int nLevels;
@@ -1547,24 +1521,6 @@ void Abc_NtkPrintGates( Abc_Ntk_t * pNtk, int fUseLibrary, int fUpdateProfile )
     // convert the network back into BDDs if this is how it was
     if ( fHasBdds )
         Abc_NtkSopToBdd(pNtk);
-}
-void Abc_NtkPrintGates2( Abc_Ntk_t * pNtk )
-{
-    Abc_Obj_t * pNode; int n, nFaninMax = Abc_NtkGetFaninMax(pNtk);
-    Abc_NtkForEachNode( pNtk, pNode, n ) 
-    {
-        if ( Abc_ObjFaninNum(pNode) < 2 )
-            continue;
-        word uTruth = Mio_GateReadTruth((Mio_Gate_t *)pNode->pData);
-        printf( "Node %d : ", Abc_ObjId(pNode) );
-        printf( "Fanins %d : ", Abc_ObjFaninNum(pNode) );
-        printf( "Gate %10s : ", Mio_GateReadName((Mio_Gate_t *)pNode->pData) );
-        printf( "Func " );
-        for ( int i = 0; i < (1 << nFaninMax)-(1 << Abc_ObjFaninNum(pNode)); i++ )
-            printf( " " );
-        Extra_PrintBinary( stdout, (unsigned *)&uTruth, 1 << Abc_ObjFaninNum(pNode) );
-        printf( "\n" );        
-    }
 }
 
 /**Function*************************************************************

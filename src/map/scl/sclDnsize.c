@@ -239,7 +239,7 @@ void Abc_SclDnsizePrint( SC_Man * p, int Iter, int nAttempts, int nOverlaps, int
   SeeAlso     []
 
 ***********************************************************************/
-void Abc_SclDnsizePerformInt( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPars, void * pFuncFanin )
+void Abc_SclDnsizePerformInt( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPars )
 {
     SC_Man * p;
     Abc_Obj_t * pObj;
@@ -261,12 +261,11 @@ void Abc_SclDnsizePerformInt( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPa
 
     // prepare the manager; collect init stats
     p = Abc_SclManStart( pLib, pNtk, pPars->fUseWireLoads, pPars->fUseDept, pPars->DelayUser, pPars->BuffTreeEst );
-    p->pFuncFanin = (float (*)(void *, Abc_Obj_t *, Abc_Obj_t *, int, int))pFuncFanin;
     p->timeTotal  = Abc_Clock();
     assert( p->vGatesBest == NULL );
     p->vGatesBest = Vec_IntDup( p->pNtk->vGates );
 
-    // perform downsizing
+    // perform upsizing
     vNodes = Vec_IntAlloc( 1000 );
     vEvals = Vec_IntAlloc( 1000 );
     vTryLater = Vec_IntAlloc( 1000 );
@@ -358,12 +357,12 @@ void Abc_SclDnsizePerformInt( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPa
   SeeAlso     []
 
 ***********************************************************************/
-void Abc_SclDnsizePerform( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPars, void * pFuncFanin )
+void Abc_SclDnsizePerform( SC_Lib * pLib, Abc_Ntk_t * pNtk, SC_SizePars * pPars )
 {
     Abc_Ntk_t * pNtkNew = pNtk;
     if ( pNtk->nBarBufs2 > 0 )
         pNtkNew = Abc_NtkDupDfsNoBarBufs( pNtk );
-    Abc_SclDnsizePerformInt( pLib, pNtkNew, pPars, pFuncFanin );
+    Abc_SclDnsizePerformInt( pLib, pNtkNew, pPars );
     if ( pNtk->nBarBufs2 > 0 )
         Abc_SclTransferGates( pNtk, pNtkNew );
     if ( pNtk->nBarBufs2 > 0 )
