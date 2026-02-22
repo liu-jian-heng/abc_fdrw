@@ -1,0 +1,155 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 490
+start replace node finding
+maxMffc = 211, max reduce = 35
+dump 1390, new mffc = 210
+dump 1426, new mffc = 209
+dump 1784, new mffc = 208
+dump 1832, new mffc = 207
+dump 1423, new mffc = 205
+dump 1671, new mffc = 203
+dump 1365, new mffc = 201
+dump 1878, new mffc = 199
+dump 1666, new mffc = 196
+dump 1791, new mffc = 192
+nid = 1525, patch size = 23
+nid = 1393, patch size = 62
+nid = 1358, patch size = 70
+nid = 1424, patch size = 50
+nid = 1841, patch size = 12
+nid = 1828, patch size = 28
+nid = 1416, patch size = 39
+nid = 1356, patch size = 39
+nid = 1388, patch size = 41
+nid = 1656, patch size = 41
+nid = 1489, patch size = 17
+nid = 1500, patch size = 10
+nid = 1502, patch size = 12
+nid = 1868, patch size = 41
+nid = 1437, patch size = 34
+nid = 1473, patch size = 51
+nid = 1436, patch size = 31
+nid = 1475, patch size = 69
+nid = 1412, patch size = 64
+nid = 1413, patch size = 53
+nid = 1737, patch size = 58
+nid = 1649, patch size = 66
+nid = 1771, patch size = 36
+start replacement
+trim: 2543->1973
+Trim time:  6.496582 sec
+start conflict test
+start final
+newly find #UNSAT: 23
+nid = 2031(1857)
+conflict = 69
+patch = 70
+org status = -1
+nid = 2062(1889)
+conflict = 69
+patch = 56
+org status = -7
+nid = 2137(1929)
+conflict = 81
+patch = 36
+org status = -5
+nid = 2150(1938)
+conflict = 0
+patch = 2
+org status = -7
+nid = 2160(1947)
+conflict = 14
+patch = 26
+org status = -1
+nid = 2161(1948)
+conflict = 15
+patch = 10
+org status = -5
+nid = 2165(1951)
+conflict = 13
+patch = 8
+org status = -5
+nid = 2220(1989)
+conflict = 59
+patch = 49
+org status = -5
+nid = 2225(1994)
+conflict = 58
+patch = 54
+org status = -5
+nid = 2237(1997)
+conflict = 38
+patch = 60
+org status = -5
+nid = 2267(2017)
+conflict = 36
+patch = 48
+org status = -5
+nid = 2398(2127)
+conflict = 16
+patch = 19
+org status = -5
+nid = 2399(2136)
+conflict = 29
+patch = 38
+org status = -5
+nid = 2403(2138)
+conflict = 28
+patch = 38
+org status = -1
+nid = 2448(2180)
+conflict = 98
+patch = 60
+org status = -1
+nid = 2560(2229)
+conflict = 25
+patch = 42
+org status = -7
+nid = 2167(2581)
+conflict = 38
+patch = 46
+org status = -5
+nid = 2231(2589)
+conflict = 24
+patch = 13
+org status = -5
+nid = 2232(2590)
+conflict = 58
+patch = 34
+org status = -5
+nid = 2233(2591)
+conflict = 54
+patch = 39
+org status = -5
+nid = 2561(2671)
+conflict = 27
+patch = 45
+org status = -7
+nid = 2562(2672)
+conflict = 18
+patch = 61
+org status = -7
+nid = 1935(2680)
+conflict = 44
+patch = 61
+org status = -7
+nSimWords = 0

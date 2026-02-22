@@ -1,0 +1,168 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 435
+start replace node finding
+maxMffc = 170, max reduce = 28
+dump 1435, new mffc = 169
+dump 1439, new mffc = 168
+dump 1444, new mffc = 167
+dump 1750, new mffc = 166
+dump 1783, new mffc = 165
+dump 1441, new mffc = 163
+dump 1429, new mffc = 161
+dump 1619, new mffc = 158
+dump 1811, new mffc = 155
+nid = 1652, patch size = 70
+nid = 1648, patch size = 28
+nid = 1407, patch size = 38
+nid = 1415, patch size = 58
+nid = 1638, patch size = 20
+nid = 1686, patch size = 27
+nid = 1635, patch size = 36
+nid = 1886, patch size = 28
+nid = 1776, patch size = 63
+nid = 1920, patch size = 40
+nid = 1400, patch size = 28
+nid = 1926, patch size = 46
+nid = 1869, patch size = 46
+nid = 1870, patch size = 50
+nid = 1910, patch size = 42
+start replacement
+trim: 2473->2146
+Trim time:  7.384051 sec
+start conflict test
+start final
+newly find #UNSAT: 18
+nid = 1971(1819)
+conflict = 23
+patch = 29
+org status = -7
+nid = 2156(1997)
+conflict = 48
+patch = 65
+org status = -5
+nid = 2160(2001)
+conflict = 26
+patch = 50
+org status = -5
+nid = 2163(2004)
+conflict = 37
+patch = 58
+org status = -1
+nid = 2130(2025)
+conflict = 46
+patch = 65
+org status = -7
+nid = 2227(2052)
+conflict = 24
+patch = 37
+org status = -5
+nid = 2229(2054)
+conflict = 43
+patch = 38
+org status = -1
+nid = 2265(2096)
+conflict = 87
+patch = 69
+org status = -5
+nid = 2368(2181)
+conflict = 16
+patch = 21
+org status = -5
+nid = 2369(2195)
+conflict = 101
+patch = 66
+org status = -5
+nid = 2467(2266)
+conflict = 87
+patch = 61
+org status = -1
+nid = 2527(2316)
+conflict = 27
+patch = 19
+org status = -7
+nid = 2540(2332)
+conflict = 73
+patch = 68
+org status = -5
+nid = 2561(2347)
+conflict = 31
+patch = 65
+org status = -7
+nid = 2562(2348)
+conflict = 33
+patch = 69
+org status = -7
+nid = 2634(2371)
+conflict = 38
+patch = 69
+org status = -7
+nid = 2683(2398)
+conflict = 60
+patch = 54
+org status = -5
+nid = 2244(2697)
+conflict = 62
+patch = 68
+org status = -7
+nSimWords = 0
+    0 : { 2419 2325 1737 }
+    1 : { 1775 1737 2325 }
+    2 : { 1245 2271 1248 }
+    3 : { 2361 1248 2271 }
+    4 : { 316 316 446 }
+    5 : { 1359 1341 574 }
+    6 : { 2283 2193 2194 }
+    7 : { 2258 2169 2188 }
+    8 : { 370 370 373 }
+    9 : { 1146 1144 446 }
+   10 : { 942 942 2162 }
+   11 : { 529 530 2075 }
+   12 : { 2190 2099 1980 }
+   13 : { 2182 1979 2091 }
+   14 : { 2179 2079 2088 }
+   15 : { 2172 2106 2102 }
+   16 : { 2171 2080 2101 }
+   17 : { 2070 2091 1979 }
+   18 : { 526 527 530 }
+   19 : { 1523 1748 1788 }
+   20 : { 1799 1788 1748 }
+   21 : { 1327 1700 1239 }
+   22 : { 1235 1719 1700 }
+   23 : { 1762 1719 1239 }
+   24 : { 445 446 318 }
+   25 : { 321 321 456 }
+   26 : { 1446 1373 1450 }
+   27 : { 427 428 318 }
+   28 : { 1328 1739 1335 }
+   29 : { 1393 1510 1508 }
+   30 : { 1402 1508 1510 }
+   31 : { 318 318 1172 }
+   32 : { 1171 1173 1250 }
+   33 : { 1231 1236 1146 }
+   34 : { 1232 1237 1233 }
+   35 : { 1051 1145 363 }
+   36 : { 1142 1146 1051 }
+   37 : { 953 953 940 }
+   38 : { 1054 1056 983 }
+   39 : { 940 940 1051 }
+   40 : { 746 2673 746 }
+   41 : { 730 2672 730 }

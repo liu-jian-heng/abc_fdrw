@@ -1,0 +1,191 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 5 -a -F _coef.log -C 1500".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 5
+....cost eval of the patch is 0
+....coef of cost eval = 0.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 1
+....synthesis after rewriting = 0
+size of circuit is 3128, TFI is 10
+size of circuit is 2065, TFI is 22
+size of circuit is 2684, TFI is 22
+size of circuit is 3479, TFI is 24
+size of circuit is 637, TFI is 20
+size of circuit is 3164, TFI is 12
+size of circuit is 3139, TFI is 21
+size of circuit is 3227, TFI is 36
+size of circuit is 2185, TFI is 54
+size of circuit is 1902, TFI is 9
+size of circuit is 1346, TFI is 10
+size of circuit is 403, TFI is 13
+size of circuit is 679, TFI is 15
+size of circuit is 815, TFI is 16
+size of circuit is 556, TFI is 18
+size of circuit is 1632, TFI is 9
+size of circuit is 1626, TFI is 11
+size of circuit is 2278, TFI is 9
+size of circuit is 280, TFI is 10
+size of circuit is 623, TFI is 13
+size of circuit is 937, TFI is 14
+size of circuit is 1122, TFI is 25
+size of circuit is 583, TFI is 12
+size of circuit is 898, TFI is 38
+size of circuit is 4023, TFI is 13
+size of circuit is 4174, TFI is 14
+size of circuit is 3041, TFI is 17
+size of circuit is 3042, TFI is 23
+size of circuit is 3453, TFI is 24
+size of circuit is 3015, TFI is 10
+size of circuit is 2661, TFI is 15
+size of circuit is 3546, TFI is 22
+size of circuit is 3289, TFI is 13
+size of circuit is 3563, TFI is 22
+size of circuit is 3151, TFI is 23
+size of circuit is 2573, TFI is 9
+size of circuit is 2247, TFI is 9
+size of circuit is 3293, TFI is 11
+size of circuit is 4036, TFI is 19
+size of circuit is 2700, TFI is 6
+size of circuit is 2336, TFI is 13
+size of circuit is 3170, TFI is 18
+size of circuit is 162, TFI is 9
+size of circuit is 197, TFI is 16
+size of circuit is 52, TFI is 7
+size of circuit is 54, TFI is 6
+size of circuit is 100, TFI is 7
+size of circuit is 92, TFI is 9
+size of circuit is 24, TFI is 10
+size of circuit is 14, TFI is 6
+size of circuit is 146, TFI is 7
+size of circuit is 328, TFI is 8
+size of circuit is 244, TFI is 9
+size of circuit is 125, TFI is 10
+size of circuit is 5, TFI is 6
+size of circuit is 37, TFI is 7
+size of circuit is 506, TFI is 8
+size of circuit is 97, TFI is 9
+size of circuit is 980, TFI is 7
+size of circuit is 636, TFI is 8
+size of circuit is 431, TFI is 15
+size of circuit is 653, TFI is 20
+size of circuit is 104, TFI is 22
+size of circuit is 758, TFI is 6
+size of circuit is 158, TFI is 7
+size of circuit is 49, TFI is 8
+size of circuit is 125, TFI is 9
+size of circuit is 227, TFI is 13
+size of circuit is 129, TFI is 14
+size of circuit is 416, TFI is 15
+size of circuit is 71, TFI is 16
+size of circuit is 2784, TFI is 12
+size of circuit is 3465, TFI is 17
+size of circuit is 358, TFI is 13
+size of circuit is 2271, TFI is 6
+size of circuit is 1997, TFI is 7
+size of circuit is 1413, TFI is 11
+size of circuit is 2416, TFI is 13
+size of circuit is 2356, TFI is 14
+size of circuit is 2822, TFI is 23
+size of circuit is 2398, TFI is 18
+size of circuit is 3757, TFI is 15
+size of circuit is 3263, TFI is 15
+size of circuit is 2254, TFI is 17
+size of circuit is 3021, TFI is 23
+size of circuit is 1439, TFI is 8
+size of circuit is 2546, TFI is 9
+size of circuit is 3266, TFI is 10
+size of circuit is 2806, TFI is 13
+size of circuit is 2765, TFI is 13
+size of circuit is 3559, TFI is 16
+size of circuit is 2156, TFI is 10
+size of circuit is 4033, TFI is 10
+size of circuit is 3120, TFI is 12
+size of circuit is 3401, TFI is 21
+size of circuit is 3208, TFI is 21
+size of circuit is 1818, TFI is 12
+size of circuit is 2865, TFI is 20
+size of circuit is 2797, TFI is 20
+size of circuit is 3639, TFI is 30
+size of circuit is 3157, TFI is 11
+size of circuit is 3171, TFI is 21
+size of circuit is 2876, TFI is 14
+size of circuit is 3816, TFI is 16
+size of circuit is 3288, TFI is 21
+size of circuit is 4235, TFI is 38
+size of circuit is 893, TFI is 12
+size of circuit is 1780, TFI is 14
+size of circuit is 2875, TFI is 22
+size of circuit is 2895, TFI is 23
+size of circuit is 1478, TFI is 10
+size of circuit is 1246, TFI is 11
+size of circuit is 1460, TFI is 16
+size of circuit is 2650, TFI is 17
+size of circuit is 1193, TFI is 6
+size of circuit is 2114, TFI is 7
+size of circuit is 1049, TFI is 8
+size of circuit is 1784, TFI is 9
+size of circuit is 1517, TFI is 9
+size of circuit is 731, TFI is 8
+size of circuit is 744, TFI is 9
+size of circuit is 1354, TFI is 10
+size of circuit is 2111, TFI is 19
+size of circuit is 2916, TFI is 9
+size of circuit is 2404, TFI is 15
+size of circuit is 2917, TFI is 11
+size of circuit is 1872, TFI is 17
+size of circuit is 719, TFI is 25
+size of circuit is 1309, TFI is 8
+size of circuit is 1839, TFI is 33
+size of circuit is 1827, TFI is 11
+size of circuit is 749, TFI is 18
+size of circuit is 578, TFI is 28
+size of circuit is 671, TFI is 8
+size of circuit is 991, TFI is 15
+size of circuit is 1229, TFI is 23
+size of circuit is 1251, TFI is 35
+size of circuit is 1477, TFI is 40
+size of circuit is 400, TFI is 14
+size of circuit is 1186, TFI is 23
+size of circuit is 234, TFI is 31
+size of circuit is 7, TFI is 18
+size of circuit is 3314, TFI is 23
+size of circuit is 2420, TFI is 8
+size of circuit is 1992, TFI is 6
+size of circuit is 2273, TFI is 15
+size of circuit is 1590, TFI is 23
+size of circuit is 2427, TFI is 9
+size of circuit is 2765, TFI is 14
+size of circuit is 1971, TFI is 18
+size of circuit is 2254, TFI is 19
+size of circuit is 2403, TFI is 18
+size of circuit is 1864, TFI is 19
+size of circuit is 2568, TFI is 20
+size of circuit is 2563, TFI is 32
+size of circuit is 1998, TFI is 7
+size of circuit is 1652, TFI is 12
+size of circuit is 2662, TFI is 14
+size of circuit is 2778, TFI is 27
+size of circuit is 2405, TFI is 11
+size of circuit is 2448, TFI is 19
+size of circuit is 3436, TFI is 20
+size of circuit is 3141, TFI is 32
+size of circuit is 1683, TFI is 18
+size of circuit is 1702, TFI is 21
+size of circuit is 2064, TFI is 23
+size of circuit is 2334, TFI is 12
+size of circuit is 1319, TFI is 14
+size of circuit is 1771, TFI is 16
+size of circuit is 2078, TFI is 40
+nSimWords = 0

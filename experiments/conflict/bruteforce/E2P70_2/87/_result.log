@@ -1,0 +1,70 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 231
+start replace node finding
+maxMffc = 47, max reduce = 19
+dump 1273, new mffc = 46
+nid = 1473, patch size = 17
+nid = 568, patch size = 17
+nid = 1649, patch size = 23
+nid = 1552, patch size = 19
+nid = 1563, patch size = 45
+nid = 1558, patch size = 49
+nid = 2361, patch size = 33
+start replacement
+trim: 3032->2909
+Trim time:  9.126448 sec
+start conflict test
+start final
+newly find #UNSAT: 8
+nid = 2680(2670)
+conflict = 0
+patch = 2
+org status = -7
+nid = 2681(2671)
+conflict = 0
+patch = 3
+org status = -7
+nid = 2748(2757)
+conflict = 76
+patch = 30
+org status = -1
+nid = 2796(2816)
+conflict = 76
+patch = 70
+org status = -5
+nid = 2868(2883)
+conflict = 39
+patch = 33
+org status = -5
+nid = 2869(2884)
+conflict = 39
+patch = 38
+org status = -5
+nid = 2870(2886)
+conflict = 35
+patch = 53
+org status = -5
+nid = 3085(3050)
+conflict = 48
+patch = 23
+org status = -7
+nSimWords = 0

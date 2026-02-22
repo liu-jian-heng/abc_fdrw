@@ -1,0 +1,3 @@
+ABC command line: "&read resub_All.aig; &fdrw -G 5 -v -w -C 1500".
+
+Error: Cannot open input file "resub_All.aig". 

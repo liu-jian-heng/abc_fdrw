@@ -1,0 +1,98 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 203
+there are 823 initial node to go
+there are 601 node still UNSAT in ckt 1
+start replace node finding
+maxMffc = 39, max reduce = 22
+nid = 1686, patch size = 7
+nid = 1685, patch size = 9
+nid = 1684, patch size = 15
+nid = 2399, patch size = 21
+nid = 1594, patch size = 34
+start replacement
+trim: 2962->2925
+Trim time:  5.284232 sec
+nSimWords = 0
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 7
+nid = 2671(447)
+conflict = 56
+patch = 64
+node is in initial circuit
+org status = -7
+nid = 2672(448)
+conflict = 80
+patch = 66
+node is in initial circuit
+org status = -7
+nid = 2673(449)
+conflict = 48
+patch = 48
+node is in initial circuit
+org status = -7
+nid = 2774(1531)
+conflict = 20
+patch = 13
+node is in initial circuit
+org status = -7
+nid = 2775(1532)
+conflict = 15
+patch = 12
+node is in initial circuit
+org status = -7
+nid = 2914(1606)
+conflict = 33
+patch = 36
+node is in initial circuit
+org status = -7
+nid = 2920(1613)
+conflict = 52
+patch = 56
+node is in initial circuit
+org status = -7
+nSimWords = 0
+    0 : { 322 738 1091 }
+    1 : { 642 2588 1705 }
+    2 : { 598 1597 1674 }
+    3 : { 490 1514 1673 }
+    4 : { 594 1674 1597 }
+    5 : { 503 1528 1569 }
+    6 : { 492 1516 1560 }
+    7 : { 500 1525 1566 }
+    8 : { 497 1522 1562 }
+    9 : { 493 332 1518 }
+   10 : { 476 1569 1528 }
+   11 : { 475 1568 1527 }
+   12 : { 465 1558 1514 }
+   13 : { 429 1565 1517 }
+   14 : { 418 731 781 }
+   15 : { 415 781 734 }
+   16 : { 414 726 729 }
+   17 : { 389 774 516 }
+   18 : { 391 776 322 }
+   19 : { 402 732 516 }
+   20 : { 394 322 714 }
+   21 : { 395 515 322 }
+   22 : { 396 340 715 }
+   23 : { 374 765 723 }

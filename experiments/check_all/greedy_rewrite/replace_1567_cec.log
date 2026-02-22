@@ -1,0 +1,231 @@
+ABC command line: "&read replace_1567.aig; &cec -m -v".
+
+label 1
+label 3
+Assuming the current network is a single-output miter.
+label 6
+Start EquivFixOutputPairs =     0.00 sec
+End EquivFixOutputPairs =     0.00 sec
+Start ManSatSweeping =     0.00 sec
+Simulating 15 words for 15 rounds. SAT solving with 1000 conflicts.
+nSimWords = 0
+cst =    2555  cls =      0  lit =    2555  unused =     256  proof =     0
+cst =       6  cls =     18  lit =      28  unused =    2765  proof =     0
+cst =       2  cls =      8  lit =      11  unused =    2792  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+cst =       0  cls =      1  lit =       1  unused =    2809  proof =     0
+  1 : P =      0. D =      0. F =     1. M =     894. And =    2555. Time =     0.04 sec
+Increasing conflict limit to 10000.
+The result is written into file "cec_giaSweep.aig".
+Switching into reduced mode.
+  2 : P =      0. D =      0. F =     1. M =     894. And =    2555. Time =     0.58 sec
+Increasing conflict limit to 100000.
+The result is written into file "cec_giaSweep.aig".
+Switching into normal mode.
+  3 : P =      0. D =      0. F =     1. M =       0. And =    2555. Time =     8.17 sec
+Performed 3 SAT calls: P = 0  D = 0  F = 3
+NBeg = 2555. NEnd = 2555. (Gain =   0.00 %).  RBeg = 0. REnd = 0. (Gain =   0.00 %).
+Sim  =     0.00 sec (  0.00 %)
+Sat  =     8.79 sec (  0.00 %)
+Pat  =     0.00 sec (  0.00 %)
+Time =     8.80 sec
+End ManSatSweeping =     8.80 sec
+Networks are UNDECIDED after the new CEC engine.  Time =     8.80 sec
+Calling the old CEC engine.
+Start Old Verify =     8.80 sec
+Original miter:   Nodes =   2558.
+label 27
+Initial SAT:      Nodes =   2558.  Time =     0.03 sec
+Rewriting:        Nodes =   2558.  Time =     0.04 sec
+There are 0 XORs
+Balance-X:        Nodes =   2840.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=1):   Nodes =   2840.  Time =     0.00 sec
+Rewriting:        Nodes =   2582.  Time =     0.02 sec
+There are 0 XORs
+Balance-X:        Nodes =   2837.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=2):   Nodes =   2837.  Time =     0.00 sec
+Rewriting:        Nodes =   2583.  Time =     0.02 sec
+There are 0 XORs
+Balance-X:        Nodes =   2837.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=3):   Nodes =   2837.  Time =     0.01 sec
+Rewriting:        Nodes =   2583.  Time =     0.02 sec
+There are 0 XORs
+Balance-X:        Nodes =   2837.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=4):   Nodes =   2837.  Time =     0.07 sec
+Rewriting:        Nodes =   2583.  Time =     0.02 sec
+There are 0 XORs
+Balance-X:        Nodes =   2837.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=5):   Nodes =   2837.  Time =     1.32 sec
+Rewriting:        Nodes =   2583.  Time =     0.01 sec
+There are 0 XORs
+Balance-X:        Nodes =   2837.  Time =     0.00 sec
+Starting Fra_SmlSimulate......classes =     3.   Lits =      6.
+Refined classes  after Pattern 0=     3.   Changes =    0.   Lits =      6.
+Refined classes after pattern 1 =     3.   Changes =    0.   Lits =      6.
+Refined classes  =     1.   Changes =    2.   Lits =      4.
+Refined classes  =     1.   Changes =    0.   Lits =      4.
+start Fra_FraigSweep...
+Fraiging (i=6):   Nodes =   2837.  Time =     6.73 sec
+Rewriting:        Nodes =   2583.  Time =     0.01 sec
+label 27
+CNF stats: Vars =   1848. Clauses =    5820. Literals =    15755. Time =     0.00 sec
+Running SAT solver with parameters 10000 and 1000 and 50.
+reduceDB: Keeping    5025 out of   10000 clauses (50.25 %)  Time =     0.05 sec
+reduceDB: Keeping    5511 out of   11000 clauses (50.10 %)  Time =     0.05 sec
+reduceDB: Keeping    6024 out of   12002 clauses (50.19 %)  Time =     0.06 sec
+reduceDB: Keeping    6535 out of   13000 clauses (50.27 %)  Time =     0.06 sec
+reduceDB: Keeping    7024 out of   14001 clauses (50.17 %)  Time =     0.06 sec
+reduceDB: Keeping    7653 out of   15000 clauses (51.02 %)  Time =     0.06 sec
+reduceDB: Keeping    8216 out of   16000 clauses (51.35 %)  Time =     0.06 sec
+reduceDB: Keeping    8732 out of   17001 clauses (51.36 %)  Time =     0.06 sec
+reduceDB: Keeping    9628 out of   18000 clauses (53.49 %)  Time =     0.06 sec
+reduceDB: Keeping   10022 out of   19000 clauses (52.75 %)  Time =     0.07 sec
+reduceDB: Keeping   10912 out of   20000 clauses (54.56 %)  Time =     0.07 sec
+reduceDB: Keeping   10100 out of   21001 clauses (48.09 %)  Time =     0.07 sec
+reduceDB: Keeping   11211 out of   22000 clauses (50.96 %)  Time =     0.07 sec
+reduceDB: Keeping   11935 out of   23000 clauses (51.89 %)  Time =     0.08 sec
+reduceDB: Keeping   12446 out of   24000 clauses (51.86 %)  Time =     0.08 sec
+reduceDB: Keeping   13140 out of   25001 clauses (52.56 %)  Time =     0.08 sec
+reduceDB: Keeping   13813 out of   26000 clauses (53.13 %)  Time =     0.08 sec
+reduceDB: Keeping   14234 out of   27001 clauses (52.72 %)  Time =     0.09 sec
+reduceDB: Keeping   15103 out of   28000 clauses (53.94 %)  Time =     0.09 sec
+reduceDB: Keeping   15843 out of   29000 clauses (54.63 %)  Time =     0.10 sec
+reduceDB: Keeping   14618 out of   30000 clauses (48.73 %)  Time =     0.10 sec
+reduceDB: Keeping   16340 out of   31001 clauses (52.71 %)  Time =     0.11 sec
+reduceDB: Keeping   16977 out of   32000 clauses (53.05 %)  Time =     0.11 sec
+reduceDB: Keeping   17151 out of   33001 clauses (51.97 %)  Time =     0.12 sec
+reduceDB: Keeping   17797 out of   34002 clauses (52.34 %)  Time =     0.12 sec
+reduceDB: Keeping   18176 out of   35000 clauses (51.93 %)  Time =     0.12 sec
+reduceDB: Keeping   19089 out of   36002 clauses (53.02 %)  Time =     0.13 sec
+reduceDB: Keeping   19785 out of   37003 clauses (53.47 %)  Time =     0.13 sec
+reduceDB: Keeping   20108 out of   38001 clauses (52.91 %)  Time =     0.13 sec
+reduceDB: Keeping   20518 out of   39002 clauses (52.61 %)  Time =     0.14 sec
+reduceDB: Keeping   21121 out of   40000 clauses (52.80 %)  Time =     0.14 sec
+reduceDB: Keeping   21506 out of   41001 clauses (52.45 %)  Time =     0.14 sec
+reduceDB: Keeping   22409 out of   42002 clauses (53.35 %)  Time =     0.15 sec
+reduceDB: Keeping   22990 out of   43001 clauses (53.46 %)  Time =     0.15 sec
+reduceDB: Keeping   23532 out of   44000 clauses (53.48 %)  Time =     0.16 sec
+reduceDB: Keeping   24365 out of   45000 clauses (54.14 %)  Time =     0.17 sec
+reduceDB: Keeping   24850 out of   46002 clauses (54.02 %)  Time =     0.17 sec
+reduceDB: Keeping   25208 out of   47001 clauses (53.63 %)  Time =     0.18 sec
+reduceDB: Keeping   25795 out of   48000 clauses (53.74 %)  Time =     0.18 sec
+reduceDB: Keeping   25915 out of   49000 clauses (52.89 %)  Time =     0.18 sec
+reduceDB: Keeping   26693 out of   50000 clauses (53.39 %)  Time =     0.19 sec
+reduceDB: Keeping   26994 out of   51000 clauses (52.93 %)  Time =     0.19 sec
+reduceDB: Keeping   27756 out of   52000 clauses (53.38 %)  Time =     0.20 sec
+reduceDB: Keeping   27661 out of   53004 clauses (52.19 %)  Time =     0.21 sec
+reduceDB: Keeping   28472 out of   54000 clauses (52.73 %)  Time =     0.21 sec
+reduceDB: Keeping   29698 out of   55000 clauses (54.00 %)  Time =     0.22 sec
+reduceDB: Keeping   29755 out of   56000 clauses (53.13 %)  Time =     0.22 sec
+reduceDB: Keeping   30426 out of   57003 clauses (53.38 %)  Time =     0.23 sec
+reduceDB: Keeping   30563 out of   58000 clauses (52.69 %)  Time =     0.24 sec
+reduceDB: Keeping   30971 out of   59001 clauses (52.49 %)  Time =     0.25 sec
+reduceDB: Keeping   31134 out of   60001 clauses (51.89 %)  Time =     0.25 sec
+reduceDB: Keeping   31361 out of   61000 clauses (51.41 %)  Time =     0.26 sec
+reduceDB: Keeping   32256 out of   62000 clauses (52.03 %)  Time =     0.27 sec
+reduceDB: Keeping   33384 out of   63001 clauses (52.99 %)  Time =     0.28 sec
+reduceDB: Keeping   34371 out of   64000 clauses (53.70 %)  Time =     0.29 sec
+reduceDB: Keeping   35570 out of   65001 clauses (54.72 %)  Time =     0.29 sec
+reduceDB: Keeping   36139 out of   66002 clauses (54.75 %)  Time =     0.30 sec
+reduceDB: Keeping   36742 out of   67001 clauses (54.84 %)  Time =     0.31 sec
+reduceDB: Keeping   28279 out of   68001 clauses (41.59 %)  Time =     0.32 sec
+reduceDB: Keeping   33385 out of   69003 clauses (48.38 %)  Time =     0.33 sec
+reduceDB: Keeping   35098 out of   70003 clauses (50.14 %)  Time =     0.34 sec
+reduceDB: Keeping   35429 out of   71001 clauses (49.90 %)  Time =     0.35 sec
+reduceDB: Keeping   36074 out of   72001 clauses (50.10 %)  Time =     0.36 sec
+reduceDB: Keeping   36397 out of   73001 clauses (49.86 %)  Time =     0.36 sec
+reduceDB: Keeping   37075 out of   74000 clauses (50.10 %)  Time =     0.37 sec
+reduceDB: Keeping   37620 out of   75001 clauses (50.16 %)  Time =     0.38 sec
+reduceDB: Keeping   37955 out of   76000 clauses (49.94 %)  Time =     0.39 sec
+reduceDB: Keeping   38364 out of   77001 clauses (49.82 %)  Time =     0.40 sec
+reduceDB: Keeping   39091 out of   78001 clauses (50.12 %)  Time =     0.42 sec
+reduceDB: Keeping   39609 out of   79002 clauses (50.14 %)  Time =     0.43 sec
+reduceDB: Keeping   40074 out of   80000 clauses (50.09 %)  Time =     0.44 sec
+reduceDB: Keeping   40613 out of   81001 clauses (50.14 %)  Time =     0.45 sec
+reduceDB: Keeping   41103 out of   82002 clauses (50.12 %)  Time =     0.47 sec
+reduceDB: Keeping   41573 out of   83000 clauses (50.09 %)  Time =     0.48 sec
+reduceDB: Keeping   42140 out of   84000 clauses (50.17 %)  Time =     0.51 sec
+reduceDB: Keeping   40386 out of   85001 clauses (47.51 %)  Time =     0.52 sec
+reduceDB: Keeping   42946 out of   86000 clauses (49.94 %)  Time =     0.53 sec
+reduceDB: Keeping   43622 out of   87001 clauses (50.14 %)  Time =     0.54 sec
+reduceDB: Keeping   42816 out of   88001 clauses (48.65 %)  Time =     0.55 sec
+reduceDB: Keeping   44430 out of   89000 clauses (49.92 %)  Time =     0.57 sec
+reduceDB: Keeping   45078 out of   90001 clauses (50.09 %)  Time =     0.58 sec
+reduceDB: Keeping   45372 out of   91000 clauses (49.86 %)  Time =     0.59 sec
+reduceDB: Keeping   46080 out of   92001 clauses (50.09 %)  Time =     0.60 sec
+reduceDB: Keeping   46967 out of   93002 clauses (50.50 %)  Time =     0.61 sec
+reduceDB: Keeping   49436 out of   94000 clauses (52.59 %)  Time =     0.62 sec
+reduceDB: Keeping   51494 out of   95002 clauses (54.20 %)  Time =     0.64 sec
+reduceDB: Keeping   41477 out of   96000 clauses (43.21 %)  Time =     0.65 sec
+reduceDB: Keeping   45527 out of   97001 clauses (46.93 %)  Time =     0.67 sec
+reduceDB: Keeping   48982 out of   98000 clauses (49.98 %)  Time =     0.68 sec
+reduceDB: Keeping   49745 out of   99000 clauses (50.25 %)  Time =     0.69 sec
+reduceDB: Keeping   50092 out of  100001 clauses (50.09 %)  Time =     0.70 sec
+reduceDB: Keeping   50604 out of  101001 clauses (50.10 %)  Time =     0.72 sec
+reduceDB: Keeping   51113 out of  102000 clauses (50.11 %)  Time =     0.75 sec
+reduceDB: Keeping   51619 out of  103000 clauses (50.12 %)  Time =     0.76 sec
+reduceDB: Keeping   52166 out of  104000 clauses (50.16 %)  Time =     0.77 sec
+reduceDB: Keeping   52647 out of  105000 clauses (50.14 %)  Time =     0.79 sec
+reduceDB: Keeping   53117 out of  106001 clauses (50.11 %)  Time =     0.80 sec
+reduceDB: Keeping   53164 out of  107001 clauses (49.69 %)  Time =     0.83 sec
+reduceDB: Keeping   53985 out of  108000 clauses (49.99 %)  Time =     0.87 sec
+reduceDB: Keeping   54653 out of  109001 clauses (50.14 %)  Time =     0.90 sec
+reduceDB: Keeping   54785 out of  110001 clauses (49.80 %)  Time =     0.92 sec
+reduceDB: Keeping   55685 out of  111004 clauses (50.16 %)  Time =     0.94 sec
+reduceDB: Keeping   55822 out of  112000 clauses (49.84 %)  Time =     0.95 sec
+reduceDB: Keeping   56613 out of  113003 clauses (50.10 %)  Time =     0.98 sec
+reduceDB: Keeping   57017 out of  114000 clauses (50.01 %)  Time =     1.00 sec
+reduceDB: Keeping   57676 out of  115003 clauses (50.15 %)  Time =     1.01 sec
+reduceDB: Keeping   58144 out of  116000 clauses (50.12 %)  Time =     1.03 sec
+reduceDB: Keeping   58884 out of  117000 clauses (50.33 %)  Time =     1.04 sec
+reduceDB: Keeping   59099 out of  118000 clauses (50.08 %)  Time =     1.06 sec
+reduceDB: Keeping   61076 out of  119001 clauses (51.32 %)  Time =     1.08 sec
+reduceDB: Keeping   62098 out of  120001 clauses (51.75 %)  Time =     1.11 sec
+reduceDB: Keeping   61698 out of  121000 clauses (50.99 %)  Time =     1.14 sec
+reduceDB: Keeping   63081 out of  122001 clauses (51.71 %)  Time =     1.18 sec
+reduceDB: Keeping   63565 out of  123003 clauses (51.68 %)  Time =     1.22 sec
+reduceDB: Keeping   65518 out of  124000 clauses (52.84 %)  Time =     1.25 sec
+reduceDB: Keeping   67035 out of  125000 clauses (53.63 %)  Time =     1.28 sec
+reduceDB: Keeping   52329 out of  126001 clauses (41.53 %)  Time =     1.32 sec
+starts        :             7098
+conflicts     :          3986231
+decisions     :          4590297
+propagations  :       1433660938
+Final SAT:        Nodes =   2583.  Time =   862.69 sec
+Networks are equivalent.  Time =   879.79 sec
+End Old Verify =   879.79 sec

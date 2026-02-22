@@ -314,7 +314,7 @@ extern void                 Cec_ManFdTraverseUnknown( Cec_ManFd_t* pMan, int fCo
 extern Vec_Int_t*           Cec_ManFdTraverseUnknownFrt( Cec_ManFd_t* pMan, int fColor, int nRange, int fType, Vec_Flt_t* vCoef );
 extern void                 Cec_ManFdTraverseUnknownLevelTest( Cec_ManFd_t* pMan, int lv_min, int lv_max, int lv_lim, int fColor );
 extern void                 Cec_ManFdShrink( Cec_ManFd_t* pMan, int nid );
-extern void                 Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid );
+extern void                 Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid, int fClean );
 extern void                 Cec_ManFdShrinkLevelTest( Cec_ManFd_t* pMan, int nid, int lv_lim );
 extern void                 Cec_ManFdCleanSupport( Cec_ManFd_t* pMan, int nid );
 extern void                 Cec_ManFdIncreIter( Cec_ManFd_t* pMan );

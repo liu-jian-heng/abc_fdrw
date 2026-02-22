@@ -584,13 +584,15 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     Cec_ManFdStop( pMan, 2 );
                     return 0;
                 } else if (nodeId == -6) {
+                    // find the two nodes that have largest MFFC (top down devide-and-conquer), might have some bug
                     vIntBuff = Vec_IntDup( vRwNd );
                     Vec_IntRemove( vIntBuff, -6 );
                     pOut = Cec_ManSyn( p, vIntBuff );
                     Gia_AigerWrite( pOut, "syn_fin.aig", 0, 0, 0 );
                     Gia_SelfDefShow( pOut, "syn_fin.dot", NULL, NULL, NULL );
                     return pOut;
-                } else if (nodeId == -7) {
+                } else if (nodeId == -13) {
+                    // conflict based, fast check
                     // -7, coef_Patch, coef_Frt, partial_method
                     flag = 1; // print detail mapping
                     rwCkt = Vec_IntEntry(vRwNd, 1);
@@ -609,7 +611,8 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         nid = Gia_ObjId( pMan->pGia, pObj );
                         buf = Gia_ObjColors( pMan->pGia, nid );
                         if (buf == 1 || buf == 2) {
-                            if (Cec_ManFdToSolve( pMan, nid )) Cec_ManFdShrinkSimple( pMan, nid );
+                            if (Cec_ManFdToSolve( pMan, nid )) Cec_ManFdShrinkSimple( pMan, nid, 0 );
+                            
                         }
                     }
                     vUnsat = Cec_ManFdUnsatId( pMan, 0, 1 );
@@ -762,6 +765,7 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     return 0;
 
                 } else if (nodeId == -8) {
+                    // conflict base, check the exact conflict amount change
                     Cec_ManFdCleanUnknown( pMan, 3 ); // Try to get conflicts, not just by printing. Maybe idata? pName?
                     vIntBuff1 = Cec_ManFdUnsatId( pMan, 0, 0 );
                     vIntBuff3 = Cec_ManFdSolved( pMan, 0, 0 );
@@ -875,15 +879,9 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
 
                             }
                         }
-                        // cost_buf1 /= (1.0 * cnt1);
-                        // cost_buf2 /= (1.0 * cnt2);
                         printf("> > > replacing %d new solve %d(%d), less solve %d(%d), conflict change ratio (square) : -%f, %f\n", nid, buf1, buf5, buf2, buf6, cost_buf1, cost_buf2);
-                        // cost_buf1 *= (1.0 * cnt1);
-                        // cost_buf2 *= (1.0 * cnt2);
                         cost_buf1 += 1.0 * buf1;
                         cost_buf2 += 1.0 * buf2;
-                        // cost_buf1 /= (1.0 * (cnt1 + buf1));
-                        // cost_buf2 /= (1.0 * (cnt2 + buf2));
 
                         if (buf1 > buf2) {
                             Vec_IntPush( vCnt1, nid );
@@ -895,43 +893,6 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         } else {
                             Vec_IntPush( vCnt4, nid );
                         }
-                        // Cec_ManFdMapId( pMan, vCnt1, 1 );
-                        // Cec_ManFdMapId( pMan, vCnt2, 1 );
-                        // Gia_SelfDefShow( pMan->pAbs, "pAbs_comp.dot", vCnt1, vCnt2, 0);
-                        
-                        /*
-                            vIntBuff3 = Cec_ManFdUnsatId( pMan_buf, 0, 0 );
-                            vCnt = Vec_IntDup( vIntBuff3 );
-                            Cec_ManFdMapId( pMan_buf, vCnt, 1 );
-                            Gia_SelfDefShow( pMan_buf->pAbs, "pAbs_rep.dot", vCnt, NULL, 0);
-                            Vec_IntPrint( vIntBuff3 );
-                            Vec_IntPrint( vIntBuff2 );
-                            Vec_IntMap( vIntBuff, vIntBuff3 );
-                            Vec_IntRemoveAll( vIntBuff3, -1, 0 ); // problem: replaced patch is also recorded
-                            vIntBuff = Vec_IntInvert( vIntBuff4 = vIntBuff, -1 );
-                            Vec_IntFree( vIntBuff4 );
-                            Vec_IntPrintMap( vIntBuff );
-                            Vec_IntMap( vIntBuff, vIntBuff3 );
-                            vIntBuff4 = Vec_IntDup( vIntBuff2 );
-                            Vec_IntMap( vIntBuff, vIntBuff4 );
-                            Vec_IntRemoveAll( vIntBuff4, -1, 0 );
-                            Vec_IntSort( vIntBuff3, 0 );
-                            Vec_IntSort( vIntBuff4, 0 );
-                            Vec_IntTwoRemove1( vIntBuff4, vIntBuff3 );
-                            // vIntBuff2 is not on pMan_buf, wrong values
-                            Vec_IntTwoRemove1( vIntBuff3, vIntBuff2 );
-                            printf("nid %d have gain %d nodes\n", nid, Vec_IntSize(vIntBuff3) - Vec_IntSize(vIntBuff4));
-                            printf("new computed nodes:");
-                            Vec_IntPrint( vIntBuff3 );
-                            printf("not computable nodes:");
-                            Vec_IntPrint( vIntBuff4 );
-                            vCnt1 = Vec_IntDup( vIntBuff3 );
-                            vCnt2 = Vec_IntDup( vIntBuff4 );
-                            // both have some nodes not in pAbs...
-                            Cec_ManFdMapId( pMan_buf, vCnt1, 1 );
-                            Cec_ManFdMapId( pMan_buf, vCnt2, 1 );
-                            Gia_SelfDefShow( pMan_buf->pAbs, "pAbs_comp.dot", vCnt1, vCnt2, 0);
-                        */
                         
                         Vec_IntFree( vIntBuff );
                         // Vec_IntFree( vIntBuff3 );
@@ -945,6 +906,7 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     Cec_ManFdStop( pMan, 2 );
                     return 0;
                 } else if (nodeId == -9) {
+                    // surrounding check
                     vMerge = Vec_IntAlloc(100);
                     vCnt1 = Vec_IntAlloc(100);
                     vCnt2 = Vec_IntAlloc(100);
@@ -1041,75 +1003,6 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                             buf = Gia_ManAndNum(pItp);
                             printf("syn ratio without patch: %f\n", (float)buf / (float)buf2);
                             printf("amount of reduced nodes: %d\n", buf2 - buf);
-                            // ---- old (replace partial)
-                            // if (Vec_IntEntry( vRwNd, 1 ) == 1) {
-                            //     vIntBuff1 = Vec_IntDup( pItp->vCos );
-                            //     Cec_ManGiaMapId( pItp, vIntBuff1 );
-                            //     Gia_ManStop( pItp );
-                            //     printf("replace the patch\n");
-                            //     pItp = Cec_ManSurrounding( pTemp, vIntBuff1, 3, 1 );
-                            //     if (Gia_ManCoNum(pItp) > 31) {
-                            //         printf("too many co\n");
-                            //         Gia_ManStop( pItp );
-                            //         Gia_ManStop( pTemp );
-                            //         Vec_IntFree( vIntBuff1 );
-                            //         continue;
-                            //     }
-                            //     Vec_IntFree( vIntBuff1 );
-                            //     vIntBuff1 = Vec_IntDup( pItp->vCos );
-                            //     Cec_ManGiaMapId( pItp, vIntBuff1 );
-                            //     vIntBuff2 = Vec_IntDup( pItp->vCis );
-                            //     Cec_ManGiaMapId( pItp, vIntBuff2 );
-                            //     printf("replace nid = ");
-                            //     Vec_IntPrint(vIntBuff1);
-                            //     printf("Support");
-                            //     Vec_IntPrint(vIntBuff2);
-                            //     Gia_ManFillValue( pItp );
-                            //     buf = ~0;
-                            //     Gia_ManForEachCo( pItp, pObjbuf, j ) {
-                            //         Cec_ManSubcircuit( pItp, pObjbuf, 0, 0, 1 << j, 0 );
-                            //         buf ^= (1 << j);
-                            //     }
-                            //     vIntBuff3 = Vec_IntAlloc(100);
-                            //     Gia_ManForEachObj( pItp, pObjbuf, j ) {
-                            //         if (Gia_ObjValue(pObjbuf) == buf) Vec_IntPush( vIntBuff3, Gia_ObjId( pItp, pObjbuf ) );
-                            //     }
-                            //     Gia_SelfDefShow( pItp, "fd_surrounding.dot", vIntBuff3, 0, NULL );
-                            //     Gia_SelfDefShow( pTemp, "fd_replace.dot", vIntBuff1, vIntBuff2, NULL );
-                            //     Gia_AigerWrite( pTemp, "fd_replace.aig", 0, 0, 0 );
-                            //     printf("start syn surrounding\n");
-                            //     pItp = Cec_ManSimpSyn( pTemp2 = pItp, 1, 0, -1 );
-                            //     Gia_ManStop( pTemp2 );
-                            //     buf = Gia_ManAndNum(pItp);
-                            //     Gia_ManFillValue( pItp );
-                            //     buf = ~0;
-                            //     Gia_ManForEachCo( pItp, pObjbuf, j ) {
-                            //         Cec_ManSubcircuit( pItp, pObjbuf, 0, 0, 1 << j, 0 );
-                            //         buf ^= (1 << i);
-                            //     }
-                            //     vIntBuff3 = Vec_IntAlloc(100);
-                            //     Gia_ManForEachObj( pItp, pObjbuf, j ) {
-                            //         if (Gia_ObjValue(pObjbuf) == buf) Vec_IntPush( vIntBuff3, Gia_ObjId( pItp, pObjbuf ) );
-                            //     }
-                            //     Gia_SelfDefShow( pItp, "fd_synSurrounding.dot", vIntBuff3, 0, NULL );
-                            //     pTemp = Cec_ManReplacePatch( pTemp2 = pTemp, pItp, vIntBuff1, vIntBuff2, 0, 0);
-                            //     Gia_ManStop( pTemp2 );
-                            //     Vec_IntFree( vIntBuff1 );
-                            //     Vec_IntFree( vIntBuff2 );
-                            //     Vec_IntFree( vIntBuff3 );
-                            //     vIntBuff1 = Vec_IntDup( pItp->vCos );
-                            //     Cec_ManGiaMapId( pItp, vIntBuff1 );
-                            //     vIntBuff2 = Vec_IntDup( pItp->vCis );
-                            //     Cec_ManGiaMapId( pItp, vIntBuff2 );
-                            //     printf("syn: nid = ");
-                            //     Vec_IntPrint(vIntBuff1);
-                            //     printf("Support");
-                            //     Vec_IntPrint(vIntBuff2);
-                            //     Vec_IntRemoveAll( vIntBuff2, -1, 0 );
-                            //     Gia_SelfDefShow( pTemp, "fd_syn.dot", vIntBuff1, vIntBuff2, NULL );
-                            //     Vec_IntFree( vIntBuff1 );
-                            //     Vec_IntFree( vIntBuff2 );
-                            // }
                             
                             vIntBuff1 = Cec_ManCheckMiter( pTemp );
                             Vec_IntPop( vIntBuff1 );
@@ -1160,9 +1053,8 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     Cec_ManFdStop( pMan, 2 );
                     return 0;
                 } else if (nodeId == -12) {
+                    // greedy rewrite
                     rwCkt = Vec_IntEntry(vRwNd, 1);
-                    // Gia_SelfDefShow( pMan->pGia, "pGia.dot", 0, 0, 0 );
-                    // assert( rwCkt == 2 || rwCkt == 1 );
                     if (rwCkt == 1 || rwCkt == 2) {
                         buf1 = Vec_IntEntry(vRwNd, 2);
                         buf2 = Vec_IntEntry(vRwNd, 3);
@@ -1198,7 +1090,6 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                             Vec_IntForEachEntry( pMan->vNodeInit, nid, i ) {
                                 if (Gia_ObjColors( pMan->pGia, nid ) != 1 && Gia_ObjColors( pMan->pGia, nid ) != 2) continue;
                                 Cec_ManFdShrinkLevelTest( pMan, nid, buf1 );
-
                             }
                         }
                         return 0;
@@ -1207,6 +1098,7 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     printf("mapped node info:\n");
                     vIntBuff2 = Vec_IntAlloc(100);
                     vIntBuff3 = Vec_IntAlloc(100);
+                    if (rwCkt == 1 || rwCkt == 2) return 0;
                     
                     printf("start replacement\n");
                     pTemp = Cec_ManFdReplaceMulti( pMan, vIntBuff1 ); // pTemp --> pGia
@@ -1232,8 +1124,6 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     Vec_IntFree( vIntBuff3 );
                     Vec_IntFree( vIntBuff4 );
 
-                    // printf("merges to be done:\n");
-                    // Vec_IntPrint( vMerge );
                     pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vMerge, -1, 1 ); // why circuit size not changed
                     printf("after partsyn\n");
                     Cec_ManPrintMapCopy( pTemp );
@@ -1254,7 +1144,6 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                     Vec_IntRemoveAll( vUnsat, -1, 0 );
                     Vec_IntRemoveAll( vSolved, -1, 0 );
 
-
                     pOut = pTemp;
                     Cec_ManFdUpdate( pMan, pOut );
                     Cec_ManFdMapId( pMan, vIntBuff4, 1 );
@@ -1263,14 +1152,13 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         printf("map (%d) to (%d)\n", buf1, buf2);
                     }
 
-                    
-
                     Cec_ManFdDumpStat( pMan, "partSyn.stat" );
                     Gia_AigerWrite( pMan->pGia, "_partSyn.aig", 0, 0, 0 );
                     Cec_ManFdStop( pMan, 2 );
 
                     return 0;
-                } else if (nodeId == -13) {
+                } else if (nodeId == -7) {
+                    // conflict base, check all and reduce based on MFFC
                     rwCkt = Vec_IntEntry(vRwNd, 1);
                     assert( rwCkt == 2 || rwCkt == 1 );
 
@@ -1279,38 +1167,20 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         nid = Gia_ObjId( pMan->pGia, pObj );
                         buf = Gia_ObjColors( pMan->pGia, nid );
                         if (buf == 1 || buf == 2) {
-                            printf("nid = %d, color = %d\n", nid, buf);
-                            if (Cec_ManFdToSolve( pMan, nid )) Cec_ManFdShrinkSimple( pMan, nid );
-                            printf("label\n");
+                            // printf("nid = %d, color = %d\n", nid, buf);
+                            if (Cec_ManFdToSolve( pMan, nid )) Cec_ManFdShrinkSimple( pMan, nid, 1 );
+                            if (Vec_IntEntry( pMan->vStat, nid ) > 0) {
+                                Cec_ManFdCleanSupport( pMan, nid );
+                            }
+                            // printf("label\n");
                             if (buf != rwCkt && Vec_IntEntry( pMan->vStat, nid ) <= 0) {
                                 Vec_IntPush( vIntBuff2, nid );
                             }
                         }
                     }
-                    printf("done\n");
+                    printf("done checking\n");
                     vUnsat = Cec_ManFdUnsatId( pMan, 0, 1 );
-                    
-                    // vIntBuff = Vec_IntStart( Gia_ManObjNum( pMan->pGia ) );
-                    // Gia_ManForEachObj( pMan->pGia, pObj, j ) {
-                    //     if (Gia_ObjColors( pMan->pGia, Gia_ObjId( pMan->pGia, pObj ) ) == 3) 
-                    //         Vec_IntWriteEntry( vIntBuff, Gia_ObjId( pMan->pGia, pObj ), -1 );
-                    //     else if (Vec_IntEntry( pMan->vStat, Gia_ObjId( pMan->pGia, pObj ) ) <= 0)
-                    //         Vec_IntWriteEntry( vIntBuff, Gia_ObjId( pMan->pGia, pObj ), -1 );
-                    //     else {
-                    //         buf = Vec_FltEntry( pMan->vCostTh, Gia_ObjId( pMan->pGia, pObj ) ); // Gia_ManObjNum( (Gia_Man_t*) Vec_PtrEntry( pMan->vVeryStat, Gia_ObjId( pMan->pGia, pObj ) ) );
-                    //         // Vec_IntForEachEntry( Vec_WecEntry( pMan->vGSupport, Gia_ObjId( pMan->pGia, pObj ) ), nid, k ) {
-                    //         //     if (Gia_ObjColors( pMan->pGia, nid ) == 3) continue;
-                    //         //     buf += Vec_FltEntry( pMan->vCostTh, nid );
-                    //         // }
-                    //         // buf = Abc_MaxInt( 0, buf - 5 );
-                    //         buf = 20000 * Gia_ManObjNum( (Gia_Man_t*) Vec_PtrEntry( pMan->vVeryStat, Gia_ObjId( pMan->pGia, pObj ) ) ) / buf;
-                    //         Vec_IntWriteEntry( vIntBuff, Gia_ObjId( pMan->pGia, pObj ), buf );
-                    //         printf("nid = %d, cost = %d\n", Cec_ManFdMapIdSingle( pMan, Gia_ObjId( pMan->pGia, pObj ), 1), buf );
-                    //     }
-                    // }
-                    // Vec_IntSetCeil( vIntBuff, 100, -1 );
-                    // Vec_IntSetCeil( vIntBuff, 100, 2 );
-                    // Cec_ManFdPlot( pMan, 1, 0, 5, "cost.dot", vIntBuff, 0, 0 );
+                    printf("#Unsat: %d\n", Vec_IntSize( vUnsat ) );
                     
                     buf = rwCkt == 1 ? Gia_ObjId(pMan->pGia, pMan->pObj2) : Gia_ObjId(pMan->pGia, pMan->pObj1);
                     if ( Vec_IntEntry( pMan->vStat, buf ) > 0 || Vec_IntEntry( pMan->vStat, buf ) == CEC_FD_HUGE ) {
@@ -1318,19 +1188,16 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         return 0;
                     }
                     vUnsat = Cec_ManFdUnsatId( pMan, 0, 0 );
-                    printf("initial #Unsat: %d\n", Vec_IntSize( vUnsat ) );
+                    // printf("initial #Unsat: %d\n", Vec_IntSize( vUnsat ) );
 
-                    // Cec_ManFdPlot( pMan, 1, 0, 0, "pickNode.dot", 0, vUnsat, 0 );
-                    // return 0;
-
-                    buf1 = 0; buf2 = 0;
-                    Vec_IntForEachEntry( pMan->vNodeInit, nid, j ) {
-                        if ( Gia_ObjColors( pMan->pGia, nid ) != 3 ) buf1++;
-                        if ( Vec_IntFind( vIntBuff2, nid ) >= 0 ) buf2++;
-                    }
-                    printf("there are %d initial node to go\n", buf1 );
-                    printf("there are %d node still UNSAT in ckt %d\n", buf2, rwCkt );
-                    printf("start replace node finding\n");
+                    // buf1 = 0; buf2 = 0;
+                    // Vec_IntForEachEntry( pMan->vNodeInit, nid, j ) {
+                    //     if ( Gia_ObjColors( pMan->pGia, nid ) != 3 ) buf1++;
+                    //     if ( Vec_IntFind( vIntBuff2, nid ) >= 0 ) buf2++;
+                    // }
+                    // printf("there are %d initial node to go\n", buf1 );
+                    // printf("there are %d node still UNSAT in ckt %d\n", buf2, rwCkt );
+                    // printf("start replace node finding\n");
                     
                     Gia_SelfDefShow( pMan->pGia, "init.dot", NULL, NULL, NULL );
                     Gia_ManFillValue( pMan->pGia );
@@ -1350,166 +1217,190 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         printf("nid = %d, patch size = %d\n", nid, Gia_ManAndNum( (Gia_Man_t*) Vec_PtrEntry( pMan->vVeryStat, nid ) ) );
                     }
 
-
                     printf("start replacement\n");
                     pTemp = Cec_ManFdReplaceMulti( pMan, vIntBuff1 );
-                    buf = 0;
-                    Gia_ManForEachObj( pTemp, pObj, j ) {
-                        if (pObj->Value != -1) buf++;
-                    }
-                    Gia_AigerWrite( pTemp, "replaced.aig", 0, 0, 0 );
-                    Gia_SelfDefShow( pTemp, "replaced.dot", NULL, NULL, NULL );
-                    pOut = Gia_ManDup( pTemp );
+
                     Gia_ManFillValue( pMan->pGia );
                     Cec_ManMapCopy( pMan->pGia, pTemp, 0 );
                     Cec_ManGiaMapId( pMan->pGia, vIntBuff3 = Vec_IntDup(vUnsat) );
                     Vec_IntRemoveAll( vIntBuff3, -1, 0 );
                     Gia_ManFillValue( pTemp );
-                    if (Vec_IntEntry( vRwNd, 2 ) == 0) {
-                        Vec_IntForEachEntry( vIntBuff3, nid, j ) {
-                            Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
-                        }
-                        Vec_IntForEachEntry( pMan->vMerge, nid, j ) {
-                            Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
-                        }
-                    } else if (Vec_IntEntry( vRwNd, 2 ) == 1) {
-                        pObjbuf = rwCkt == 1 ? Gia_ObjCopy( pTemp, pMan->pObj1 ) : Gia_ObjCopy( pTemp, pMan->pObj2 );
-                        Cec_ManSubcircuit( pTemp, pObjbuf, 0, 0, 1, 0 );
-                        pObjbuf->Value = -1;
-                        Vec_IntForEachEntry( vIntBuff3, nid, j ) {
-                            Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
-                        }
-                        Vec_IntForEachEntry( pMan->vMerge, nid, j ) {
-                            Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
-                        }
+                    Vec_IntForEachEntry( vIntBuff3, nid, j ) {
+                        Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
                     }
+                    Vec_IntForEachEntry( pMan->vMerge, nid, j ) {
+                        Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
+                    }
+                    printf("Gia size: %d\n", Gia_ManObjNum(pTemp));
                     Vec_IntFree( vIntBuff3 );
                     Cec_ManMark2Val( pTemp, ~0 ^ 1, 0, 1, 0 );
                     vMerge = Cec_ManGetTopMark( pTemp, 0 );
-
-                    pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vMerge, -1, 1 ); // why circuit size not changed
+                    pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vMerge, -1, 1 );
+                    Gia_ManStop( pTemp2 );
                     Vec_IntFree( vMerge );
-                    Gia_ManFillValue( pTemp2 );
-                    Cec_ManMapCopy( pTemp2, pMan->pGia, 0 ); // pTemp2 --> pGia
-                    Cec_ManMapCopy( pTemp, pTemp2, 1 ); // pTemp --> pGia
-                    Gia_ManFillValue( pMan->pGia );
-                    Cec_ManMapCopy( pMan->pGia, pTemp, 0 ); // pGia --> pTemp2
-
                     pTemp = Cec_ManFraigSyn_naive( pTemp2 = pTemp, pMan->pPars->nBTLimit );
-                    if (Gia_ManAndNum( pTemp ) == Gia_ManAndNum( pTemp2 )) {
-                        Gia_ManStop( pTemp );
-                        pTemp = pTemp2;
-                        Gia_ManFillValue( pTemp );
-                        Cec_ManMapCopy( pTemp, pMan->pGia, 0 ); // pTemp --> pGia
-                    } else {
-                        printf("found equivalence node....forcing fraig\n");
-                        Gia_ManStop( pTemp2 );
-                        Cec_ManMatch( pTemp, pMan->pGia ); // pTemp --> pGia
-                        Gia_ManForEachObj( pTemp, pObj, j ) {
-                            if (Gia_ObjValue(pObj) < 0) {
-                                // if (Gia_ObjValue(pObj) != -1) printf("Nid: %d\n", Gia_ObjId(pTemp, pObj));
-                                pObj->Value = -1;
-                            }
-                        }
-                        Gia_ManFillValue( pMan->pGia );
-                        Cec_ManMapCopy( pMan->pGia, pTemp, 0 ); // pGia --> pTemp
-                    }
+                    Gia_ManStop( pTemp2 );
+                    printf("Gia size: %d\n", Gia_ManObjNum(pTemp));
 
-                    Gia_AigerWrite( pTemp, "partSyn.aig", 0, 0, 0 );
-                    Gia_SelfDefShow( pTemp, "partSyn.dot", 0, 0, 0 );
-                    pFile = fopen( "partSyn.stat", "w" );
-                    buf = 0;
-                    Vec_IntForEachEntry( pMan->vNodeInit, nid, j ) {
-                        if (Gia_ObjValue(Gia_ManObj(pMan->pGia, nid)) == -1) continue;
-                        if (buf % 10 == 0) fprintf( pFile, "f ");
-                        fprintf(pFile, "%d ", Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(pMan->pGia, nid))) );
-                        if (buf % 10 == 9) fprintf( pFile, "\n" );
-                        buf++;
-                    }
-                    if (buf % 10 != 0) fprintf( pFile, "\n" );
-                    fclose( pFile );
-                    // buf = 0;
-                    // Gia_ManForEachObj( pTemp, pObj, j ) {
-                    //     if (pObj->Value != -1) buf++;
-                    // }
-                    // printf("#Aig copied = %d\n", buf);
-                    vIntBuff4 = Cec_ManDumpValue( pTemp );
-
-                    printf("start conflict test\n");
-
-                    // pMan->pPars->fVerbose = 0;
-                    pMan_buf = Cec_ManFdStart( pTemp, pMan->pPars, NULL );
-                    Gia_ManForEachAnd( pMan_buf->pGia, pObj, j ) {
-                        nid = Gia_ObjId( pMan_buf->pGia, pObj );
-                        if (Vec_IntEntry( vIntBuff4, nid ) == -1) continue;
-                        if (Vec_IntEntry( vIntBuff4, nid ) < 0) {
-                            printf("nid %d have value %d\n", nid, Vec_IntEntry( vIntBuff4, nid ));
-                            continue;
-                        }
-                        // printf("nid %d have value %d\n", nid, Vec_IntEntry( vIntBuff4, nid ));
-                        buf = Gia_ObjColors( pMan_buf->pGia, nid );
-                        if (buf != 1 && buf != 2) continue;
-                        buf = Abc_Lit2Var(Vec_IntEntry( vIntBuff4, nid ));
-                        if (Vec_IntFind( vIntBuff2, buf ) != -1) {
-                            // printf("nid %d can be mapped to %d\n", nid, Abc_Lit2Var( Vec_IntEntry( vIntBuff4, nid )));
-                            Cec_ManFdShrinkSimple( pMan_buf, nid );
-                        }
-                    }
-                    printf("lable conflict\n");
-                    buf = 0;
-                    Vec_IntForEachEntry( vIntBuff4, buf, j ) {
-                        // printf("nid %d have value %d\n", j, buf);
-                        if (buf != -1) {
-                            if (buf < 0) {
-                                printf("buf: %d\n", buf);
-                                continue;
-                            }
-                            if (Abc_Lit2Var( buf ) >= Vec_IntSize( pMan->vStat )) printf("nid %d is copied to not exists node %d\n", j, Abc_Lit2Var( buf ));
-                            else if (Vec_IntEntry( pMan->vStat, Abc_Lit2Var( buf ) ) > 0 && Vec_IntEntry( pMan_buf->vStat, j ) > 0) {
-                                printf("nid = %d(%d) is double find\n", Abc_Lit2Var( buf ), j);
-                            }
-                        }
-                    }
-                    printf("start final\n");
-
-                    // pMan->pPars->fVerbose = 1;
-                    vIntBuff5 = Cec_ManFdUnsatId( pMan_buf, 0, 0 );
-                    printf("newly find #UNSAT: %d\n", Vec_IntSize(vIntBuff5));
-                    vIntBuff6 = Vec_IntDup( vIntBuff5 );
-                    Cec_ManLoadValue( pTemp, vIntBuff4 );
-                    Cec_ManGiaMapId( pTemp, vIntBuff6 );
-                    Cec_ManFdPlot( pMan, 1, 0, 0, "final.dot", vUnsat, vIntBuff6, 0 );
-
-                    Vec_IntForEachEntryTwo( vIntBuff5, vIntBuff6, buf1, buf2, j ) {
-                        printf( "nid = %d(%d)\n", buf2, buf1 );
-                        printf( "conflict = %d\n", Vec_IntEntry( pMan_buf->vConf, buf1 ) );
-                        printf( "patch = %d\n", Gia_ManAndNum( (Gia_Man_t*) Vec_PtrEntry( pMan_buf->vVeryStat, buf1 ) ) );
-                        if (Vec_IntFind( pMan->vNodeInit, buf2 ) != -1) printf( "node is in initial circuit\n");
-                        else printf( "node is an added node\n" );
-                        if (buf2 > 0) printf( "org status = %d\n", Vec_IntEntry( pMan->vStat, buf2 ) );
-                        else printf( "somehow not a copied nid\n" );
-                    }
-                    Cec_ManFdStop( pMan_buf, 2 );
-                    if (Vec_IntSize(vIntBuff5) == 0) {
-                        printf("conflict test failed\n");
-                        return 0;
-                    }
-
-                    // final syn
-                    pTemp = pOut;
                     vIntBuff = Cec_ManCheckMiter( pTemp );
                     Vec_IntPop( vIntBuff );
                     pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vIntBuff, -1, 0 );
                     Gia_ManStop( pTemp2 );
                     Vec_IntFree( vIntBuff );
                     pOut = Cec_ManFraigSyn_naive( pTemp, 10000 );
-                    
-                    Cec_ManMatch( pOut, pMan->pGia );
-                    Cec_ManFdUpdate( pMan, pOut );
-                    Cec_ManFdDumpStat( pMan, "final.log" );
                     Gia_AigerWrite( pOut, "final.aig", 0, 0, 0 );
-                    Cec_ManFdStop( pMan, 2 );
                     return pOut;
+
+                    // conflict test
+
+                    // Gia_AigerWrite( pTemp, "replaced.aig", 0, 0, 0 );
+                    // Gia_SelfDefShow( pTemp, "replaced.dot", NULL, NULL, NULL );
+                    // pOut = Gia_ManDup( pTemp );
+                    // Gia_ManFillValue( pMan->pGia );
+                    // Cec_ManMapCopy( pMan->pGia, pTemp, 0 );
+                    // Cec_ManGiaMapId( pMan->pGia, vIntBuff3 = Vec_IntDup(vUnsat) );
+                    // Vec_IntRemoveAll( vIntBuff3, -1, 0 );
+                    // Gia_ManFillValue( pTemp );
+                    // if (Vec_IntEntry( vRwNd, 2 ) == 0) {
+                    //     Vec_IntForEachEntry( vIntBuff3, nid, j ) {
+                    //         Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
+                    //     }
+                    //     Vec_IntForEachEntry( pMan->vMerge, nid, j ) {
+                    //         Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
+                    //     }
+                    // } else if (Vec_IntEntry( vRwNd, 2 ) == 1) {
+                    //     pObjbuf = rwCkt == 1 ? Gia_ObjCopy( pTemp, pMan->pObj1 ) : Gia_ObjCopy( pTemp, pMan->pObj2 );
+                    //     Cec_ManSubcircuit( pTemp, pObjbuf, 0, 0, 1, 0 );
+                    //     pObjbuf->Value = -1;
+                    //     Vec_IntForEachEntry( vIntBuff3, nid, j ) {
+                    //         Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
+                    //     }
+                    //     Vec_IntForEachEntry( pMan->vMerge, nid, j ) {
+                    //         Cec_ManSubcircuit( pTemp, Gia_ManObj( pTemp, nid ), 0, 0, 1, 0 );
+                    //     }
+                    // }
+                    // Vec_IntFree( vIntBuff3 );
+                    // Cec_ManMark2Val( pTemp, ~0 ^ 1, 0, 1, 0 );
+                    // vMerge = Cec_ManGetTopMark( pTemp, 0 );
+
+                    // pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vMerge, -1, 0 ); // why circuit size not changed
+                    // Vec_IntFree( vMerge );
+                    // Gia_ManFillValue( pTemp2 );
+                    // Cec_ManMapCopy( pTemp2, pMan->pGia, 0 ); // pTemp2 --> pGia
+                    // Cec_ManMapCopy( pTemp, pTemp2, 1 ); // pTemp --> pGia
+                    // Gia_ManFillValue( pMan->pGia );
+                    // Cec_ManMapCopy( pMan->pGia, pTemp, 0 ); // pGia --> pTemp2
+
+                    // pTemp = Cec_ManFraigSyn_naive( pTemp2 = pTemp, pMan->pPars->nBTLimit );
+                    // // if (Gia_ManAndNum( pTemp ) == Gia_ManAndNum( pTemp2 )) {
+                    // //     Gia_ManStop( pTemp );
+                    // //     pTemp = pTemp2;
+                    // //     Gia_ManFillValue( pTemp );
+                    // //     Cec_ManMapCopy( pTemp, pMan->pGia, 0 ); // pTemp --> pGia
+                    // // } else {
+                    // //     printf("found equivalence node....forcing fraig\n");
+                    // //     Gia_ManStop( pTemp2 );
+                    // //     Cec_ManMatch( pTemp, pMan->pGia ); // pTemp --> pGia
+                    // //     Gia_ManForEachObj( pTemp, pObj, j ) {
+                    // //         if (Gia_ObjValue(pObj) < 0) {
+                    // //             // if (Gia_ObjValue(pObj) != -1) printf("Nid: %d\n", Gia_ObjId(pTemp, pObj));
+                    // //             pObj->Value = -1;
+                    // //         }
+                    // //     }
+                    // //     Gia_ManFillValue( pMan->pGia );
+                    // //     Cec_ManMapCopy( pMan->pGia, pTemp, 0 ); // pGia --> pTemp
+                    // // }
+
+                    // // Gia_AigerWrite( pTemp, "partSyn.aig", 0, 0, 0 );
+                    // // Gia_SelfDefShow( pTemp, "partSyn.dot", 0, 0, 0 );
+                    // // pFile = fopen( "partSyn.stat", "w" );
+                    // // buf = 0;
+                    // // Vec_IntForEachEntry( pMan->vNodeInit, nid, j ) {
+                    // //     if (Gia_ObjValue(Gia_ManObj(pMan->pGia, nid)) == -1) continue;
+                    // //     if (buf % 10 == 0) fprintf( pFile, "f ");
+                    // //     fprintf(pFile, "%d ", Abc_Lit2Var(Gia_ObjValue(Gia_ManObj(pMan->pGia, nid))) );
+                    // //     if (buf % 10 == 9) fprintf( pFile, "\n" );
+                    // //     buf++;
+                    // // }
+                    // // if (buf % 10 != 0) fprintf( pFile, "\n" );
+                    // // fclose( pFile );
+
+                    // vIntBuff4 = Cec_ManDumpValue( pTemp );
+
+                    // // printf("start conflict test\n");
+
+                    // // // pMan->pPars->fVerbose = 0;
+                    // // pMan_buf = Cec_ManFdStart( pTemp, pMan->pPars, NULL );
+                    // // Gia_ManForEachAnd( pMan_buf->pGia, pObj, j ) {
+                    // //     nid = Gia_ObjId( pMan_buf->pGia, pObj );
+                    // //     if (Vec_IntEntry( vIntBuff4, nid ) == -1) continue;
+                    // //     if (Vec_IntEntry( vIntBuff4, nid ) < 0) {
+                    // //         printf("nid %d have value %d\n", nid, Vec_IntEntry( vIntBuff4, nid ));
+                    // //         continue;
+                    // //     }
+                    // //     // printf("nid %d have value %d\n", nid, Vec_IntEntry( vIntBuff4, nid ));
+                    // //     buf = Gia_ObjColors( pMan_buf->pGia, nid );
+                    // //     if (buf != 1 && buf != 2) continue;
+                    // //     buf = Abc_Lit2Var(Vec_IntEntry( vIntBuff4, nid ));
+                    // //     if (Vec_IntFind( vIntBuff2, buf ) != -1) {
+                    // //         // printf("nid %d can be mapped to %d\n", nid, Abc_Lit2Var( Vec_IntEntry( vIntBuff4, nid )));
+                    // //         Cec_ManFdShrinkSimple( pMan_buf, nid, 1 );
+                    // //     }
+                    // // }
+                    // // printf("lable conflict\n");
+                    // // buf = 0;
+                    // // Vec_IntForEachEntry( vIntBuff4, buf, j ) {
+                    // //     // printf("nid %d have value %d\n", j, buf);
+                    // //     if (buf != -1) {
+                    // //         if (buf < 0) {
+                    // //             printf("buf: %d\n", buf);
+                    // //             continue;
+                    // //         }
+                    // //         if (Abc_Lit2Var( buf ) >= Vec_IntSize( pMan->vStat )) printf("nid %d is copied to not exists node %d\n", j, Abc_Lit2Var( buf ));
+                    // //         else if (Vec_IntEntry( pMan->vStat, Abc_Lit2Var( buf ) ) > 0 && Vec_IntEntry( pMan_buf->vStat, j ) > 0) {
+                    // //             printf("nid = %d(%d) is double find\n", Abc_Lit2Var( buf ), j);
+                    // //         }
+                    // //     }
+                    // // }
+                    // // printf("start final\n");
+
+                    // // // pMan->pPars->fVerbose = 1;
+                    // // vIntBuff5 = Cec_ManFdUnsatId( pMan_buf, 0, 0 );
+                    // // printf("newly find #UNSAT: %d\n", Vec_IntSize(vIntBuff5));
+                    // // vIntBuff6 = Vec_IntDup( vIntBuff5 );
+                    // // Cec_ManLoadValue( pTemp, vIntBuff4 );
+                    // // Cec_ManGiaMapId( pTemp, vIntBuff6 );
+                    // // Cec_ManFdPlot( pMan, 1, 0, 0, "final.dot", vUnsat, vIntBuff6, 0 );
+
+                    // // Vec_IntForEachEntryTwo( vIntBuff5, vIntBuff6, buf1, buf2, j ) {
+                    // //     printf( "nid = %d(%d)\n", buf2, buf1 );
+                    // //     printf( "conflict = %d\n", Vec_IntEntry( pMan_buf->vConf, buf1 ) );
+                    // //     printf( "patch = %d\n", Gia_ManAndNum( (Gia_Man_t*) Vec_PtrEntry( pMan_buf->vVeryStat, buf1 ) ) );
+                    // //     if (Vec_IntFind( pMan->vNodeInit, buf2 ) != -1) printf( "node is in initial circuit\n");
+                    // //     else printf( "node is an added node\n" );
+                    // //     if (buf2 > 0) printf( "org status = %d\n", Vec_IntEntry( pMan->vStat, buf2 ) );
+                    // //     else printf( "somehow not a copied nid\n" );
+                    // // }
+                    // // Cec_ManFdStop( pMan_buf, 2 );
+                    // // if (Vec_IntSize(vIntBuff5) == 0) {
+                    // //     printf("conflict test failed\n");
+                    // //     return 0;
+                    // // }
+
+                    // // final syn
+                    // vIntBuff = Cec_ManCheckMiter( pTemp );
+                    // Vec_IntPop( vIntBuff );
+                    // pTemp = Cec_ManPartSyn( pTemp2 = pTemp, 0, vIntBuff, -1, 0 );
+                    // Gia_ManStop( pTemp2 );
+                    // Vec_IntFree( vIntBuff );
+                    // pOut = Cec_ManFraigSyn_naive( pTemp, 10000 );
+                    
+                    // // Cec_ManMatch( pOut, pMan->pGia );
+                    // // Cec_ManFdUpdate( pMan, pOut );
+                    // // Cec_ManFdDumpStat( pMan, "final.log" );
+                    // Gia_AigerWrite( pOut, "final.aig", 0, 0, 0 );
+                    // // Cec_ManFdStop( pMan, 2 );
+                    // return pOut;
 
                 } else if (nodeId == -14) {
                     // vIntBuff = Vec_IntAlloc( 100 );
@@ -1526,7 +1417,7 @@ Gia_Man_t* Cec_ManFdRewrite( Gia_Man_t * p, Cec_ParFd_t * pPars, Vec_Int_t* vRwN
                         if (Gia_ObjLevel( pMan->pAbs, pObj ) > buf2) continue;
                         nid = Cec_ManFdMapIdSingle( pMan, i, 0 );
                         if (Gia_ObjColors( pMan->pGia, nid ) != rwCkt) continue;
-                        Cec_ManFdShrinkSimple( pMan, nid );
+                        Cec_ManFdShrinkSimple( pMan, nid, 0 );
                         if (Vec_IntEntry( pMan->vStat, nid ) > 0) {
                             vWecBuff = Vec_WecStart( buf3 );
                             Vec_IntForEachEntry( Vec_WecEntry( pMan->vGSupport, nid), buf, j ) {

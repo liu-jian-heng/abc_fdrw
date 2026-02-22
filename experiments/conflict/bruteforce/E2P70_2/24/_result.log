@@ -1,0 +1,199 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 582
+start replace node finding
+maxMffc = 341, max reduce = 35
+dump 2313, new mffc = 340
+dump 2419, new mffc = 339
+dump 2429, new mffc = 338
+dump 2460, new mffc = 337
+dump 2588, new mffc = 336
+dump 2617, new mffc = 335
+dump 2624, new mffc = 334
+dump 2630, new mffc = 333
+dump 2631, new mffc = 332
+dump 2653, new mffc = 331
+dump 2696, new mffc = 330
+dump 2742, new mffc = 329
+dump 2756, new mffc = 328
+dump 2761, new mffc = 327
+dump 2765, new mffc = 326
+dump 2780, new mffc = 325
+dump 2498, new mffc = 323
+dump 2619, new mffc = 321
+dump 2621, new mffc = 319
+dump 2326, new mffc = 317
+dump 2777, new mffc = 315
+dump 2785, new mffc = 313
+dump 2791, new mffc = 311
+dump 2623, new mffc = 309
+dump 2454, new mffc = 306
+dump 2328, new mffc = 304
+nid = 2695, patch size = 17
+nid = 2449, patch size = 36
+nid = 2831, patch size = 38
+nid = 2788, patch size = 55
+nid = 2789, patch size = 41
+nid = 2668, patch size = 67
+nid = 2669, patch size = 18
+nid = 2553, patch size = 63
+nid = 2700, patch size = 11
+nid = 2448, patch size = 42
+nid = 2537, patch size = 47
+nid = 2494, patch size = 29
+nid = 2851, patch size = 53
+nid = 2664, patch size = 17
+nid = 2474, patch size = 42
+nid = 2475, patch size = 42
+nid = 2459, patch size = 20
+nid = 2800, patch size = 59
+nid = 2674, patch size = 16
+nid = 2325, patch size = 17
+nid = 2692, patch size = 31
+nid = 2652, patch size = 36
+nid = 2580, patch size = 24
+nid = 2688, patch size = 43
+nid = 2565, patch size = 24
+nid = 2566, patch size = 34
+nid = 2513, patch size = 35
+nid = 2542, patch size = 59
+nid = 2493, patch size = 35
+nid = 2381, patch size = 52
+nid = 2350, patch size = 47
+nid = 2351, patch size = 40
+nid = 2741, patch size = 53
+nid = 2361, patch size = 24
+nid = 2534, patch size = 33
+nid = 2873, patch size = 57
+nid = 2615, patch size = 28
+nid = 2415, patch size = 66
+nid = 2468, patch size = 62
+start replacement
+trim: 3548->2881
+Trim time: 14.418619 sec
+start conflict test
+start final
+newly find #UNSAT: 20
+nid = 854(662)
+conflict = 67
+patch = 55
+org status = -1
+nid = 904(901)
+conflict = 7
+patch = 11
+org status = -1
+nid = 910(906)
+conflict = 8
+patch = 8
+org status = -5
+nid = 911(908)
+conflict = 22
+patch = 17
+org status = -5
+nid = 931(925)
+conflict = 73
+patch = 63
+org status = -5
+nid = 912(989)
+conflict = 30
+patch = 28
+org status = -1
+nid = 913(990)
+conflict = 21
+patch = 21
+org status = -5
+nid = 914(991)
+conflict = 33
+patch = 50
+org status = -5
+nid = 1063(1041)
+conflict = 60
+patch = 67
+org status = -5
+nid = 1064(1059)
+conflict = 88
+patch = 65
+org status = -1
+nid = 1070(1065)
+conflict = 66
+patch = 53
+org status = -1
+nid = 1074(1067)
+conflict = 0
+patch = 7
+org status = -1
+nid = 1075(1070)
+conflict = 2
+patch = 10
+org status = -5
+nid = 1167(1139)
+conflict = 77
+patch = 35
+org status = -5
+nid = 1168(1140)
+conflict = 33
+patch = 29
+org status = -1
+nid = 1175(1149)
+conflict = 74
+patch = 48
+org status = -1
+nid = 1187(1170)
+conflict = 12
+patch = 13
+org status = -1
+nid = 1190(1173)
+conflict = 20
+patch = 25
+org status = -5
+nid = 1216(1198)
+conflict = 13
+patch = 12
+org status = -5
+nid = 1772(1738)
+conflict = 6
+patch = 3
+org status = -7
+nSimWords = 0
+    0 : { 3070 2804 2741 }
+    1 : { 3182 2776 2773 }
+    2 : { 3065 2915 2806 }
+    3 : { 371 765 1851 }
+    4 : { 2947 2914 2774 }
+    5 : { 2312 2314 2386 }
+    6 : { 2424 2412 2417 }
+    7 : { 1333 1649 1657 }
+    8 : { 1330 1646 1653 }
+    9 : { 1328 1657 1649 }
+   10 : { 520 515 457 }
+   11 : { 820 932 945 }
+   12 : { 835 946 948 }
+   13 : { 621 533 550 }
+   14 : { 635 663 551 }
+   15 : { 323 376 327 }
+   16 : { 384 327 376 }
+   17 : { 379 312 319 }
+   18 : { 389 457 460 }
+   19 : { 530 696 811 }
+   20 : { 372 773 515 }
+   21 : { 396 780 394 }
+   22 : { 380 317 324 }
+   23 : { 381 322 325 }

@@ -1,0 +1,162 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 238
+there are 892 initial node to go
+there are 628 node still UNSAT in ckt 1
+start replace node finding
+maxMffc = 64, max reduce = 45
+nid = 2421, patch size = 32
+nid = 1605, patch size = 54
+nid = 1708, patch size = 63
+start replacement
+trim: 3045->2987
+Trim time:  5.297959 sec
+nSimWords = 0
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 24
+nid = 2992(2717)
+conflict = 6
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 2993(2730)
+conflict = 0
+patch = 2
+node is in initial circuit
+org status = -7
+nid = 2994(2731)
+conflict = 0
+patch = 3
+node is in initial circuit
+org status = -7
+nid = 2995(2732)
+conflict = 0
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 2999(2736)
+conflict = 0
+patch = 8
+node is in initial circuit
+org status = -1
+nid = 3000(2737)
+conflict = 2
+patch = 11
+node is in initial circuit
+org status = -1
+nid = 3001(2738)
+conflict = 2
+patch = 12
+node is in initial circuit
+org status = -7
+nid = 3012(2748)
+conflict = 6
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 3015(2749)
+conflict = 0
+patch = 2
+node is in initial circuit
+org status = -7
+nid = 3017(2752)
+conflict = 6
+patch = 3
+node is in initial circuit
+org status = -7
+nid = 3020(2753)
+conflict = 9
+patch = 6
+node is in initial circuit
+org status = -7
+nid = 3023(2756)
+conflict = 15
+patch = 13
+node is in initial circuit
+org status = -7
+nid = 3024(2757)
+conflict = 15
+patch = 14
+node is in initial circuit
+org status = -7
+nid = 3026(2759)
+conflict = 12
+patch = 8
+node is in initial circuit
+org status = -7
+nid = 3027(2760)
+conflict = 20
+patch = 11
+node is in initial circuit
+org status = -7
+nid = 3041(2773)
+conflict = 6
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 3049(2787)
+conflict = 2
+patch = 6
+node is in initial circuit
+org status = -7
+nid = 3065(2956)
+conflict = 26
+patch = 27
+node is in initial circuit
+org status = -7
+nid = 3159(3023)
+conflict = 9
+patch = 10
+node is in initial circuit
+org status = -7
+nid = 3160(3024)
+conflict = 5
+patch = 12
+node is in initial circuit
+org status = -7
+nid = 3183(3046)
+conflict = 0
+patch = 3
+node is in initial circuit
+org status = -7
+nid = 3211(3068)
+conflict = 9
+patch = 5
+node is in initial circuit
+org status = -5
+nid = 3212(3069)
+conflict = 3
+patch = 6
+node is in initial circuit
+org status = -7
+nid = 3231(3084)
+conflict = 41
+patch = 48
+node is in initial circuit
+org status = -7
+nSimWords = 0
+    0 : { 2386 1585 2400 }
+    1 : { 2385 1579 2399 }
+    2 : { 608 1691 1609 }
+    3 : { 361 320 516 }
+    4 : { 368 1510 740 }

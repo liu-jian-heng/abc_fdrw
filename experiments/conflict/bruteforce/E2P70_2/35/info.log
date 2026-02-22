@@ -1,0 +1,5 @@
+ckt:1
+partSyn:0
+Result:bruteforce/E2P70_2/35/final.aig
+C:100
+basicCmd:-g -G 2 -E 2 -P 70.0 -a

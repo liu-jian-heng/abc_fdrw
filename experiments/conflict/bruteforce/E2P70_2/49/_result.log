@@ -1,0 +1,105 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 456
+start replace node finding
+maxMffc = 179, max reduce = 34
+dump 1670, new mffc = 178
+dump 1682, new mffc = 177
+dump 1683, new mffc = 176
+dump 1732, new mffc = 175
+dump 1739, new mffc = 174
+dump 1779, new mffc = 173
+dump 1906, new mffc = 172
+dump 1941, new mffc = 171
+dump 1943, new mffc = 170
+dump 1997, new mffc = 169
+dump 1792, new mffc = 167
+dump 1987, new mffc = 165
+dump 1996, new mffc = 163
+dump 1736, new mffc = 159
+dump 1584, new mffc = 155
+dump 2005, new mffc = 151
+nid = 1915, patch size = 9
+nid = 1938, patch size = 18
+nid = 1951, patch size = 52
+nid = 1949, patch size = 63
+nid = 1698, patch size = 62
+nid = 1985, patch size = 54
+nid = 1659, patch size = 12
+nid = 1961, patch size = 58
+nid = 1725, patch size = 37
+nid = 1869, patch size = 22
+nid = 1716, patch size = 30
+nid = 1817, patch size = 42
+nid = 1818, patch size = 52
+nid = 1904, patch size = 70
+nid = 1642, patch size = 70
+start replacement
+trim: 2671->2272
+Trim time:  8.705270 sec
+start conflict test
+start final
+newly find #UNSAT: 11
+nid = 2052(1967)
+conflict = 39
+patch = 41
+org status = -7
+nid = 2131(2058)
+conflict = 40
+patch = 67
+org status = -5
+nid = 2146(2069)
+conflict = 85
+patch = 67
+org status = -5
+nid = 2241(2153)
+conflict = 30
+patch = 36
+org status = -1
+nid = 2293(2195)
+conflict = 60
+patch = 52
+org status = -5
+nid = 2310(2212)
+conflict = 82
+patch = 58
+org status = -5
+nid = 2316(2218)
+conflict = 34
+patch = 33
+org status = -1
+nid = 2527(2375)
+conflict = 65
+patch = 68
+org status = -1
+nid = 2697(2489)
+conflict = 73
+patch = 62
+org status = -5
+nid = 2242(2776)
+conflict = 56
+patch = 52
+org status = -5
+nid = 2243(2777)
+conflict = 76
+patch = 69
+org status = -5
+nSimWords = 0

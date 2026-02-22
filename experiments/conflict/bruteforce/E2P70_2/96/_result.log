@@ -1,0 +1,181 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 210
+there are 819 initial node to go
+there are 23 node still UNSAT in ckt 2
+start replace node finding
+maxMffc = 380, max reduce = 43
+dump 2620, new mffc = 379
+dump 3123, new mffc = 378
+dump 3135, new mffc = 377
+dump 2974, new mffc = 375
+dump 2790, new mffc = 371
+dump 2451, new mffc = 367
+dump 2453, new mffc = 364
+dump 2436, new mffc = 361
+nid = 2697, patch size = 46
+nid = 2581, patch size = 31
+nid = 2786, patch size = 8
+nid = 2983, patch size = 10
+nid = 2778, patch size = 35
+nid = 2821, patch size = 64
+nid = 2985, patch size = 14
+nid = 2967, patch size = 22
+nid = 2928, patch size = 13
+nid = 2579, patch size = 28
+nid = 2951, patch size = 15
+nid = 2780, patch size = 55
+nid = 2618, patch size = 45
+nid = 2694, patch size = 19
+nid = 2943, patch size = 27
+nid = 2639, patch size = 25
+nid = 2959, patch size = 40
+nid = 2746, patch size = 20
+nid = 2914, patch size = 19
+nid = 2567, patch size = 22
+nid = 2516, patch size = 35
+nid = 2477, patch size = 64
+nid = 2994, patch size = 45
+nid = 3097, patch size = 56
+nid = 3098, patch size = 48
+nid = 2853, patch size = 35
+nid = 2897, patch size = 32
+nid = 2736, patch size = 70
+nid = 2682, patch size = 65
+start replacement
+trim: 2924->2551
+Trim time:  5.004041 sec
+nSimWords = 0
+found equivalence node....forcing fraig
+    0 : { 2015 2022 3096 }
+    1 : { 2008 2015 2022 }
+    2 : { 3020 2957 2953 }
+    3 : { 369 329 2964 }
+    4 : { 1626 1644 281 }
+    5 : { 497 610 277 }
+    6 : { 1076 1086 279 }
+    7 : { 2969 2928 1279 }
+    8 : { 2987 2943 2946 }
+    9 : { 2628 2600 2726 }
+   10 : { 1785 1791 2554 }
+   11 : { 2449 2468 338 }
+   12 : { 2450 2469 2466 }
+   13 : { 2435 2446 2436 }
+   14 : { 2178 2182 2185 }
+   15 : { 2138 2145 1874 }
+   16 : { 1864 1871 2142 }
+   17 : { 2134 2141 1870 }
+   18 : { 2129 1866 1775 }
+   19 : { 2125 2132 1773 }
+   20 : { 2120 1763 1730 }
+   21 : { 2095 1850 2102 }
+   22 : { 2086 1758 2093 }
+   23 : { 2024 1958 2031 }
+   24 : { 1954 3074 1961 }
+   25 : { 1951 2031 1958 }
+   26 : { 1867 2145 1874 }
+   27 : { 1843 1850 2102 }
+   28 : { 1766 1773 2132 }
+   29 : { 1756 2127 1763 }
+   30 : { 1647 2928 1279 }
+   31 : { 364 330 1517 }
+   32 : { 1601 1634 1619 }
+   33 : { 1343 330 1517 }
+   34 : { 335 357 399 }
+   35 : { 337 354 443 }
+   36 : { 1014 2940 1027 }
+   37 : { 1578 1487 1438 }
+   38 : { 1510 1356 1361 }
+   39 : { 1487 1361 1356 }
+   40 : { 1165 1353 1292 }
+   41 : { 1351 2933 1269 }
+   42 : { 1305 1438 1487 }
+   43 : { 346 619 356 }
+   44 : { 358 263 786 }
+   45 : { 406 380 327 }
+   46 : { 470 694 642 }
+   47 : { 330 283 401 }
+   48 : { 407 381 378 }
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 6
+nid = 754(652)
+conflict = 8
+patch = 9
+node is in initial circuit
+org status = -1
+nid = 757(743)
+conflict = 7
+patch = 6
+node is in initial circuit
+org status = -1
+nid = 761(757)
+conflict = 16
+patch = 24
+node is in initial circuit
+org status = -5
+nid = 1696(1677)
+conflict = 11
+patch = 24
+node is in initial circuit
+org status = -7
+nid = 1698(1690)
+conflict = 37
+patch = 34
+node is in initial circuit
+org status = -5
+nid = 2406(2400)
+conflict = 8
+patch = 10
+node is in initial circuit
+org status = -7
+nSimWords = 0
+    0 : { 2935 2941 2968 }
+    1 : { 2927 2933 2967 }
+    2 : { 2933 2938 2958 }
+    3 : { 2740 2693 2744 }
+    4 : { 352 351 2690 }
+    5 : { 579 455 2684 }
+    6 : { 606 431 2685 }
+    7 : { 299 263 340 }
+    8 : { 1554 1574 393 }
+    9 : { 1454 1475 1714 }
+   10 : { 2593 2590 2593 }
+   11 : { 668 519 578 }
+   12 : { 728 578 902 }
+   13 : { 2589 2589 454 }
+   14 : { 2486 2502 2565 }
+   15 : { 1727 1737 1738 }
+   16 : { 394 384 263 }
+   17 : { 785 807 1591 }
+   18 : { 718 2592 568 }
+   19 : { 587 454 529 }
+   20 : { 715 1534 530 }
+   21 : { 568 750 674 }
+   22 : { 662 1694 752 }
+   23 : { 555 609 665 }
+   24 : { 481 613 511 }
+   25 : { 561 663 487 }
+   26 : { 560 661 486 }
+   27 : { 556 514 604 }
+   28 : { 340 341 327 }
+   29 : { 411 342 338 }

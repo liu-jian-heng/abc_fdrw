@@ -1,0 +1,3 @@
+ABC command line: "&read _replaced.aig; &cec -m -v".
+
+Error: Cannot open input file "_replaced.aig". 

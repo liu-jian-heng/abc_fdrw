@@ -1,0 +1,113 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 533
+start replace node finding
+maxMffc = 481, max reduce = 36
+dump 2313, new mffc = 480
+dump 2320, new mffc = 479
+dump 2503, new mffc = 478
+dump 2625, new mffc = 477
+dump 2751, new mffc = 476
+dump 2800, new mffc = 475
+dump 3006, new mffc = 474
+dump 3014, new mffc = 473
+dump 2462, new mffc = 471
+dump 2631, new mffc = 469
+dump 2633, new mffc = 467
+dump 2814, new mffc = 465
+dump 2833, new mffc = 463
+dump 2750, new mffc = 460
+dump 2836, new mffc = 458
+dump 2855, new mffc = 456
+dump 3010, new mffc = 453
+dump 3011, new mffc = 452
+dump 2646, new mffc = 448
+dump 2668, new mffc = 444
+dump 2650, new mffc = 440
+nid = 2660, patch size = 6
+nid = 2747, patch size = 51
+nid = 2511, patch size = 23
+nid = 2930, patch size = 34
+nid = 2641, patch size = 21
+nid = 2654, patch size = 35
+nid = 2622, patch size = 11
+nid = 2697, patch size = 22
+nid = 2474, patch size = 61
+nid = 2919, patch size = 15
+nid = 2850, patch size = 29
+nid = 2732, patch size = 41
+nid = 2395, patch size = 33
+nid = 2728, patch size = 34
+nid = 2712, patch size = 17
+nid = 2401, patch size = 55
+nid = 2961, patch size = 24
+nid = 2974, patch size = 69
+nid = 3021, patch size = 47
+nid = 3022, patch size = 53
+nid = 2950, patch size = 64
+nid = 2687, patch size = 42
+nid = 2811, patch size = 31
+nid = 2426, patch size = 49
+nid = 2619, patch size = 38
+nid = 2535, patch size = 38
+nid = 2780, patch size = 53
+nid = 2978, patch size = 43
+nid = 2600, patch size = 19
+nid = 2308, patch size = 53
+nid = 2361, patch size = 35
+nid = 3087, patch size = 46
+nid = 3088, patch size = 50
+nid = 2446, patch size = 42
+nid = 2488, patch size = 51
+nid = 2581, patch size = 55
+nid = 2564, patch size = 51
+nid = 2908, patch size = 48
+start replacement
+trim: 3618->2877
+Trim time:  5.055327 sec
+start conflict test
+start final
+newly find #UNSAT: 6
+nid = 1123(1123)
+conflict = 17
+patch = 52
+org status = -5
+nid = 1222(1169)
+conflict = 11
+patch = 17
+org status = -5
+nid = 1261(1205)
+conflict = 32
+patch = 22
+org status = -1
+nid = 1310(1251)
+conflict = 11
+patch = 8
+org status = -5
+nid = 1311(1261)
+conflict = 16
+patch = 24
+org status = -1
+nid = 1312(1263)
+conflict = 88
+patch = 62
+org status = -1
+nSimWords = 0

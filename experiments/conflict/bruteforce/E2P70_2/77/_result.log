@@ -1,0 +1,226 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 243
+start replace node finding
+maxMffc = 114, max reduce = 36
+dump 1398, new mffc = 113
+dump 1405, new mffc = 112
+dump 1474, new mffc = 110
+dump 1507, new mffc = 108
+nid = 1320, patch size = 66
+nid = 1492, patch size = 34
+nid = 1355, patch size = 5
+nid = 1312, patch size = 52
+nid = 1369, patch size = 8
+nid = 1397, patch size = 58
+nid = 1490, patch size = 32
+nid = 1603, patch size = 30
+nid = 1503, patch size = 26
+nid = 1600, patch size = 58
+nid = 1604, patch size = 65
+nid = 2333, patch size = 48
+start replacement
+trim: 3020->2737
+Trim time:  3.773568 sec
+start conflict test
+start final
+newly find #UNSAT: 40
+nid = 2365(2438)
+conflict = 14
+patch = 18
+org status = -7
+nid = 2371(2446)
+conflict = 32
+patch = 31
+org status = -5
+nid = 2377(2454)
+conflict = 33
+patch = 41
+org status = -7
+nid = 2402(2479)
+conflict = 25
+patch = 27
+org status = -7
+nid = 2403(2481)
+conflict = 32
+patch = 58
+org status = -7
+nid = 2512(2552)
+conflict = 15
+patch = 11
+org status = -7
+nid = 2513(2554)
+conflict = 19
+patch = 20
+org status = -7
+nid = 2514(2560)
+conflict = 44
+patch = 48
+org status = -7
+nid = 2540(2598)
+conflict = 38
+patch = 25
+org status = -1
+nid = 2547(2613)
+conflict = 56
+patch = 62
+org status = -5
+nid = 2573(2637)
+conflict = 6
+patch = 4
+org status = -7
+nid = 2616(2661)
+conflict = 19
+patch = 12
+org status = -7
+nid = 2617(2662)
+conflict = 19
+patch = 11
+org status = -7
+nid = 2618(2663)
+conflict = 16
+patch = 15
+org status = -7
+nid = 2621(2666)
+conflict = 7
+patch = 6
+org status = -1
+nid = 2628(2671)
+conflict = 7
+patch = 13
+org status = -1
+nid = 2630(2674)
+conflict = 42
+patch = 61
+org status = -1
+nid = 2632(2685)
+conflict = 42
+patch = 35
+org status = -1
+nid = 2637(2686)
+conflict = 19
+patch = 31
+org status = -7
+nid = 2638(2687)
+conflict = 0
+patch = 2
+org status = -7
+nid = 2639(2688)
+conflict = 0
+patch = 3
+org status = -5
+nid = 2640(2690)
+conflict = 2
+patch = 5
+org status = -7
+nid = 2660(2709)
+conflict = 0
+patch = 3
+org status = -7
+nid = 2661(2710)
+conflict = 60
+patch = 43
+org status = -7
+nid = 2708(2747)
+conflict = 82
+patch = 64
+org status = -7
+nid = 2711(2751)
+conflict = 58
+patch = 63
+org status = -1
+nid = 2842(2844)
+conflict = 46
+patch = 43
+org status = -5
+nid = 2862(2865)
+conflict = 72
+patch = 60
+org status = -1
+nid = 2884(2884)
+conflict = 8
+patch = 29
+org status = -5
+nid = 2933(2920)
+conflict = 88
+patch = 29
+org status = -5
+nid = 2949(2926)
+conflict = 18
+patch = 32
+org status = -7
+nid = 2972(2930)
+conflict = 23
+patch = 24
+org status = -7
+nid = 2974(2932)
+conflict = 48
+patch = 37
+org status = -7
+nid = 2382(3006)
+conflict = 44
+patch = 45
+org status = -7
+nid = 2665(3028)
+conflict = 19
+patch = 17
+org status = -1
+nid = 2666(3029)
+conflict = 29
+patch = 36
+org status = -5
+nid = 2887(3054)
+conflict = 29
+patch = 39
+org status = -5
+nid = 2948(3070)
+conflict = 77
+patch = 68
+org status = -7
+nid = 2965(3085)
+conflict = 40
+patch = 41
+org status = -5
+nid = 2987(3106)
+conflict = 63
+patch = 67
+org status = -7
+nSimWords = 0
+    0 : { 1562 2321 1596 }
+    1 : { 1571 2326 1602 }
+    2 : { 1434 1432 1469 }
+    3 : { 1431 1429 1466 }
+    4 : { 1412 1469 1432 }
+    5 : { 1409 1466 1429 }
+    6 : { 866 838 907 }
+    7 : { 1242 1516 1008 }
+    8 : { 504 1033 1182 }
+    9 : { 1069 1235 1186 }
+   10 : { 452 1081 851 }
+   11 : { 845 822 838 }
+   12 : { 853 847 830 }
+   13 : { 650 513 515 }
+   14 : { 847 825 823 }
+   15 : { 320 380 1080 }
+   16 : { 456 856 690 }
+   17 : { 334 310 508 }
+   18 : { 381 775 513 }
+   19 : { 370 1230 973 }

@@ -1,0 +1,432 @@
+ABC command line: "&read _init.aig; &cec -m -v".
+
+label 1
+label 3
+Assuming the current network is a single-output miter.
+label 6
+Start EquivFixOutputPairs =     0.00 sec
+End EquivFixOutputPairs =     0.00 sec
+Start ManSatSweeping =     0.00 sec
+Simulating 15 words for 15 rounds. SAT solving with 1000 conflicts.
+nSimWords = 0
+cst =   27913  cls =      0  lit =   27913  unused =     256  proof =     0
+cst =    1449  cls =   2057  lit =    5093  unused =   21019  proof =     0
+cst =     556  cls =   1042  lit =    1975  unused =   25152  proof =     0
+cst =     237  cls =    574  lit =     959  unused =   26636  proof =     0
+cst =     104  cls =    334  lit =     502  unused =   27333  proof =     0
+cst =      66  cls =    247  lit =     354  unused =   27568  proof =     0
+cst =      49  cls =    194  lit =     272  unused =   27703  proof =     0
+cst =      30  cls =    168  lit =     223  unused =   27778  proof =     0
+cst =      23  cls =    140  lit =     184  unused =   27845  proof =     0
+cst =      20  cls =    116  lit =     154  unused =   27899  proof =     0
+  1 : P =      0. D =      0. F =     1. M =    7987. And =   27913. Time =     0.17 sec
+Increasing conflict limit to 10000.
+The result is written into file "cec_giaSweep.aig".
+Switching into reduced mode.
+  2 : P =      0. D =     15. F =     0. M =    7987. And =   27913. Time =     0.02 sec
+  3 : P =      1. D =      4. F =     0. M =    7987. And =   27911. Time =     0.01 sec
+Switching into normal mode.
+  4 : P =      0. D =     31. F =     0. M =       0. And =   27911. Time =     0.03 sec
+  5 : P =      0. D =     33. F =     0. M =       0. And =   27911. Time =     0.07 sec
+  6 : P =      2. D =     11. F =     0. M =       0. And =   27654. Time =     0.05 sec
+  7 : P =      1. D =      5. F =     0. M =       0. And =   27653. Time =     0.02 sec
+  8 : P =      2. D =      2. F =     0. M =       0. And =   27651. Time =     0.01 sec
+  9 : P =      1. D =      1. F =     0. M =       0. And =   27649. Time =     0.01 sec
+ 10 : P =      1. D =      2. F =     0. M =       0. And =   27648. Time =     0.01 sec
+ 11 : P =      1. D =      0. F =     0. M =       0. And =   27647. Time =     0.01 sec
+ 12 : P =      2. D =      0. F =     0. M =       0. And =   27644. Time =     0.02 sec
+ 13 : P =      0. D =      0. F =     1. M =       0. And =   27644. Time =     1.91 sec
+Increasing conflict limit to 100000.
+The result is written into file "cec_giaSweep.aig".
+ 14 : P =      0. D =      0. F =     1. M =       0. And =   27644. Time =    20.77 sec
+Performed 118 SAT calls: P = 11  D = 104  F = 3
+NBeg = 27913. NEnd = 27644. (Gain =   0.96 %).  RBeg = 0. REnd = 0. (Gain =   0.00 %).
+Sim  =     0.03 sec (  0.00 %)
+Sat  =    23.06 sec (  0.00 %)
+Pat  =     0.01 sec (  0.00 %)
+Time =    23.15 sec
+End ManSatSweeping =    23.15 sec
+Networks are UNDECIDED after the new CEC engine.  Time =    23.15 sec
+Calling the old CEC engine.
+Start Old Verify =    23.15 sec
+Original miter:   Nodes =  27647.
+label 27
+Initial SAT:      Nodes =  27647.  Time =     0.10 sec
+Rewriting:        Nodes =  27601.  Time =     0.18 sec
+Starting Fra_SmlSimulate......classes =   698.   Lits =   1147.
+Refined classes  after Pattern 0=   698.   Changes =    0.   Lits =   1147.
+Refined classes after pattern 1 =   688.   Changes =   15.   Lits =   1132.
+Refined classes  =   485.   Changes =  400.   Lits =    732.
+Refined classes  =   359.   Changes =  218.   Lits =    514.
+Refined classes  =   301.   Changes =   93.   Lits =    421.
+Refined classes  =   278.   Changes =   49.   Lits =    372.
+Refined classes  =   242.   Changes =   58.   Lits =    314.
+Refined classes  =   220.   Changes =   29.   Lits =    285.
+Refined classes  =   203.   Changes =   29.   Lits =    256.
+Refined classes  =   189.   Changes =   23.   Lits =    233.
+Refined classes  =   172.   Changes =   22.   Lits =    211.
+Refined classes  =   162.   Changes =   17.   Lits =    194.
+Refined classes  =   144.   Changes =   24.   Lits =    170.
+Refined classes  =   139.   Changes =    6.   Lits =    164.
+Refined classes  =   134.   Changes =    8.   Lits =    156.
+Refined classes  =   129.   Changes =    6.   Lits =    150.
+Refined classes  =   121.   Changes =   10.   Lits =    140.
+Refined classes  =   118.   Changes =    3.   Lits =    137.
+Refined classes  =   112.   Changes =    8.   Lits =    129.
+Refined classes  =   108.   Changes =    5.   Lits =    124.
+Refined classes  =   105.   Changes =    5.   Lits =    119.
+Refined classes  =   100.   Changes =    9.   Lits =    110.
+Refined classes  =    98.   Changes =    2.   Lits =    108.
+Refined classes  =    96.   Changes =    3.   Lits =    105.
+Refined classes  =    94.   Changes =    2.   Lits =    103.
+Refined classes  =    88.   Changes =    6.   Lits =     97.
+Refined classes  =    85.   Changes =    3.   Lits =     94.
+Refined classes  =    84.   Changes =    3.   Lits =     91.
+Refined classes  =    82.   Changes =    2.   Lits =     89.
+Refined classes  =    80.   Changes =    2.   Lits =     87.
+Refined classes  =    77.   Changes =    3.   Lits =     84.
+Refined classes  =    75.   Changes =    2.   Lits =     82.
+Refined classes  =    73.   Changes =    2.   Lits =     80.
+Refined classes  =    72.   Changes =    1.   Lits =     79.
+Refined classes  =    71.   Changes =    1.   Lits =     78.
+Refined classes  =    70.   Changes =    1.   Lits =     77.
+Refined classes  =    66.   Changes =    5.   Lits =     72.
+Refined classes  =    66.   Changes =    0.   Lits =     72.
+start Fra_FraigSweep...
+Fraiging (i=1):   Nodes =  27578.  Time =     0.04 sec
+Rewriting:        Nodes =  27578.  Time =     0.07 sec
+Starting Fra_SmlSimulate......classes =   691.   Lits =   1135.
+Refined classes  after Pattern 0=   691.   Changes =    0.   Lits =   1135.
+Refined classes after pattern 1 =   681.   Changes =   15.   Lits =   1120.
+Refined classes  =   475.   Changes =  399.   Lits =    721.
+Refined classes  =   349.   Changes =  218.   Lits =    503.
+Refined classes  =   291.   Changes =   93.   Lits =    410.
+Refined classes  =   268.   Changes =   49.   Lits =    361.
+Refined classes  =   231.   Changes =   58.   Lits =    303.
+Refined classes  =   209.   Changes =   29.   Lits =    274.
+Refined classes  =   192.   Changes =   29.   Lits =    245.
+Refined classes  =   178.   Changes =   23.   Lits =    222.
+Refined classes  =   161.   Changes =   22.   Lits =    200.
+Refined classes  =   151.   Changes =   17.   Lits =    183.
+Refined classes  =   133.   Changes =   24.   Lits =    159.
+Refined classes  =   128.   Changes =    6.   Lits =    153.
+Refined classes  =   123.   Changes =    8.   Lits =    145.
+Refined classes  =   118.   Changes =    6.   Lits =    139.
+Refined classes  =   110.   Changes =   10.   Lits =    129.
+Refined classes  =   107.   Changes =    3.   Lits =    126.
+Refined classes  =   101.   Changes =    8.   Lits =    118.
+Refined classes  =    97.   Changes =    5.   Lits =    113.
+Refined classes  =    94.   Changes =    5.   Lits =    108.
+Refined classes  =    89.   Changes =    9.   Lits =     99.
+Refined classes  =    87.   Changes =    2.   Lits =     97.
+Refined classes  =    85.   Changes =    3.   Lits =     94.
+Refined classes  =    83.   Changes =    2.   Lits =     92.
+Refined classes  =    77.   Changes =    6.   Lits =     86.
+Refined classes  =    74.   Changes =    3.   Lits =     83.
+Refined classes  =    73.   Changes =    3.   Lits =     80.
+Refined classes  =    71.   Changes =    2.   Lits =     78.
+Refined classes  =    69.   Changes =    2.   Lits =     76.
+Refined classes  =    66.   Changes =    3.   Lits =     73.
+Refined classes  =    64.   Changes =    2.   Lits =     71.
+Refined classes  =    62.   Changes =    2.   Lits =     69.
+Refined classes  =    61.   Changes =    1.   Lits =     68.
+Refined classes  =    60.   Changes =    1.   Lits =     67.
+Refined classes  =    59.   Changes =    1.   Lits =     66.
+Refined classes  =    55.   Changes =    5.   Lits =     61.
+Refined classes  =    55.   Changes =    0.   Lits =     61.
+start Fra_FraigSweep...
+Fraiging (i=2):   Nodes =  27564.  Time =     0.10 sec
+Rewriting:        Nodes =  27563.  Time =     0.07 sec
+Starting Fra_SmlSimulate......classes =   688.   Lits =   1128.
+Refined classes  after Pattern 0=   688.   Changes =    0.   Lits =   1128.
+Refined classes after pattern 1 =   678.   Changes =   15.   Lits =   1113.
+Refined classes  =   472.   Changes =  399.   Lits =    714.
+Refined classes  =   345.   Changes =  218.   Lits =    496.
+Refined classes  =   287.   Changes =   93.   Lits =    403.
+Refined classes  =   264.   Changes =   49.   Lits =    354.
+Refined classes  =   227.   Changes =   58.   Lits =    296.
+Refined classes  =   205.   Changes =   29.   Lits =    267.
+Refined classes  =   187.   Changes =   29.   Lits =    238.
+Refined classes  =   172.   Changes =   23.   Lits =    215.
+Refined classes  =   155.   Changes =   22.   Lits =    193.
+Refined classes  =   145.   Changes =   17.   Lits =    176.
+Refined classes  =   127.   Changes =   24.   Lits =    152.
+Refined classes  =   122.   Changes =    6.   Lits =    146.
+Refined classes  =   117.   Changes =    8.   Lits =    138.
+Refined classes  =   112.   Changes =    6.   Lits =    132.
+Refined classes  =   104.   Changes =   10.   Lits =    122.
+Refined classes  =   101.   Changes =    3.   Lits =    119.
+Refined classes  =    95.   Changes =    8.   Lits =    111.
+Refined classes  =    91.   Changes =    5.   Lits =    106.
+Refined classes  =    88.   Changes =    5.   Lits =    101.
+Refined classes  =    83.   Changes =    9.   Lits =     92.
+Refined classes  =    81.   Changes =    2.   Lits =     90.
+Refined classes  =    79.   Changes =    3.   Lits =     87.
+Refined classes  =    77.   Changes =    2.   Lits =     85.
+Refined classes  =    71.   Changes =    6.   Lits =     79.
+Refined classes  =    68.   Changes =    3.   Lits =     76.
+Refined classes  =    67.   Changes =    3.   Lits =     73.
+Refined classes  =    65.   Changes =    2.   Lits =     71.
+Refined classes  =    63.   Changes =    2.   Lits =     69.
+Refined classes  =    60.   Changes =    3.   Lits =     66.
+Refined classes  =    58.   Changes =    2.   Lits =     64.
+Refined classes  =    56.   Changes =    2.   Lits =     62.
+Refined classes  =    55.   Changes =    1.   Lits =     61.
+Refined classes  =    54.   Changes =    1.   Lits =     60.
+Refined classes  =    53.   Changes =    1.   Lits =     59.
+Refined classes  =    49.   Changes =    5.   Lits =     54.
+Refined classes  =    49.   Changes =    0.   Lits =     54.
+start Fra_FraigSweep...
+Fraiging (i=3):   Nodes =  27552.  Time =     0.15 sec
+Rewriting:        Nodes =  27552.  Time =     0.07 sec
+Starting Fra_SmlSimulate......classes =   684.   Lits =   1124.
+Refined classes  after Pattern 0=   684.   Changes =    0.   Lits =   1124.
+Refined classes after pattern 1 =   674.   Changes =   15.   Lits =   1109.
+Refined classes  =   468.   Changes =  399.   Lits =    710.
+Refined classes  =   341.   Changes =  218.   Lits =    492.
+Refined classes  =   283.   Changes =   93.   Lits =    399.
+Refined classes  =   260.   Changes =   49.   Lits =    350.
+Refined classes  =   223.   Changes =   58.   Lits =    292.
+Refined classes  =   201.   Changes =   29.   Lits =    263.
+Refined classes  =   183.   Changes =   29.   Lits =    234.
+Refined classes  =   168.   Changes =   23.   Lits =    211.
+Refined classes  =   151.   Changes =   22.   Lits =    189.
+Refined classes  =   141.   Changes =   17.   Lits =    172.
+Refined classes  =   123.   Changes =   24.   Lits =    148.
+Refined classes  =   118.   Changes =    6.   Lits =    142.
+Refined classes  =   113.   Changes =    8.   Lits =    134.
+Refined classes  =   108.   Changes =    6.   Lits =    128.
+Refined classes  =   100.   Changes =   10.   Lits =    118.
+Refined classes  =    97.   Changes =    3.   Lits =    115.
+Refined classes  =    91.   Changes =    8.   Lits =    107.
+Refined classes  =    87.   Changes =    5.   Lits =    102.
+Refined classes  =    84.   Changes =    5.   Lits =     97.
+Refined classes  =    79.   Changes =    9.   Lits =     88.
+Refined classes  =    77.   Changes =    2.   Lits =     86.
+Refined classes  =    75.   Changes =    3.   Lits =     83.
+Refined classes  =    73.   Changes =    2.   Lits =     81.
+Refined classes  =    67.   Changes =    6.   Lits =     75.
+Refined classes  =    64.   Changes =    3.   Lits =     72.
+Refined classes  =    63.   Changes =    3.   Lits =     69.
+Refined classes  =    61.   Changes =    2.   Lits =     67.
+Refined classes  =    59.   Changes =    2.   Lits =     65.
+Refined classes  =    56.   Changes =    3.   Lits =     62.
+Refined classes  =    54.   Changes =    2.   Lits =     60.
+Refined classes  =    52.   Changes =    2.   Lits =     58.
+Refined classes  =    51.   Changes =    1.   Lits =     57.
+Refined classes  =    50.   Changes =    1.   Lits =     56.
+Refined classes  =    49.   Changes =    1.   Lits =     55.
+Refined classes  =    45.   Changes =    5.   Lits =     50.
+Refined classes  =    45.   Changes =    0.   Lits =     50.
+start Fra_FraigSweep...
+Fraiging (i=4):   Nodes =  27552.  Time =     0.55 sec
+Rewriting:        Nodes =  27552.  Time =     0.07 sec
+Starting Fra_SmlSimulate......classes =   684.   Lits =   1124.
+Refined classes  after Pattern 0=   684.   Changes =    0.   Lits =   1124.
+Refined classes after pattern 1 =   674.   Changes =   15.   Lits =   1109.
+Refined classes  =   468.   Changes =  399.   Lits =    710.
+Refined classes  =   341.   Changes =  218.   Lits =    492.
+Refined classes  =   283.   Changes =   93.   Lits =    399.
+Refined classes  =   260.   Changes =   49.   Lits =    350.
+Refined classes  =   223.   Changes =   58.   Lits =    292.
+Refined classes  =   201.   Changes =   29.   Lits =    263.
+Refined classes  =   183.   Changes =   29.   Lits =    234.
+Refined classes  =   168.   Changes =   23.   Lits =    211.
+Refined classes  =   151.   Changes =   22.   Lits =    189.
+Refined classes  =   141.   Changes =   17.   Lits =    172.
+Refined classes  =   123.   Changes =   24.   Lits =    148.
+Refined classes  =   118.   Changes =    6.   Lits =    142.
+Refined classes  =   113.   Changes =    8.   Lits =    134.
+Refined classes  =   108.   Changes =    6.   Lits =    128.
+Refined classes  =   100.   Changes =   10.   Lits =    118.
+Refined classes  =    97.   Changes =    3.   Lits =    115.
+Refined classes  =    91.   Changes =    8.   Lits =    107.
+Refined classes  =    87.   Changes =    5.   Lits =    102.
+Refined classes  =    84.   Changes =    5.   Lits =     97.
+Refined classes  =    79.   Changes =    9.   Lits =     88.
+Refined classes  =    77.   Changes =    2.   Lits =     86.
+Refined classes  =    75.   Changes =    3.   Lits =     83.
+Refined classes  =    73.   Changes =    2.   Lits =     81.
+Refined classes  =    67.   Changes =    6.   Lits =     75.
+Refined classes  =    64.   Changes =    3.   Lits =     72.
+Refined classes  =    63.   Changes =    3.   Lits =     69.
+Refined classes  =    61.   Changes =    2.   Lits =     67.
+Refined classes  =    59.   Changes =    2.   Lits =     65.
+Refined classes  =    56.   Changes =    3.   Lits =     62.
+Refined classes  =    54.   Changes =    2.   Lits =     60.
+Refined classes  =    52.   Changes =    2.   Lits =     58.
+Refined classes  =    51.   Changes =    1.   Lits =     57.
+Refined classes  =    50.   Changes =    1.   Lits =     56.
+Refined classes  =    49.   Changes =    1.   Lits =     55.
+Refined classes  =    45.   Changes =    5.   Lits =     50.
+Refined classes  =    45.   Changes =    0.   Lits =     50.
+start Fra_FraigSweep...
+Fraiging (i=5):   Nodes =  27552.  Time =     3.55 sec
+Rewriting:        Nodes =  27552.  Time =     0.07 sec
+Starting Fra_SmlSimulate......classes =   684.   Lits =   1124.
+Refined classes  after Pattern 0=   684.   Changes =    0.   Lits =   1124.
+Refined classes after pattern 1 =   674.   Changes =   15.   Lits =   1109.
+Refined classes  =   468.   Changes =  399.   Lits =    710.
+Refined classes  =   341.   Changes =  218.   Lits =    492.
+Refined classes  =   283.   Changes =   93.   Lits =    399.
+Refined classes  =   260.   Changes =   49.   Lits =    350.
+Refined classes  =   223.   Changes =   58.   Lits =    292.
+Refined classes  =   201.   Changes =   29.   Lits =    263.
+Refined classes  =   183.   Changes =   29.   Lits =    234.
+Refined classes  =   168.   Changes =   23.   Lits =    211.
+Refined classes  =   151.   Changes =   22.   Lits =    189.
+Refined classes  =   141.   Changes =   17.   Lits =    172.
+Refined classes  =   123.   Changes =   24.   Lits =    148.
+Refined classes  =   118.   Changes =    6.   Lits =    142.
+Refined classes  =   113.   Changes =    8.   Lits =    134.
+Refined classes  =   108.   Changes =    6.   Lits =    128.
+Refined classes  =   100.   Changes =   10.   Lits =    118.
+Refined classes  =    97.   Changes =    3.   Lits =    115.
+Refined classes  =    91.   Changes =    8.   Lits =    107.
+Refined classes  =    87.   Changes =    5.   Lits =    102.
+Refined classes  =    84.   Changes =    5.   Lits =     97.
+Refined classes  =    79.   Changes =    9.   Lits =     88.
+Refined classes  =    77.   Changes =    2.   Lits =     86.
+Refined classes  =    75.   Changes =    3.   Lits =     83.
+Refined classes  =    73.   Changes =    2.   Lits =     81.
+Refined classes  =    67.   Changes =    6.   Lits =     75.
+Refined classes  =    64.   Changes =    3.   Lits =     72.
+Refined classes  =    63.   Changes =    3.   Lits =     69.
+Refined classes  =    61.   Changes =    2.   Lits =     67.
+Refined classes  =    59.   Changes =    2.   Lits =     65.
+Refined classes  =    56.   Changes =    3.   Lits =     62.
+Refined classes  =    54.   Changes =    2.   Lits =     60.
+Refined classes  =    52.   Changes =    2.   Lits =     58.
+Refined classes  =    51.   Changes =    1.   Lits =     57.
+Refined classes  =    50.   Changes =    1.   Lits =     56.
+Refined classes  =    49.   Changes =    1.   Lits =     55.
+Refined classes  =    45.   Changes =    5.   Lits =     50.
+Refined classes  =    45.   Changes =    0.   Lits =     50.
+start Fra_FraigSweep...
+Fraiging (i=6):   Nodes =  27552.  Time =    29.79 sec
+Rewriting:        Nodes =  27552.  Time =     0.07 sec
+label 27
+CNF stats: Vars =  14322. Clauses =   56490. Literals =   152021. Time =     0.02 sec
+Running SAT solver with parameters 10000 and 1000 and 50.
+reduceDB: Keeping    4930 out of   10001 clauses (49.30 %)  Time =     0.04 sec
+reduceDB: Keeping    5533 out of   11000 clauses (50.30 %)  Time =     0.04 sec
+reduceDB: Keeping    6016 out of   12000 clauses (50.13 %)  Time =     0.04 sec
+reduceDB: Keeping    6517 out of   13001 clauses (50.13 %)  Time =     0.04 sec
+reduceDB: Keeping    7019 out of   14001 clauses (50.13 %)  Time =     0.04 sec
+reduceDB: Keeping    7593 out of   15001 clauses (50.62 %)  Time =     0.05 sec
+reduceDB: Keeping    8194 out of   16000 clauses (51.21 %)  Time =     0.05 sec
+reduceDB: Keeping    8608 out of   17001 clauses (50.63 %)  Time =     0.05 sec
+reduceDB: Keeping    9092 out of   18000 clauses (50.51 %)  Time =     0.05 sec
+reduceDB: Keeping    9817 out of   19000 clauses (51.67 %)  Time =     0.05 sec
+reduceDB: Keeping   10489 out of   20001 clauses (52.44 %)  Time =     0.05 sec
+reduceDB: Keeping   11382 out of   21001 clauses (54.20 %)  Time =     0.06 sec
+reduceDB: Keeping   11832 out of   22001 clauses (53.78 %)  Time =     0.06 sec
+reduceDB: Keeping   12344 out of   23000 clauses (53.67 %)  Time =     0.06 sec
+reduceDB: Keeping   12587 out of   24000 clauses (52.45 %)  Time =     0.06 sec
+reduceDB: Keeping   13354 out of   25003 clauses (53.41 %)  Time =     0.06 sec
+reduceDB: Keeping   13651 out of   26000 clauses (52.50 %)  Time =     0.07 sec
+reduceDB: Keeping   14292 out of   27000 clauses (52.93 %)  Time =     0.07 sec
+reduceDB: Keeping   14788 out of   28000 clauses (52.81 %)  Time =     0.07 sec
+reduceDB: Keeping   15563 out of   29001 clauses (53.66 %)  Time =     0.07 sec
+reduceDB: Keeping   16015 out of   30001 clauses (53.38 %)  Time =     0.07 sec
+reduceDB: Keeping   16472 out of   31001 clauses (53.13 %)  Time =     0.08 sec
+reduceDB: Keeping   16860 out of   32000 clauses (52.69 %)  Time =     0.08 sec
+reduceDB: Keeping   17265 out of   33000 clauses (52.32 %)  Time =     0.08 sec
+reduceDB: Keeping   17648 out of   34001 clauses (51.90 %)  Time =     0.08 sec
+reduceDB: Keeping   18204 out of   35001 clauses (52.01 %)  Time =     0.09 sec
+reduceDB: Keeping   18642 out of   36001 clauses (51.78 %)  Time =     0.09 sec
+reduceDB: Keeping   19542 out of   37002 clauses (52.81 %)  Time =     0.09 sec
+reduceDB: Keeping   19673 out of   38003 clauses (51.77 %)  Time =     0.09 sec
+reduceDB: Keeping   20190 out of   39000 clauses (51.77 %)  Time =     0.10 sec
+reduceDB: Keeping   20700 out of   40001 clauses (51.75 %)  Time =     0.10 sec
+reduceDB: Keeping   21019 out of   41001 clauses (51.26 %)  Time =     0.10 sec
+reduceDB: Keeping   21949 out of   42000 clauses (52.26 %)  Time =     0.10 sec
+reduceDB: Keeping   23132 out of   43000 clauses (53.80 %)  Time =     0.11 sec
+reduceDB: Keeping   23834 out of   44000 clauses (54.17 %)  Time =     0.11 sec
+reduceDB: Keeping   24533 out of   45000 clauses (54.52 %)  Time =     0.11 sec
+reduceDB: Keeping   24504 out of   46001 clauses (53.27 %)  Time =     0.12 sec
+reduceDB: Keeping   24880 out of   47002 clauses (52.93 %)  Time =     0.12 sec
+reduceDB: Keeping   25254 out of   48000 clauses (52.61 %)  Time =     0.12 sec
+reduceDB: Keeping   25388 out of   49001 clauses (51.81 %)  Time =     0.13 sec
+reduceDB: Keeping   26101 out of   50001 clauses (52.20 %)  Time =     0.13 sec
+reduceDB: Keeping   26307 out of   51001 clauses (51.58 %)  Time =     0.13 sec
+reduceDB: Keeping   26711 out of   52001 clauses (51.37 %)  Time =     0.14 sec
+reduceDB: Keeping   27131 out of   53000 clauses (51.19 %)  Time =     0.14 sec
+reduceDB: Keeping   27535 out of   54001 clauses (50.99 %)  Time =     0.14 sec
+reduceDB: Keeping   28747 out of   55000 clauses (52.27 %)  Time =     0.15 sec
+reduceDB: Keeping   28658 out of   56001 clauses (51.17 %)  Time =     0.15 sec
+reduceDB: Keeping   28858 out of   57000 clauses (50.63 %)  Time =     0.15 sec
+reduceDB: Keeping   29308 out of   58001 clauses (50.53 %)  Time =     0.16 sec
+reduceDB: Keeping   29645 out of   59001 clauses (50.24 %)  Time =     0.16 sec
+reduceDB: Keeping   30083 out of   60000 clauses (50.14 %)  Time =     0.17 sec
+reduceDB: Keeping   30600 out of   61001 clauses (50.16 %)  Time =     0.17 sec
+reduceDB: Keeping   31078 out of   62001 clauses (50.12 %)  Time =     0.17 sec
+reduceDB: Keeping   31560 out of   63000 clauses (50.10 %)  Time =     0.18 sec
+reduceDB: Keeping   32207 out of   64001 clauses (50.32 %)  Time =     0.18 sec
+reduceDB: Keeping   32927 out of   65001 clauses (50.66 %)  Time =     0.19 sec
+reduceDB: Keeping   33232 out of   66001 clauses (50.35 %)  Time =     0.19 sec
+reduceDB: Keeping   34422 out of   67002 clauses (51.37 %)  Time =     0.19 sec
+reduceDB: Keeping   34201 out of   68000 clauses (50.30 %)  Time =     0.20 sec
+reduceDB: Keeping   34488 out of   69001 clauses (49.98 %)  Time =     0.20 sec
+reduceDB: Keeping   35047 out of   70000 clauses (50.07 %)  Time =     0.21 sec
+reduceDB: Keeping   35365 out of   71000 clauses (49.81 %)  Time =     0.21 sec
+reduceDB: Keeping   36101 out of   72000 clauses (50.14 %)  Time =     0.22 sec
+reduceDB: Keeping   36366 out of   73000 clauses (49.82 %)  Time =     0.22 sec
+reduceDB: Keeping   37118 out of   74001 clauses (50.16 %)  Time =     0.23 sec
+reduceDB: Keeping   37572 out of   75000 clauses (50.10 %)  Time =     0.23 sec
+reduceDB: Keeping   38002 out of   76001 clauses (50.00 %)  Time =     0.24 sec
+reduceDB: Keeping   38606 out of   77000 clauses (50.14 %)  Time =     0.24 sec
+reduceDB: Keeping   39119 out of   78000 clauses (50.15 %)  Time =     0.25 sec
+reduceDB: Keeping   39487 out of   79000 clauses (49.98 %)  Time =     0.25 sec
+reduceDB: Keeping   40118 out of   80001 clauses (50.15 %)  Time =     0.26 sec
+reduceDB: Keeping   40590 out of   81001 clauses (50.11 %)  Time =     0.26 sec
+reduceDB: Keeping   41070 out of   82000 clauses (50.09 %)  Time =     0.27 sec
+reduceDB: Keeping   41578 out of   83003 clauses (50.09 %)  Time =     0.28 sec
+reduceDB: Keeping   42113 out of   84000 clauses (50.13 %)  Time =     0.28 sec
+reduceDB: Keeping   42619 out of   85001 clauses (50.14 %)  Time =     0.29 sec
+reduceDB: Keeping   41433 out of   86002 clauses (48.18 %)  Time =     0.29 sec
+reduceDB: Keeping   43460 out of   87001 clauses (49.95 %)  Time =     0.30 sec
+reduceDB: Keeping   44143 out of   88001 clauses (50.16 %)  Time =     0.31 sec
+reduceDB: Keeping   44247 out of   89000 clauses (49.72 %)  Time =     0.31 sec
+reduceDB: Keeping   44998 out of   90000 clauses (50.00 %)  Time =     0.32 sec
+reduceDB: Keeping   42986 out of   91000 clauses (47.24 %)  Time =     0.32 sec
+reduceDB: Keeping   46094 out of   92000 clauses (50.10 %)  Time =     0.33 sec
+reduceDB: Keeping   45974 out of   93001 clauses (49.43 %)  Time =     0.34 sec
+reduceDB: Keeping   47113 out of   94001 clauses (50.12 %)  Time =     0.34 sec
+reduceDB: Keeping   47899 out of   95001 clauses (50.42 %)  Time =     0.35 sec
+reduceDB: Keeping   48275 out of   96000 clauses (50.29 %)  Time =     0.35 sec
+reduceDB: Keeping   48900 out of   97000 clauses (50.41 %)  Time =     0.36 sec
+reduceDB: Keeping   50774 out of   98000 clauses (51.81 %)  Time =     0.37 sec
+reduceDB: Keeping   52232 out of   99001 clauses (52.76 %)  Time =     0.37 sec
+reduceDB: Keeping   52860 out of  100000 clauses (52.86 %)  Time =     0.38 sec
+reduceDB: Keeping   53130 out of  101000 clauses (52.60 %)  Time =     0.39 sec
+reduceDB: Keeping   52847 out of  102000 clauses (51.81 %)  Time =     0.39 sec
+reduceDB: Keeping   53589 out of  103001 clauses (52.03 %)  Time =     0.40 sec
+reduceDB: Keeping   53403 out of  104000 clauses (51.35 %)  Time =     0.41 sec
+reduceDB: Keeping   54782 out of  105003 clauses (52.17 %)  Time =     0.41 sec
+reduceDB: Keeping   55645 out of  106003 clauses (52.49 %)  Time =     0.42 sec
+reduceDB: Keeping   57577 out of  107000 clauses (53.81 %)  Time =     0.42 sec
+reduceDB: Keeping   42515 out of  108000 clauses (39.37 %)  Time =     0.43 sec
+reduceDB: Keeping   50730 out of  109001 clauses (46.54 %)  Time =     0.44 sec
+reduceDB: Keeping   55166 out of  110000 clauses (50.15 %)  Time =     0.44 sec
+reduceDB: Keeping   55275 out of  111000 clauses (49.80 %)  Time =     0.45 sec
+reduceDB: Keeping   56203 out of  112000 clauses (50.18 %)  Time =     0.46 sec
+reduceDB: Keeping   56542 out of  113003 clauses (50.04 %)  Time =     0.47 sec
+reduceDB: Keeping   57152 out of  114000 clauses (50.13 %)  Time =     0.47 sec
+reduceDB: Keeping   57642 out of  115000 clauses (50.12 %)  Time =     0.48 sec
+reduceDB: Keeping   58027 out of  116000 clauses (50.02 %)  Time =     0.49 sec
+reduceDB: Keeping   58739 out of  117001 clauses (50.20 %)  Time =     0.49 sec
+reduceDB: Keeping   61387 out of  118000 clauses (52.02 %)  Time =     0.50 sec
+reduceDB: Keeping   64021 out of  119001 clauses (53.80 %)  Time =     0.51 sec
+reduceDB: Keeping   65462 out of  120001 clauses (54.55 %)  Time =     0.51 sec
+reduceDB: Keeping   65931 out of  121002 clauses (54.49 %)  Time =     0.52 sec
+reduceDB: Keeping   66398 out of  122000 clauses (54.42 %)  Time =     0.53 sec
+reduceDB: Keeping   53964 out of  123001 clauses (43.87 %)  Time =     0.53 sec
+reduceDB: Keeping   62170 out of  124000 clauses (50.14 %)  Time =     0.54 sec
+starts        :             6861
+conflicts     :          3887338
+decisions     :          4496589
+propagations  :      10950800462
+Final SAT:        Nodes =  27552.  Time =   947.91 sec
+Networks are equivalent.  Time =  1005.97 sec
+End Old Verify =  1005.97 sec

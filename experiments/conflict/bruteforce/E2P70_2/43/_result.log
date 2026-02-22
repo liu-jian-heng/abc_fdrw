@@ -1,0 +1,105 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 397
+start replace node finding
+maxMffc = 108, max reduce = 22
+dump 1544, new mffc = 107
+dump 1713, new mffc = 106
+dump 1425, new mffc = 104
+dump 1712, new mffc = 102
+nid = 1558, patch size = 9
+nid = 1442, patch size = 15
+nid = 1559, patch size = 12
+nid = 1481, patch size = 32
+nid = 1536, patch size = 9
+nid = 1653, patch size = 18
+nid = 1421, patch size = 14
+nid = 1542, patch size = 23
+nid = 1538, patch size = 46
+nid = 1518, patch size = 59
+nid = 1444, patch size = 55
+nid = 1485, patch size = 60
+nid = 1423, patch size = 64
+nid = 1483, patch size = 65
+nid = 1412, patch size = 66
+start replacement
+trim: 2503->2202
+Trim time:  7.804022 sec
+start conflict test
+start final
+newly find #UNSAT: 10
+nid = 1968(1956)
+conflict = 62
+patch = 64
+org status = -5
+nid = 2088(2035)
+conflict = 85
+patch = 63
+org status = -5
+nid = 2097(2045)
+conflict = 35
+patch = 58
+org status = -5
+nid = 2175(2143)
+conflict = 3
+patch = 5
+org status = -7
+nid = 2284(2224)
+conflict = 103
+patch = 28
+org status = -1
+nid = 2399(2328)
+conflict = 12
+patch = 33
+org status = -5
+nid = 2411(2334)
+conflict = 13
+patch = 10
+org status = -5
+nid = 2444(2371)
+conflict = 70
+patch = 50
+org status = -5
+nid = 2479(2399)
+conflict = 40
+patch = 50
+org status = -1
+nid = 2571(2423)
+conflict = 46
+patch = 67
+org status = -5
+nSimWords = 0
+    0 : { 2684 2541 2619 }
+    1 : { 2604 2591 2545 }
+    2 : { 2594 2546 732 }
+    3 : { 2596 2532 676 }
+    4 : { 2597 2533 660 }
+    5 : { 948 948 1059 }
+    6 : { 1252 1252 1160 }
+    7 : { 2045 745 1972 }
+    8 : { 2008 742 1935 }
+    9 : { 1938 1862 1865 }
+   10 : { 1899 1333 1320 }
+   11 : { 1242 1241 1344 }
+   12 : { 1698 1344 1241 }
+   13 : { 1320 1426 1320 }
+   14 : { 366 366 406 }
+   15 : { 888 958 888 }

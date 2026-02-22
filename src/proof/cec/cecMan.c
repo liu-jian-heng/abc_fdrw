@@ -3504,13 +3504,13 @@ int Cec_ManFdTraverseUnknownCone( Cec_ManFd_t* pMan, int nid, int nHeight ) {
     if (Gia_ObjIsConst0(pObj)) return -1;
     nid1 = Gia_ObjFaninId0(pObj, nid);
     if (Cec_ManFdToSolve( pMan, nid1 ))
-        Cec_ManFdShrinkSimple( pMan, nid1 );
+        Cec_ManFdShrinkSimple( pMan, nid1, 1 );
     if (Vec_IntEntry( pMan->vStat, nid1 ) > 0) return nid1;
     buf = Cec_ManFdTraverseUnknownCone( pMan, nid1, nHeight - 1 );
     if (buf != -1) return buf;
     nid2 = Gia_ObjFaninId1(pObj, nid);
     if (Cec_ManFdToSolve( pMan, nid2 ))
-        Cec_ManFdShrinkSimple( pMan, nid2 );
+        Cec_ManFdShrinkSimple( pMan, nid2, 1 );
     if (Vec_IntEntry( pMan->vStat, nid2 ) > 0) return nid2;
     buf = Cec_ManFdTraverseUnknownCone( pMan, nid2, nHeight - 1 );
     if (buf != -1) return buf;
@@ -3527,7 +3527,7 @@ void Cec_ManFdTraverseUnknownNeighbor( Cec_ManFd_t* pMan, int nid, int nHeight )
     Vec_IntForEachEntry( vNeighbor, nidAbsBuf, i ) {
         nidGiaBuf = Cec_ManFdMapIdSingle( pMan, nidAbsBuf, 0 );
         if (Cec_ManFdToSolve( pMan, nidGiaBuf )) 
-            Cec_ManFdShrinkSimple( pMan, nidGiaBuf );
+            Cec_ManFdShrinkSimple( pMan, nidGiaBuf, 1 );
         if (Vec_IntEntry( pMan->vStat, nidGiaBuf ) > 0) Vec_IntPush( vIntBuff, nidGiaBuf );
         else {
             nidGiaBuf = Cec_ManFdTraverseUnknownCone( pMan, nidGiaBuf, nHeight - 1 );
@@ -3554,7 +3554,7 @@ int Cec_ManFdTraverseUnknownUpward( Cec_ManFd_t* pMan, int nid, int nHeight ) {
     highest = nid;
     Vec_IntForEachEntry( vTFO, nidAbsBuf, i ) {
         nidGiaBuf = Cec_ManFdMapIdSingle( pMan, nidAbsBuf, 0 );
-        Cec_ManFdShrinkSimple( pMan, nidGiaBuf );
+        Cec_ManFdShrinkSimple( pMan, nidGiaBuf, 1 );
         if (Vec_IntEntry(pMan->vStat, nidGiaBuf) > 0) {
             highest = Cec_ManFdTraverseUnknownUpward( pMan, nidGiaBuf, step );
             break;
@@ -3727,7 +3727,7 @@ int Cec_ManUpWard( Cec_ManFd_t* pMan, Vec_Int_t* vOrder, int nid, int height, in
             if (id_out != -1) continue;
             id_globalbuf = Cec_ManFdMapIdSingle( pMan, id_nxt, 0 );
             if (Cec_ManFdToSolve( pMan, id_globalbuf ) == 0) continue;
-            Cec_ManFdShrinkSimple( pMan, id_globalbuf );
+            Cec_ManFdShrinkSimple( pMan, id_globalbuf, 1 );
             if (Vec_IntEntry( pMan->vStat, id_globalbuf ) > 0) { // find UNSAT node
                 id_out = id_nxt;
             }
@@ -3815,7 +3815,7 @@ int Cec_ManFdTraverseUnknownFirst( Cec_ManFd_t* pMan, Vec_Int_t* vOrder, Vec_Int
         nidGlob = Cec_ManFdMapIdSingle( pMan, nidStart, 0 );
         if (Cec_ManFdToSolve( pMan, nidGlob )) {
             if (vTrav) Vec_IntPush( vTrav, nidStart );
-            Cec_ManFdShrinkSimple( pMan, nidGlob );
+            Cec_ManFdShrinkSimple( pMan, nidGlob, 1 );
             if (Vec_IntEntry( pMan->vStat, nidGlob ) > 0) {
                 break;
             }
@@ -3837,7 +3837,7 @@ int Cec_ManFdTraverseUnknownFirst( Cec_ManFd_t* pMan, Vec_Int_t* vOrder, Vec_Int
         nidGlob = Cec_ManFdMapIdSingle( pMan, buf2, 0 );
         assert(Cec_ManFdToSolve( pMan, nidGlob ));
         if (vTrav) Vec_IntPush( vTrav, buf2 );
-        Cec_ManFdShrinkSimple( pMan, nidGlob );
+        Cec_ManFdShrinkSimple( pMan, nidGlob, 1 );
     }
     return nidTrav;
 
@@ -3951,7 +3951,7 @@ int Cec_ManFdTraverseUnknownCheck( Cec_ManFd_t* pMan, Gia_Man_t* pCheckTFI, Vec_
 
     if ( Cec_ManFdToSolve( pMan, nidbufGlob ) ) {
         // preTest, if not success, return RetVal = 0
-        Cec_ManFdShrinkSimple( pMan, nidbufGlob );
+        Cec_ManFdShrinkSimple( pMan, nidbufGlob, 1 );
     }
 
     if ( Vec_IntEntry( pMan->vStat, nidbufGlob ) <= 0 ) {
@@ -4384,12 +4384,12 @@ void Cec_ManFdShrink( Cec_ManFd_t* pMan, int nid ) {
 
 }
 // find a patch with fewest frontier nodes
-void Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid ) {
+void Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid, int fClean ) {
     assert( Gia_ObjColors( pMan->pGia, nid ) == 1 || Gia_ObjColors( pMan->pGia, nid ) == 2 );
     if( Cec_ManFdToSolve( pMan, nid ) == 0 ) return;
     int cktOth = Gia_ObjColors( pMan->pGia, nid ) == 1 ? 2 : 1;
     int nidSup, i, buf, flag;
-    int clean_support = 0;
+    // int clean_support = 0;
     Vec_Int_t* vIntBuff;
     Vec_Int_t* vFdSupportNew = Vec_WecEntry(pMan->vGSupport, nid);
     Vec_Int_t* vFdSupportFrt = Vec_IntAlloc( 8 );
@@ -4410,8 +4410,10 @@ void Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid ) {
             Vec_IntDrop( vFdSupportNew, buf );
             patch = Cec_ManFdGetFd( pMan, nid, vFdSupportNew, 0 );
             if (patch != NULL && patch != 1 && patch != 2) {
-                // Gia_ManStop(Cec_ManPatchCleanSupport( patch, vFdSupportNew ));
-                // Gia_ManStop(patch);
+                if (fClean) {
+                    Gia_ManStop(Cec_ManPatchCleanSupport( patch, vFdSupportNew ));
+                    Gia_ManStop(patch);
+                }
                 flag = 1;
             } else {
                 Vec_IntPush( vFdSupportNew, nidSup );
@@ -4422,14 +4424,17 @@ void Cec_ManFdShrinkSimple( Cec_ManFd_t* pMan, int nid ) {
     if (flag == 1 || Vec_IntEntry(pMan->vStat, nid) == CEC_FD_UNKNOWN) {
         Vec_IntWriteEntry( pMan->vStat, nid, CEC_FD_UNKNOWN );
         Cec_ManFdCleanOneUnknown( pMan, nid );
+        // if (Vec_IntEntry(pMan->vStat, nid) <= 0) {
+        //     printf("nid %d is somehow not solved\n", nid);
+        // }
     } else {
         if (Vec_IntEntry(pMan->vStat, nid) == CEC_FD_TRIVIAL) 
             Vec_IntWriteEntry( pMan->vStat, nid, CEC_FD_UNSHRINKABLE );
     }
 
-    if (clean_support == 1) {
-        Cec_ManFdCleanSupport( pMan, nid );
-    }
+    // if (clean_support == 1) {
+    //     Cec_ManFdCleanSupport( pMan, nid );
+    // }
 }
 
 

@@ -1,0 +1,190 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 454
+start replace node finding
+maxMffc = 428, max reduce = 46
+dump 2067, new mffc = 427
+dump 2077, new mffc = 426
+dump 2079, new mffc = 425
+dump 2114, new mffc = 424
+dump 2124, new mffc = 423
+dump 2142, new mffc = 422
+dump 2325, new mffc = 421
+dump 2331, new mffc = 420
+dump 2404, new mffc = 419
+dump 2512, new mffc = 418
+dump 2131, new mffc = 416
+dump 2137, new mffc = 414
+dump 2160, new mffc = 412
+dump 2170, new mffc = 410
+dump 2083, new mffc = 408
+dump 2307, new mffc = 405
+dump 2013, new mffc = 402
+dump 2087, new mffc = 399
+dump 2112, new mffc = 395
+nid = 2338, patch size = 33
+nid = 2558, patch size = 36
+nid = 2314, patch size = 17
+nid = 2344, patch size = 57
+nid = 2660, patch size = 20
+nid = 2324, patch size = 49
+nid = 2373, patch size = 43
+nid = 2157, patch size = 41
+nid = 2375, patch size = 46
+nid = 2403, patch size = 59
+nid = 2568, patch size = 63
+nid = 2551, patch size = 56
+nid = 2141, patch size = 33
+nid = 2430, patch size = 61
+nid = 2534, patch size = 52
+nid = 2535, patch size = 57
+nid = 2281, patch size = 35
+nid = 1932, patch size = 54
+nid = 2038, patch size = 53
+nid = 2611, patch size = 61
+nid = 2303, patch size = 32
+nid = 2640, patch size = 28
+nid = 2042, patch size = 64
+nid = 2369, patch size = 28
+nid = 1941, patch size = 40
+nid = 2400, patch size = 33
+nid = 2034, patch size = 46
+nid = 2504, patch size = 41
+nid = 2471, patch size = 70
+nid = 2266, patch size = 59
+nid = 2219, patch size = 21
+start replacement
+trim: 2738->1976
+Trim time:  7.542783 sec
+start conflict test
+start final
+newly find #UNSAT: 19
+nid = 1419(1060)
+conflict = 45
+patch = 35
+org status = -5
+nid = 1420(1080)
+conflict = 63
+patch = 38
+org status = -5
+nid = 1629(1135)
+conflict = 15
+patch = 15
+org status = -5
+nid = 1630(1136)
+conflict = 15
+patch = 13
+org status = -5
+nid = 1631(1141)
+conflict = 17
+patch = 24
+org status = -1
+nid = 1633(1146)
+conflict = 23
+patch = 33
+org status = -1
+nid = 1762(1390)
+conflict = 25
+patch = 32
+org status = -5
+nid = 1765(1430)
+conflict = 50
+patch = 52
+org status = -1
+nid = 1766(1431)
+conflict = 67
+patch = 60
+org status = -5
+nid = 1790(1451)
+conflict = 50
+patch = 24
+org status = -7
+nid = 1807(1463)
+conflict = 7
+patch = 3
+org status = -7
+nid = 1824(1481)
+conflict = 15
+patch = 14
+org status = -5
+nid = 1837(1491)
+conflict = 32
+patch = 13
+org status = -5
+nid = 1847(1501)
+conflict = 35
+patch = 32
+org status = -1
+nid = 1862(1510)
+conflict = 27
+patch = 20
+org status = -5
+nid = 1863(1513)
+conflict = 41
+patch = 32
+org status = -5
+nid = 1864(1514)
+conflict = 21
+patch = 31
+org status = -5
+nid = 1866(1518)
+conflict = 21
+patch = 40
+org status = -5
+nid = 1867(1519)
+conflict = 36
+patch = 38
+org status = -5
+nSimWords = 0
+    0 : { 368 361 2502 }
+    1 : { 2125 2502 361 }
+    2 : { 572 575 411 }
+    3 : { 574 576 713 }
+    4 : { 1980 1994 1992 }
+    5 : { 514 516 517 }
+    6 : { 455 458 316 }
+    7 : { 573 577 361 }
+    8 : { 1899 1922 1921 }
+    9 : { 1851 1861 1850 }
+   10 : { 1853 1859 1740 }
+   11 : { 1842 1771 1851 }
+   12 : { 1839 1768 1848 }
+   13 : { 1634 1635 1680 }
+   14 : { 1641 1683 1634 }
+   15 : { 1605 1668 358 }
+   16 : { 1630 1672 447 }
+   17 : { 393 569 846 }
+   18 : { 1330 1333 969 }
+   19 : { 1601 1601 321 }
+   20 : { 866 871 1344 }
+   21 : { 363 376 1056 }
+   22 : { 1053 791 1148 }
+   23 : { 942 946 527 }
+   24 : { 985 988 1091 }
+   25 : { 884 1091 946 }
+   26 : { 883 406 366 }
+   27 : { 525 794 409 }
+   28 : { 788 795 791 }
+   29 : { 430 433 409 }
+   30 : { 429 432 409 }
+   31 : { 409 411 406 }
+   32 : { 410 412 409 }
+   33 : { 371 364 367 }

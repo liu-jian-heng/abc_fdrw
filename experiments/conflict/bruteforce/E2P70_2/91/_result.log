@@ -1,0 +1,264 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 218
+there are 893 initial node to go
+there are 639 node still UNSAT in ckt 1
+start replace node finding
+maxMffc = 61, max reduce = 25
+dump 1502, new mffc = 60
+dump 1593, new mffc = 58
+dump 1492, new mffc = 55
+nid = 1703, patch size = 17
+nid = 1686, patch size = 9
+nid = 1498, patch size = 17
+nid = 1510, patch size = 16
+nid = 1589, patch size = 18
+nid = 1586, patch size = 31
+nid = 1684, patch size = 40
+nid = 1698, patch size = 25
+nid = 2416, patch size = 33
+start replacement
+trim: 3018->2972
+Trim time:  5.676893 sec
+nSimWords = 0
+found equivalence node....forcing fraig
+    0 : { 3123 3073 2446 }
+    1 : { 3118 3068 2434 }
+    2 : { 362 322 2864 }
+    3 : { 3076 3042 322 }
+    4 : { 3084 3038 3035 }
+    5 : { 939 1513 1539 }
+    6 : { 2990 2867 2941 }
+    7 : { 1067 1550 2917 }
+    8 : { 2966 2955 1053 }
+    9 : { 2942 2915 2892 }
+   10 : { 733 2064 305 }
+   11 : { 1626 1130 505 }
+   12 : { 2934 2882 2834 }
+   13 : { 1145 507 1539 }
+   14 : { 2887 2883 2837 }
+   15 : { 2884 2882 2834 }
+   16 : { 1077 1631 1515 }
+   17 : { 1752 654 2789 }
+   18 : { 2808 1516 2758 }
+   19 : { 2635 2585 2475 }
+   20 : { 2633 2583 1754 }
+   21 : { 2522 2473 2584 }
+   22 : { 2524 2585 2475 }
+   23 : { 531 1861 3067 }
+   24 : { 1477 1485 1586 }
+   25 : { 2212 1300 736 }
+   26 : { 937 736 1300 }
+   27 : { 2305 1419 1409 }
+   28 : { 865 515 502 }
+   29 : { 1241 349 711 }
+   30 : { 352 3065 1336 }
+   31 : { 2234 1340 1330 }
+   32 : { 2226 2892 1314 }
+   33 : { 1640 530 376 }
+   34 : { 2011 1168 1053 }
+   35 : { 318 343 481 }
+   36 : { 1628 517 502 }
+   37 : { 1686 579 1106 }
+   38 : { 1687 580 577 }
+   39 : { 1885 1100 1036 }
+   40 : { 1496 360 350 }
+   41 : { 1917 963 576 }
+   42 : { 1692 587 345 }
+   43 : { 1807 820 332 }
+   44 : { 1670 563 643 }
+   45 : { 1742 667 644 }
+   46 : { 1228 358 338 }
+   47 : { 1362 339 359 }
+   48 : { 1141 512 502 }
+   49 : { 1437 346 349 }
+   50 : { 1270 335 515 }
+   51 : { 1242 333 711 }
+   52 : { 1054 534 507 }
+   53 : { 1034 2250 2313 }
+   54 : { 1023 2302 2245 }
+   55 : { 999 2236 2306 }
+   56 : { 993 2277 2230 }
+   57 : { 893 2208 1875 }
+   58 : { 851 1319 349 }
+   59 : { 982 493 734 }
+   60 : { 970 2261 2270 }
+   61 : { 962 2268 2283 }
+   62 : { 959 1623 2274 }
+   63 : { 948 2272 2122 }
+   64 : { 928 2161 1856 }
+   65 : { 924 2303 1878 }
+   66 : { 917 2232 2115 }
+   67 : { 905 2239 1781 }
+   68 : { 902 2156 2236 }
+   69 : { 437 1776 2105 }
+   70 : { 879 1764 2222 }
+   71 : { 872 2147 2217 }
+   72 : { 860 2280 2194 }
+   73 : { 839 2169 2167 }
+   74 : { 843 1602 2173 }
+   75 : { 842 2171 2177 }
+   76 : { 840 1539 1319 }
+   77 : { 841 1603 2176 }
+   78 : { 798 2128 2135 }
+   79 : { 550 2245 2240 }
+   80 : { 830 2246 2242 }
+   81 : { 817 1853 1811 }
+   82 : { 812 1806 1831 }
+   83 : { 808 2147 1813 }
+   84 : { 803 1802 2142 }
+   85 : { 786 2117 2141 }
+   86 : { 796 2126 2133 }
+   87 : { 354 1717 1735 }
+   88 : { 546 1877 1866 }
+   89 : { 386 1732 1747 }
+   90 : { 387 1733 1760 }
+   91 : { 374 1258 1720 }
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 25
+nid = 2460(2509)
+conflict = 54
+patch = 60
+node is in initial circuit
+org status = -5
+nid = 2586(2630)
+conflict = 5
+patch = 6
+node is in initial circuit
+org status = -7
+nid = 2632(2681)
+conflict = 55
+patch = 35
+node is in initial circuit
+org status = -5
+nid = 2665(2714)
+conflict = 57
+patch = 45
+node is in initial circuit
+org status = -7
+nid = 2702(2752)
+conflict = 14
+patch = 18
+node is in initial circuit
+org status = -7
+nid = 2736(2786)
+conflict = 3
+patch = 8
+node is in initial circuit
+org status = -7
+nid = 2812(2862)
+conflict = 44
+patch = 39
+node is in initial circuit
+org status = -7
+nid = 2823(2877)
+conflict = 13
+patch = 8
+node is in initial circuit
+org status = -7
+nid = 2824(2879)
+conflict = 14
+patch = 13
+node is in initial circuit
+org status = -7
+nid = 2825(2880)
+conflict = 25
+patch = 15
+node is in initial circuit
+org status = -7
+nid = 2865(2927)
+conflict = 22
+patch = 12
+node is in initial circuit
+org status = -7
+nid = 2922(2963)
+conflict = 6
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 2913(2965)
+conflict = 6
+patch = 6
+node is in initial circuit
+org status = -7
+nid = 2927(2976)
+conflict = 69
+patch = 49
+node is in initial circuit
+org status = -5
+nid = 2947(2996)
+conflict = 6
+patch = 4
+node is in initial circuit
+org status = -7
+nid = 2948(2997)
+conflict = 3
+patch = 7
+node is in initial circuit
+org status = -7
+nid = 2952(3001)
+conflict = 56
+patch = 45
+node is in initial circuit
+org status = -1
+nid = 3024(3072)
+conflict = 38
+patch = 63
+node is in initial circuit
+org status = -1
+nid = 3036(3085)
+conflict = 24
+patch = 41
+node is in initial circuit
+org status = -7
+nid = 3027(3088)
+conflict = 30
+patch = 27
+node is in initial circuit
+org status = -7
+nid = 3028(3089)
+conflict = 29
+patch = 28
+node is in initial circuit
+org status = -7
+nid = 3044(3092)
+conflict = 48
+patch = 48
+node is in initial circuit
+org status = -7
+nid = 3061(3102)
+conflict = 20
+patch = 28
+node is in initial circuit
+org status = -7
+nid = 3063(3111)
+conflict = 23
+patch = 24
+node is in initial circuit
+org status = -7
+nid = 3064(3112)
+conflict = 27
+patch = 42
+node is in initial circuit
+org status = -7
+nSimWords = 0

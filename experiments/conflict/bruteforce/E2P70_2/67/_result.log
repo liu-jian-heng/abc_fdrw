@@ -1,0 +1,263 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 363
+start replace node finding
+maxMffc = 119, max reduce = 31
+dump 1309, new mffc = 118
+dump 1317, new mffc = 117
+dump 1318, new mffc = 116
+dump 770, new mffc = 114
+dump 1323, new mffc = 111
+nid = 1300, patch size = 66
+nid = 1446, patch size = 26
+nid = 2267, patch size = 52
+nid = 768, patch size = 33
+nid = 1504, patch size = 29
+nid = 1539, patch size = 51
+nid = 1391, patch size = 62
+start replacement
+trim: 2974->2827
+Trim time:  5.416273 sec
+start conflict test
+start final
+newly find #UNSAT: 44
+nid = 2298(2383)
+conflict = 52
+patch = 32
+org status = -5
+nid = 2310(2390)
+conflict = 6
+patch = 3
+org status = -7
+nid = 2316(2392)
+conflict = 6
+patch = 3
+org status = -7
+nid = 2566(2602)
+conflict = 27
+patch = 36
+org status = -5
+nid = 2690(2681)
+conflict = 31
+patch = 48
+org status = -5
+nid = 2711(2747)
+conflict = 10
+patch = 10
+org status = -7
+nid = 2742(2773)
+conflict = 19
+patch = 17
+org status = -5
+nid = 2848(2873)
+conflict = 89
+patch = 53
+org status = -1
+nid = 2944(2962)
+conflict = 25
+patch = 22
+org status = -7
+nid = 2947(2964)
+conflict = 12
+patch = 9
+org status = -1
+nid = 2972(2982)
+conflict = 18
+patch = 21
+org status = -5
+nid = 2975(2985)
+conflict = 32
+patch = 38
+org status = -5
+nid = 2984(2987)
+conflict = 17
+patch = 12
+org status = -1
+nid = 2985(2994)
+conflict = 39
+patch = 23
+org status = -5
+nid = 2986(2995)
+conflict = 41
+patch = 24
+org status = -5
+nid = 2990(2996)
+conflict = 50
+patch = 44
+org status = -7
+nid = 2994(3000)
+conflict = 71
+patch = 63
+org status = -7
+nid = 3007(3003)
+conflict = 61
+patch = 62
+org status = -7
+nid = 3134(3066)
+conflict = 41
+patch = 56
+org status = -5
+nid = 2304(3085)
+conflict = 24
+patch = 13
+org status = -7
+nid = 2311(3086)
+conflict = 23
+patch = 13
+org status = -7
+nid = 2312(3087)
+conflict = 22
+patch = 23
+org status = -7
+nid = 2322(3089)
+conflict = 26
+patch = 14
+org status = -7
+nid = 2323(3090)
+conflict = 26
+patch = 11
+org status = -7
+nid = 2324(3091)
+conflict = 24
+patch = 15
+org status = -7
+nid = 2325(3092)
+conflict = 55
+patch = 51
+org status = -7
+nid = 2326(3093)
+conflict = 56
+patch = 56
+org status = -7
+nid = 3103(3204)
+conflict = 23
+patch = 10
+org status = -7
+nid = 3110(3208)
+conflict = 26
+patch = 25
+org status = -7
+nid = 3111(3209)
+conflict = 36
+patch = 28
+org status = -7
+nid = 3112(3210)
+conflict = 29
+patch = 44
+org status = -7
+nid = 3118(3212)
+conflict = 48
+patch = 51
+org status = -7
+nid = 3119(3213)
+conflict = 54
+patch = 51
+org status = -7
+nid = 3166(3228)
+conflict = 22
+patch = 26
+org status = -7
+nid = 3167(3229)
+conflict = 6
+patch = 4
+org status = -7
+nid = 3169(3230)
+conflict = 12
+patch = 6
+org status = -7
+nid = 3172(3231)
+conflict = 15
+patch = 11
+org status = -7
+nid = 3173(3232)
+conflict = 15
+patch = 11
+org status = -7
+nid = 3174(3233)
+conflict = 12
+patch = 15
+org status = -7
+nid = 3175(3234)
+conflict = 29
+patch = 28
+org status = -7
+nid = 3176(3235)
+conflict = 37
+patch = 40
+org status = -7
+nid = 3177(3236)
+conflict = 34
+patch = 40
+org status = -7
+nid = 3178(3237)
+conflict = 38
+patch = 37
+org status = -7
+nid = 3180(3239)
+conflict = 71
+patch = 63
+org status = -7
+nSimWords = 0
+    0 : { 3073 3055 2385 }
+    1 : { 1127 981 2796 }
+    2 : { 2767 2736 1166 }
+    3 : { 2764 2733 392 }
+    4 : { 2763 2732 394 }
+    5 : { 2735 2704 2716 }
+    6 : { 713 613 366 }
+    7 : { 1488 680 1543 }
+    8 : { 2454 3197 2419 }
+    9 : { 2410 2367 2388 }
+   10 : { 2386 2395 2385 }
+   11 : { 587 774 1361 }
+   12 : { 2409 2366 1648 }
+   13 : { 2411 2368 2343 }
+   14 : { 1190 1380 2339 }
+   15 : { 2372 2335 2331 }
+   16 : { 2360 3196 2326 }
+   17 : { 2293 2313 2259 }
+   18 : { 341 345 1580 }
+   19 : { 1617 1585 1583 }
+   20 : { 649 316 836 }
+   21 : { 383 779 328 }
+   22 : { 1130 1561 2017 }
+   23 : { 404 396 2735 }
+   24 : { 903 1088 290 }
+   25 : { 1002 1180 283 }
+   26 : { 990 2729 1165 }
+   27 : { 991 2736 1166 }
+   28 : { 425 420 786 }
+   29 : { 316 326 293 }
+   30 : { 330 295 778 }
+   31 : { 360 364 779 }
+   32 : { 714 603 901 }
+   33 : { 303 301 293 }
+   34 : { 329 294 379 }
+   35 : { 408 400 481 }
+   36 : { 324 402 580 }
+   37 : { 430 393 425 }
+   38 : { 342 366 302 }
+   39 : { 415 411 409 }
+   40 : { 320 331 332 }
+   41 : { 313 329 291 }
+   42 : { 310 328 302 }
+   43 : { 301 320 302 }
+   44 : { 306 319 317 }

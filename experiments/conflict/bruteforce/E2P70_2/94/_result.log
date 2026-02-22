@@ -1,0 +1,157 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 216
+there are 874 initial node to go
+there are 25 node still UNSAT in ckt 2
+start replace node finding
+maxMffc = 398, max reduce = 40
+dump 3007, new mffc = 397
+dump 3149, new mffc = 396
+dump 3184, new mffc = 395
+dump 2802, new mffc = 393
+dump 2450, new mffc = 391
+dump 2469, new mffc = 388
+dump 2454, new mffc = 385
+nid = 3016, patch size = 6
+nid = 2560, patch size = 12
+nid = 2835, patch size = 19
+nid = 2794, patch size = 25
+nid = 2968, patch size = 14
+nid = 2776, patch size = 22
+nid = 2798, patch size = 19
+nid = 2978, patch size = 66
+nid = 2755, patch size = 25
+nid = 2891, patch size = 33
+nid = 2955, patch size = 21
+nid = 3166, patch size = 26
+nid = 2676, patch size = 19
+nid = 2958, patch size = 21
+nid = 2430, patch size = 48
+nid = 2848, patch size = 36
+nid = 2579, patch size = 28
+nid = 2542, patch size = 38
+nid = 2785, patch size = 35
+nid = 2883, patch size = 52
+nid = 2740, patch size = 35
+nid = 3042, patch size = 56
+nid = 2602, patch size = 39
+nid = 2826, patch size = 11
+nid = 2645, patch size = 69
+nid = 2933, patch size = 61
+nid = 2717, patch size = 56
+start replacement
+trim: 3052->2808
+Trim time:  8.462479 sec
+nSimWords = 0
+found equivalence node....forcing fraig
+    0 : { 329 573 357 }
+    1 : { 332 293 1894 }
+    2 : { 369 349 612 }
+    3 : { 2909 2884 2887 }
+    4 : { 555 691 2859 }
+    5 : { 397 589 2868 }
+    6 : { 2781 2767 2871 }
+    7 : { 2841 691 2880 }
+    8 : { 2837 2865 2843 }
+    9 : { 2785 2772 2767 }
+   10 : { 2786 2770 2765 }
+   11 : { 1644 1644 971 }
+   12 : { 2595 1992 2580 }
+   13 : { 1874 1764 2592 }
+   14 : { 2003 1893 2586 }
+   15 : { 1799 1744 1760 }
+   16 : { 2592 1983 2564 }
+   17 : { 2221 3122 2066 }
+   18 : { 2217 1976 2062 }
+   19 : { 2214 1975 2059 }
+   20 : { 2205 3121 2050 }
+   21 : { 2202 2045 2047 }
+   22 : { 2182 2047 2027 }
+   23 : { 2180 2044 2025 }
+   24 : { 1414 1414 368 }
+   25 : { 1775 1719 1721 }
+   26 : { 1765 1297 1709 }
+   27 : { 1179 2912 1178 }
+   28 : { 335 298 335 }
+   29 : { 453 409 360 }
+   30 : { 1346 2657 1345 }
+   31 : { 1351 2650 1350 }
+   32 : { 355 335 622 }
+   33 : { 783 783 878 }
+   34 : { 687 470 444 }
+   35 : { 396 590 368 }
+   36 : { 569 1373 444 }
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 5
+nid = 752(752)
+conflict = 11
+patch = 18
+node is in initial circuit
+org status = -1
+nid = 757(757)
+conflict = 4
+patch = 5
+node is in initial circuit
+org status = -5
+nid = 759(759)
+conflict = 6
+patch = 7
+node is in initial circuit
+org status = -5
+nid = 1691(1690)
+conflict = 15
+patch = 25
+node is in initial circuit
+org status = -7
+nid = 1694(1693)
+conflict = 88
+patch = 70
+node is in initial circuit
+org status = -1
+nSimWords = 0
+    0 : { 2630 2901 2858 }
+    1 : { 2816 3048 2898 }
+    2 : { 1660 719 3033 }
+    3 : { 2731 2952 2975 }
+    4 : { 315 293 357 }
+    5 : { 1513 573 1894 }
+    6 : { 2595 2871 2832 }
+    7 : { 2573 2396 2606 }
+    8 : { 2537 2239 2543 }
+    9 : { 1845 1852 1390 }
+   10 : { 2390 3212 2397 }
+   11 : { 1189 1852 1390 }
+   12 : { 1091 1291 368 }
+   13 : { 1705 1710 1721 }
+   14 : { 1614 668 368 }
+   15 : { 1615 669 444 }
+   16 : { 468 590 368 }
+   17 : { 1518 589 587 }
+   18 : { 769 411 497 }
+   19 : { 342 779 296 }
+   20 : { 349 459 460 }
+   21 : { 278 298 357 }
+   22 : { 331 771 443 }
+   23 : { 333 772 431 }
+   24 : { 485 1729 622 }
+   25 : { 288 470 444 }

@@ -1,0 +1,165 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 623
+start replace node finding
+maxMffc = 519, max reduce = 44
+dump 2366, new mffc = 518
+dump 2390, new mffc = 517
+dump 2589, new mffc = 516
+dump 2777, new mffc = 515
+dump 2779, new mffc = 514
+dump 2782, new mffc = 513
+dump 2799, new mffc = 512
+dump 2871, new mffc = 511
+dump 2890, new mffc = 510
+dump 3049, new mffc = 509
+dump 2402, new mffc = 507
+dump 2749, new mffc = 505
+dump 2776, new mffc = 503
+dump 2337, new mffc = 501
+dump 2846, new mffc = 499
+dump 2919, new mffc = 497
+dump 2864, new mffc = 494
+dump 2896, new mffc = 491
+dump 2918, new mffc = 489
+dump 2652, new mffc = 485
+dump 2806, new mffc = 481
+dump 2654, new mffc = 479
+nid = 2844, patch size = 12
+nid = 2382, patch size = 13
+nid = 2996, patch size = 53
+nid = 2862, patch size = 13
+nid = 2989, patch size = 6
+nid = 2792, patch size = 11
+nid = 2829, patch size = 5
+nid = 2647, patch size = 39
+nid = 2649, patch size = 68
+nid = 2839, patch size = 22
+nid = 2638, patch size = 13
+nid = 2897, patch size = 30
+nid = 2615, patch size = 17
+nid = 2668, patch size = 50
+nid = 2984, patch size = 8
+nid = 2960, patch size = 12
+nid = 2354, patch size = 58
+nid = 2744, patch size = 51
+nid = 2924, patch size = 29
+nid = 2821, patch size = 44
+nid = 2683, patch size = 19
+nid = 2449, patch size = 49
+nid = 2607, patch size = 32
+nid = 2284, patch size = 14
+nid = 2609, patch size = 70
+nid = 2576, patch size = 37
+nid = 2942, patch size = 9
+nid = 3045, patch size = 41
+nid = 2273, patch size = 31
+nid = 2353, patch size = 59
+nid = 2774, patch size = 14
+nid = 2697, patch size = 48
+nid = 2223, patch size = 67
+nid = 2979, patch size = 33
+nid = 2562, patch size = 35
+nid = 2448, patch size = 60
+nid = 2713, patch size = 49
+nid = 2480, patch size = 48
+nid = 2210, patch size = 51
+nid = 3024, patch size = 12
+nid = 2560, patch size = 44
+nid = 2742, patch size = 52
+nid = 2525, patch size = 64
+start replacement
+trim: 3498->2765
+Trim time:  6.421706 sec
+start conflict test
+start final
+newly find #UNSAT: 8
+nid = 586(587)
+conflict = 50
+patch = 50
+org status = -7
+nid = 1085(1077)
+conflict = 89
+patch = 4
+org status = -1
+nid = 1088(1079)
+conflict = 57
+patch = 51
+org status = -7
+nid = 1280(1264)
+conflict = 0
+patch = 2
+org status = -1
+nid = 1361(1345)
+conflict = 49
+patch = 53
+org status = -7
+nid = 1452(1346)
+conflict = 73
+patch = 57
+org status = -7
+nid = 1453(1434)
+conflict = 48
+patch = 44
+org status = -7
+nid = 2179(2159)
+conflict = 29
+patch = 35
+org status = -1
+nSimWords = 0
+    0 : { 386 386 1929 }
+    1 : { 1302 1409 1957 }
+    2 : { 1456 315 1482 }
+    3 : { 1332 1360 586 }
+    4 : { 596 594 511 }
+    5 : { 398 399 1232 }
+    6 : { 1164 398 1192 }
+    7 : { 1099 1137 1128 }
+    8 : { 1072 1097 1104 }
+    9 : { 849 850 969 }
+   10 : { 710 711 871 }
+   11 : { 1064 1098 1050 }
+   12 : { 585 1360 586 }
+   13 : { 1060 1280 1093 }
+   14 : { 462 1086 1084 }
+   15 : { 1052 1082 463 }
+   16 : { 1030 1061 1069 }
+   17 : { 1037 1070 1061 }
+   18 : { 1038 1069 1062 }
+   19 : { 802 801 785 }
+   20 : { 327 327 632 }
+   21 : { 276 312 601 }
+   22 : { 719 970 633 }
+   23 : { 690 693 692 }
+   24 : { 692 692 693 }
+   25 : { 275 298 312 }
+   26 : { 608 609 608 }
+   27 : { 610 608 609 }
+   28 : { 384 384 397 }
+   29 : { 419 420 331 }
+   30 : { 429 601 328 }
+   31 : { 430 1330 379 }
+   32 : { 342 358 312 }
+   33 : { 406 306 407 }
+   34 : { 394 395 628 }
+   35 : { 309 309 312 }
+   36 : { 314 389 315 }
+   37 : { 306 887 306 }

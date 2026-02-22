@@ -1,0 +1,109 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 210
+start replace node finding
+maxMffc = 89, max reduce = 27
+dump 1102, new mffc = 88
+dump 1100, new mffc = 85
+dump 1449, new mffc = 82
+dump 1470, new mffc = 81
+dump 1467, new mffc = 77
+dump 1454, new mffc = 73
+nid = 1464, patch size = 13
+nid = 1368, patch size = 12
+nid = 1448, patch size = 45
+nid = 1095, patch size = 42
+nid = 1584, patch size = 27
+nid = 1381, patch size = 35
+nid = 1569, patch size = 33
+nid = 1583, patch size = 47
+nid = 2310, patch size = 42
+start replacement
+trim: 2791->2615
+Trim time:  6.506576 sec
+start conflict test
+start final
+newly find #UNSAT: 7
+nid = 2531(2513)
+conflict = 69
+patch = 44
+org status = -1
+nid = 2587(2553)
+conflict = 27
+patch = 37
+org status = -1
+nid = 2831(2730)
+conflict = 59
+patch = 40
+org status = -5
+nid = 2852(2754)
+conflict = 77
+patch = 68
+org status = -5
+nid = 3048(2868)
+conflict = 44
+patch = 51
+org status = -5
+nid = 2918(2979)
+conflict = 37
+patch = 47
+org status = -7
+nid = 2919(2980)
+conflict = 32
+patch = 42
+org status = -7
+nSimWords = 0
+    0 : { 315 263 336 }
+    1 : { 1809 1792 1204 }
+    2 : { 531 515 1271 }
+    3 : { 1620 1603 1479 }
+    4 : { 1623 1606 324 }
+    5 : { 2577 2561 2562 }
+    6 : { 2487 2496 2479 }
+    7 : { 2514 2479 2496 }
+    8 : { 688 720 2490 }
+    9 : { 551 537 2488 }
+   10 : { 2492 2490 720 }
+   11 : { 1431 1426 498 }
+   12 : { 1511 1490 1521 }
+   13 : { 1455 1585 1447 }
+   14 : { 1345 1255 1096 }
+   15 : { 1307 1067 1066 }
+   16 : { 1309 1068 1067 }
+   17 : { 1172 1065 1027 }
+   18 : { 1306 1027 1065 }
+   19 : { 1025 1096 1255 }
+   20 : { 919 1453 826 }
+   21 : { 816 596 595 }
+   22 : { 818 595 596 }
+   23 : { 591 1119 619 }
+   24 : { 642 626 1157 }
+   25 : { 648 1157 626 }
+   26 : { 578 619 1119 }
+   27 : { 334 739 377 }
+   28 : { 433 427 423 }
+   29 : { 283 350 334 }
+   30 : { 345 387 351 }
+   31 : { 291 546 351 }
+   32 : { 293 339 348 }
+   33 : { 339 916 351 }
+   34 : { 301 519 337 }
+   35 : { 304 361 340 }

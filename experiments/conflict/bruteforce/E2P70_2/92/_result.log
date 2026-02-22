@@ -1,0 +1,169 @@
+ABC command line: "&read _init.aig; &fdrw -g -G 2 -E 2 -P 70.0 -a -F _coef.log -C 100".
+
+Level
+....level is computed as FO
+....use shortest path as dist = 0
+....pick min of dist as level = 0
+....Level is computed on pAbs = 1
+Itp
+....Itp is computed with incremental sat solver = 0
+....Itp is computed on pAbs = 0
+....G support contain merge frontier = 1
+....G supprot contain not same merge frontier support = 2
+....cost eval of the patch is 2
+....coef of cost eval = 70.000000
+Shrink
+....keep special case 0 in Gsupport first
+....shrink base on level of pAbs
+FD Rewrite
+....synthesis before replacement = 0
+....synthesis after rewriting = 0
+initial #Unsat: 235
+there are 899 initial node to go
+there are 41 node still UNSAT in ckt 2
+start replace node finding
+maxMffc = 436, max reduce = 38
+dump 2761, new mffc = 435
+dump 3098, new mffc = 434
+dump 3136, new mffc = 433
+dump 3190, new mffc = 432
+dump 3210, new mffc = 431
+dump 2799, new mffc = 429
+nid = 2469, patch size = 25
+nid = 2475, patch size = 45
+nid = 2837, patch size = 16
+nid = 2694, patch size = 12
+nid = 2791, patch size = 25
+nid = 2795, patch size = 21
+nid = 2961, patch size = 28
+nid = 3188, patch size = 21
+nid = 2783, patch size = 58
+nid = 2743, patch size = 34
+nid = 2606, patch size = 24
+nid = 2864, patch size = 41
+nid = 2760, patch size = 52
+nid = 2963, patch size = 29
+nid = 2498, patch size = 52
+nid = 3052, patch size = 58
+nid = 2848, patch size = 45
+nid = 2590, patch size = 20
+nid = 2569, patch size = 65
+nid = 2891, patch size = 63
+nid = 2725, patch size = 25
+nid = 3072, patch size = 48
+nid = 2984, patch size = 54
+nid = 2654, patch size = 60
+nid = 2828, patch size = 37
+nid = 2621, patch size = 43
+nid = 2689, patch size = 50
+nid = 3034, patch size = 53
+nid = 2940, patch size = 56
+start replacement
+trim: 3092->2709
+Trim time:  4.458699 sec
+nSimWords = 0
+found equivalence node....forcing fraig
+    0 : { 1823 1831 2601 }
+    1 : { 3348 3172 3174 }
+    2 : { 507 1511 314 }
+    3 : { 305 327 305 }
+    4 : { 318 305 327 }
+    5 : { 907 505 2953 }
+    6 : { 303 330 579 }
+    7 : { 3009 2892 2895 }
+    8 : { 2999 2871 2862 }
+    9 : { 1178 924 512 }
+   10 : { 912 520 920 }
+   11 : { 869 457 1076 }
+   12 : { 1803 1811 2581 }
+   13 : { 1376 1127 2582 }
+   14 : { 2597 2561 2564 }
+   15 : { 2584 2604 2548 }
+   16 : { 2408 2408 2409 }
+   17 : { 2410 2409 2410 }
+   18 : { 2176 2184 2190 }
+   19 : { 2180 2190 2184 }
+   20 : { 2147 2155 1794 }
+   21 : { 2145 2151 1792 }
+   22 : { 2140 1782 1749 }
+   23 : { 2049 2116 1931 }
+   24 : { 2046 2031 1927 }
+   25 : { 2006 2107 1760 }
+   26 : { 2011 1777 1774 }
+   27 : { 1923 2116 1931 }
+   28 : { 1919 1927 2031 }
+   29 : { 1786 2155 1794 }
+   30 : { 1784 1792 2151 }
+   31 : { 1774 2146 1782 }
+   32 : { 1769 1777 2112 }
+   33 : { 1765 1773 2111 }
+   34 : { 1749 1757 2015 }
+   35 : { 1729 2105 1737 }
+   36 : { 1434 2100 1362 }
+   37 : { 1727 2585 1735 }
+   38 : { 510 493 2840 }
+   39 : { 795 359 406 }
+   40 : { 361 358 378 }
+   41 : { 540 502 2844 }
+   42 : { 571 1490 1591 }
+   43 : { 655 1586 1598 }
+   44 : { 490 1606 1481 }
+   45 : { 474 2843 501 }
+   46 : { 457 761 1505 }
+   47 : { 500 1622 1506 }
+   48 : { 487 1478 866 }
+   49 : { 415 820 788 }
+   50 : { 417 1477 864 }
+   51 : { 382 333 343 }
+   52 : { 383 349 723 }
+   53 : { 308 515 328 }
+   54 : { 324 534 507 }
+start conflict test
+lable conflict
+start final
+newly find #UNSAT: 7
+nid = 1716(778)
+conflict = 47
+patch = 13
+node is in initial circuit
+org status = -1
+nid = 1500(1695)
+conflict = 57
+patch = 3
+node is in initial circuit
+org status = -7
+nid = 1501(1696)
+conflict = 13
+patch = 7
+node is in initial circuit
+org status = -7
+nid = 1610(1705)
+conflict = 59
+patch = 35
+node is in initial circuit
+org status = -1
+nid = 1611(1706)
+conflict = 46
+patch = 45
+node is in initial circuit
+org status = -5
+nid = 1612(1707)
+conflict = 59
+patch = 57
+node is in initial circuit
+org status = -1
+nid = 2429(2429)
+conflict = 19
+patch = 31
+node is in initial circuit
+org status = -5
+nSimWords = 0
+    0 : { 2400 1603 2409 }
+    1 : { 2399 1596 2408 }
+    2 : { 1609 1698 1616 }
+    3 : { 1691 1616 1707 }
+    4 : { 1585 2409 1698 }
+    5 : { 1253 1481 1569 }
+    6 : { 1572 1610 1607 }
+    7 : { 320 328 335 }
+    8 : { 499 891 509 }
